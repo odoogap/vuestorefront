@@ -85,9 +85,9 @@ class ResetPassword(graphene.Mutation):
         if len(user) != 1:
             raise GraphQLError(_('Invalid email.'))
 
-        api_reset_password_url = env['ir.config_parameter'].sudo().get_param('api_reset_password_url')
-        if not api_reset_password_url:
-            raise GraphQLError(_('Please define the API Reset Password URL.'))
+        vsf_reset_password_url = env['ir.config_parameter'].sudo().get_param('vsf_reset_password_url')
+        if not vsf_reset_password_url:
+            raise GraphQLError(_('Please define the VSF Reset Password URL.'))
 
         try:
             user.with_context(create_user=create_user).api_action_reset_password()

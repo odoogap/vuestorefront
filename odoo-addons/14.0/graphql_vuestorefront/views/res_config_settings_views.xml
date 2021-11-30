@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="res_config_settings_view_form" model="ir.ui.view">
+        <field name="name">res.config.settings.form</field>
+        <field name="model">res.config.settings</field>
+        <field name="priority" eval="99"/>
+        <field name="inherit_id" ref="website.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[@id='seo_settings']" position="after">
+                <h2>Vue Storefront</h2>
+                <div class="row mt16 o_settings_container" id="vsf_settings">
+                    <div class="col-12 col-lg-6 o_setting_box" id="vsf_reset_password_url_settings">
+                        <div class="o_setting_right_pane">
+                            <label for="vsf_reset_password_url"/>
+                            <div class="content-group">
+                                <field name="vsf_reset_password_url"/>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12 col-lg-6 o_setting_box" id="vsf_payment_return_url_settings">
+                        <div class="o_setting_right_pane">
+                            <label for="vsf_payment_return_url"/>
+                            <div class="content-group">
+                                <field name="vsf_payment_return_url"/>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12 col-lg-6 o_setting_box" id="vsf_cache_invalidation_key_settings">
+                        <div class="o_setting_right_pane">
+                            <label for="vsf_cache_invalidation_key"/>
+                            <div class="content-group">
+                                <field name="vsf_cache_invalidation_key"/>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12 col-lg-6 o_setting_box" id="vsf_cache_invalidation_url_settings">
+                        <div class="o_setting_right_pane">
+                            <label for="vsf_cache_invalidation_url"/>
+                            <div class="content-group">
+                                <field name="vsf_cache_invalidation_url"/>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12 col-lg-6 o_setting_box" id="web_base_url_settings">
+                        <div class="o_setting_right_pane">
+                            <label for="web_base_url"/>
+                            <div class="content-group">
+                                <field name="web_base_url"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

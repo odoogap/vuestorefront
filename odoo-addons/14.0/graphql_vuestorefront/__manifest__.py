@@ -24,6 +24,7 @@
         'data/mail_template.xml',
         'data/ir_config_parameter_data.xml',
         'data/res_config_settings_data.xml',
+        'views/res_config_settings_views.xml',
     ],
     'demo': [
         'data/demo_product_attribute.xml',
@@ -35,7 +36,7 @@
         'data/demo_products_men_clothing_2.xml',
         'data/demo_products_men_clothing_3.xml',
         'data/demo_products_men_clothing_4.xml',
-        'data/demo_products_men_shoes.xml'
+        'data/demo_products_men_shoes.xml',
     ],
     'installable': True,
     'auto_install': False,

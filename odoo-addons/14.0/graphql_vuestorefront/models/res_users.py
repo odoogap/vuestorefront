@@ -29,10 +29,10 @@ class ResUsers(models.Model):
 
         assert template._name == 'mail.template'
 
-        api_reset_password_url = self.env['ir.config_parameter'].sudo().get_param('api_reset_password_url')
+        vsf_reset_password_url = self.env['ir.config_parameter'].sudo().get_param('vsf_reset_password_url')
 
-        if not api_reset_password_url:
-            raise UserError(_('Please define the API Reset Password URL.'))
+        if not vsf_reset_password_url:
+            raise UserError(_('Please define the VSF Reset Password URL.'))
 
         template_values = {
             'email_to': '${object.email|safe}',
@@ -45,7 +45,7 @@ class ResUsers(models.Model):
 
         for user in self:
             token = user.signup_token
-            signup_url = "%s?token=%s" % (api_reset_password_url, token)
+            signup_url = "%s?token=%s" % (vsf_reset_password_url, token)
             if not user.email:
                 raise UserError(_("Cannot send email: user %s has no email address.") % user.name)
             with self.env.cr.savepoint():
