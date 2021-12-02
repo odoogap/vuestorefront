@@ -25,6 +25,9 @@ AddressType = graphene.Enum('AddressType', [('Contact', 'contact'), ('InvoiceAdd
 OrderStage = graphene.Enum('OrderStage', [('Quotation', 'draft'), ('QuotationSent', 'sent'),
                                           ('SalesOrder', 'sale'), ('Locked', 'done'), ('Cancelled', 'cancel')])
 
+InvoiceStatus = graphene.Enum('InvoiceStatus', [('UpsellingOpportunity', 'upselling'), ('FullyInvoiced', 'invoiced'),
+                                          ('ToInvoice', 'to invoice'), ('NothingtoInvoice', 'no')])
+
 InvoiceState = graphene.Enum('InvoiceState', [('Draft', 'draft'), ('Posted', 'posted'), ('Cancelled', 'cancel')])
 
 InventoryAvailability = graphene.Enum('InventoryAvailability', [
@@ -483,6 +486,9 @@ class Order(OdooObjectType):
     stage = OrderStage()
     order_url = graphene.String()
     transactions = graphene.List(graphene.NonNull(lambda: PaymentTransaction))
+    client_order_ref = graphene.String()
+    invoice_status = InvoiceStatus()
+    invoice_count = graphene.Int()
 
     def resolve_partner(self, info):
         return self.partner_id or None
