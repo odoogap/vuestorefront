@@ -8,7 +8,7 @@ from odoo.http import request
 from odoo import _
 
 from odoo.addons.graphql_vuestorefront.schemas.objects import (
-    SortEnum, Order, ShippingMethod,
+    SortEnum, OrderStage, InvoiceStatus, Order, ShippingMethod,
     get_document_with_check_access,
     get_document_count_with_check_access
 )
@@ -28,6 +28,11 @@ def get_search_order(sort):
         sorting = 'id ASC'
 
     return sorting
+
+
+class OrderFilterInput(graphene.InputObjectType):
+    stages = graphene.List(OrderStage)
+    invoice_status = graphene.List(InvoiceStatus)
 
 
 class OrderSortInput(graphene.InputObjectType):
@@ -55,6 +60,7 @@ class OrderQuery(graphene.ObjectType):
     )
     orders = graphene.Field(
         Orders,
+        filter=graphene.Argument(OrderFilterInput, default_value={}),
         current_page=graphene.Int(default_value=1),
         page_size=graphene.Int(default_value=10),
         sort=graphene.Argument(OrderSortInput, default_value={})
@@ -73,15 +79,24 @@ class OrderQuery(graphene.ObjectType):
         return order.sudo()
 
     @staticmethod
-    def resolve_orders(self, info, current_page, page_size, sort):
+    def resolve_orders(self, info, filter, current_page, page_size, sort):
         env = info.context["env"]
         user = request.env.user
         partner = user.partner_id
         sort_order = get_search_order(sort)
         domain = [
             ('message_partner_ids', 'child_of', [partner.commercial_partner_id.id]),
-            ('state', 'in', ['sale', 'done'])
         ]
+
+        # Filter by stages or default to sales and done
+        if filter.get('stages', False):
+            domain += [('state', 'in', filter['stages'])]
+        else:
+            domain += [('state', 'in', ['sale', 'done'])]
+
+        # Filter by invoice status
+        if filter.get('invoice_status', False):
+            domain += [('invoice_status', 'in', filter['invoice_status'])]
 
         # First offset is 0 but first page is 1
         if current_page > 1:

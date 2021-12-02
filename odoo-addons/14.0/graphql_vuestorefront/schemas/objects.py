@@ -26,7 +26,7 @@ OrderStage = graphene.Enum('OrderStage', [('Quotation', 'draft'), ('QuotationSen
                                           ('SalesOrder', 'sale'), ('Locked', 'done'), ('Cancelled', 'cancel')])
 
 InvoiceStatus = graphene.Enum('InvoiceStatus', [('UpsellingOpportunity', 'upselling'), ('FullyInvoiced', 'invoiced'),
-                                          ('ToInvoice', 'to invoice'), ('NothingtoInvoice', 'no')])
+                                                ('ToInvoice', 'to invoice'), ('NothingtoInvoice', 'no')])
 
 InvoiceState = graphene.Enum('InvoiceState', [('Draft', 'draft'), ('Posted', 'posted'), ('Cancelled', 'cancel')])
 
