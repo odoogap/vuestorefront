@@ -138,7 +138,9 @@ class Partner(OdooObjectType):
     email = graphene.String()
     phone = graphene.String()
     address_type = AddressType()
+    billing_address = graphene.Field(lambda: Partner)
     is_company = graphene.Boolean(required=True)
+    company = graphene.Field(lambda: Partner)
     contacts = graphene.List(graphene.NonNull(lambda: Partner))
     signup_token = graphene.String()
     signup_valid = graphene.String()
@@ -151,6 +153,13 @@ class Partner(OdooObjectType):
 
     def resolve_address_type(self, info):
         return self.type or None
+
+    def resolve_billing_address(self, info):
+        billing_address = self.child_ids.filtered(lambda a: a.type and a.type == 'invoice')
+        return billing_address and billing_address[0] or None
+
+    def resolve_company(self, info):
+        return self.company_id or None
 
     def resolve_contacts(self, info):
         return self.child_ids or None
@@ -516,7 +525,7 @@ class Order(OdooObjectType):
 
     def resolve_order_url(self, info):
         env = info.context["env"]
-        base_url = env['ir.config_parameter'].sudo().get_param('web.base.url')
+        base_url = env['ir.config_parameter'].sudo().get_param('web.base.url', '')
         url = urls.url_join(base_url, self.get_portal_url(report_type='pdf', download=True))
         if url:
             return url
