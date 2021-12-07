@@ -30,7 +30,8 @@ class UserProfileQuery(graphene.ObjectType):
 
 
 class UpdateMyAccountParams(graphene.InputObjectType):
-    id = graphene.Int(required=True)
+    # Deprecated
+    id = graphene.Int()
     name = graphene.String()
     email = graphene.String()
 
@@ -43,9 +44,7 @@ class UpdateMyAccount(graphene.Mutation):
 
     @staticmethod
     def mutate(self, info, myaccount):
-        env = info.context["env"]
-        ResPartner = env['res.partner'].with_context(show_address=1).sudo()
-        partner = ResPartner.search([('id', '=', myaccount['id'])], limit=1)
+        partner = request.env.user.partner_id
         if partner:
             partner.write(myaccount)
         else:
