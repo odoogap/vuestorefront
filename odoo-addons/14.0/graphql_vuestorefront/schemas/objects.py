@@ -159,7 +159,7 @@ class Partner(OdooObjectType):
         return billing_address and billing_address[0] or None
 
     def resolve_company(self, info):
-        return self.company_id or None
+        return self.company_id.partner_id or None
 
     def resolve_contacts(self, info):
         return self.child_ids or None
