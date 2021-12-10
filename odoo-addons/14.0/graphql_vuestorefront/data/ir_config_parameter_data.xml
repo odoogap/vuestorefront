@@ -7,7 +7,7 @@
 
     <record id="vsf_reset_password_url" model="ir.config_parameter">
         <field name="key">vsf_reset_password_url</field>
-        <field name="value">dummy</field>
+        <field name="value">https://vsf.labs.odoogap.com/forgot-password/new-password</field>
     </record>
 
     <record id="vsf_payment_return_url" model="ir.config_parameter">
