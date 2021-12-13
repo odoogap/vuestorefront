@@ -63,7 +63,12 @@ class CategoryQuery(graphene.ObjectType):
 
     @staticmethod
     def resolve_category(self, info, id):
-        category = info.context['env']['product.public.category'].search([('id', '=', id)], limit=1)
+        env = info.context['env']
+
+        domain = [('id', '=', id)]
+        domain += env['website'].get_current_website().website_domain()
+        category = info.context['env']['product.public.category'].search(
+            domain, limit=1)
         if not category:
             raise GraphQLError(_('Category does not exist.'))
         return category
@@ -72,7 +77,7 @@ class CategoryQuery(graphene.ObjectType):
     def resolve_categories(self, info, filter, current_page, page_size, search, sort):
         env = info.context["env"]
         order = get_search_order(sort)
-        domain = []
+        domain = env['website'].get_current_website().website_domain()
 
         if search:
             for srch in search.split(" "):
@@ -93,5 +98,6 @@ class CategoryQuery(graphene.ObjectType):
 
         ProductPublicCategory = env["product.public.category"]
         total_count = ProductPublicCategory.search_count(domain)
-        categories = ProductPublicCategory.search(domain, limit=page_size, offset=offset, order=order)
+        categories = ProductPublicCategory.search(
+            domain, limit=page_size, offset=offset, order=order)
         return CategoryList(categories=categories, total_count=total_count)
