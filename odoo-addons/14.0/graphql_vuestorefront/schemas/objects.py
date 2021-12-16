@@ -526,7 +526,7 @@ class Order(OdooObjectType):
     def resolve_order_url(self, info):
         env = info.context["env"]
         base_url = env['ir.config_parameter'].sudo().get_param('web.base.url', '')
-        url = urls.url_join(base_url, self.get_portal_url(report_type='pdf', download=True))
+        url = urls.url_join(base_url, self.get_portal_url())
         if url:
             return url
         return None
