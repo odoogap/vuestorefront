@@ -124,8 +124,8 @@ class ProductVariantData(graphene.ObjectType):
 class ProductQuery(graphene.ObjectType):
     product = graphene.Field(
         Product,
-        required=True,
-        id=graphene.Int(),
+        id=graphene.Int(default_value=None),
+        barcode=graphene.String(default_value=None),
     )
     products = graphene.Field(
         Products,
@@ -148,8 +148,14 @@ class ProductQuery(graphene.ObjectType):
     )
 
     @staticmethod
-    def resolve_product(self, info, id):
-        product = info.context["env"]["product.template"].sudo().search([('id', '=', id)], limit=1)
+    def resolve_product(self, info, id=None, barcode=None):
+        if id:
+            product = info.context["env"]["product.template"].sudo().search([('id', '=', id)], limit=1)
+        elif barcode:
+            product = info.context["env"]["product.template"].sudo().search([('barcode', '=', barcode)], limit=1)
+        else:
+            product = None
+
         if not product:
             raise GraphQLError(_('Product does not exist.'))
         return product

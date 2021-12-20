@@ -300,6 +300,7 @@ class Product(OdooObjectType):
                                      description='Specific to Product Template')
     product_variants = graphene.List(graphene.NonNull(lambda: Product), description='Specific to Product Template')
     first_variant = graphene.Int(description='Specific to use in Product Template')
+    barcode = graphene.String()
 
     def resolve_type_id(self, info):
         if self.type == 'product':
