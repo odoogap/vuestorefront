@@ -4,6 +4,7 @@
 
 import logging
 
+from odoo.http import request
 from odoo import api, models, _
 from odoo.addons.auth_signup.models.res_partner import now
 from odoo.exceptions import UserError
@@ -29,10 +30,10 @@ class ResUsers(models.Model):
 
         assert template._name == 'mail.template'
 
-        vsf_reset_password_url = self.env['ir.config_parameter'].sudo().get_param('vsf_reset_password_url')
-
-        if not vsf_reset_password_url:
-            raise UserError(_('Please define the VSF Reset Password URL.'))
+        website = request.env['website'].get_current_website()
+        domain = website.domain
+        if domain and domain[-1] == '/':
+            domain = domain[:-1]
 
         template_values = {
             'email_to': '${object.email|safe}',
@@ -45,7 +46,7 @@ class ResUsers(models.Model):
 
         for user in self:
             token = user.signup_token
-            signup_url = "%s?token=%s" % (vsf_reset_password_url, token)
+            signup_url = "%s?token=%s" % (domain, token)
             if not user.email:
                 raise UserError(_("Cannot send email: user %s has no email address.") % user.name)
             with self.env.cr.savepoint():
