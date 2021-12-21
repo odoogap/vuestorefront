@@ -56,29 +56,13 @@ class GraphQLController(http.Controller, GraphQLControllerMixin):
 
             domain = 'https://%s' % request_host
 
-            cr = request.env.cr
-
-            # Query used to get the code of the default_language_id of website
-            query = """
-                    SELECT code 
-                    FROM res_lang
-                    WHERE id IN (
-                        SELECT default_lang_id
-                        FROM website
-                        WHERE domain = %s
-                    )
-                """
-            params = (domain,)
-
-            cr.execute(query, params)
-            query_result = cr.fetchone()
-
-            if query_result:
-                lang = query_result[0]
-
-                # Updating the context language according to the vsf domain verifying that domain in the website
+            website = request.env['website'].search([('domain', '=', domain)], limit=1)
+            if website:
                 context = dict(request.context)
-                context.update({'lang': lang})
+                context.update({
+                    'website_id': website.id,
+                    'lang': website.default_lang_id.code,
+                })
                 request.context = context
 
         except:
