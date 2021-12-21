@@ -89,7 +89,7 @@ class Lead(OdooObjectType):
     id = graphene.Int(required=True)
     name = graphene.String()
     email = graphene.String()
-    phone = graphene.Int()
+    phone = graphene.String()
     company = graphene.String()
     subject = graphene.String()
     message = graphene.String()
@@ -301,6 +301,7 @@ class Product(OdooObjectType):
     product_variants = graphene.List(graphene.NonNull(lambda: Product), description='Specific to Product Template')
     first_variant = graphene.Int(description='Specific to use in Product Template')
     barcode = graphene.String()
+    product_template = graphene.Field(lambda: Product)
 
     def resolve_type_id(self, info):
         if self.type == 'product':
@@ -425,6 +426,9 @@ class Product(OdooObjectType):
 
     def resolve_first_variant(self, info):
         return self.product_variant_id or None
+
+    def resolve_product_template(self, info):
+        return self.product_tmpl_id or None
 
 
 class Payment(OdooObjectType):
