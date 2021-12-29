@@ -10,7 +10,7 @@ from odoo.addons.graphql_vuestorefront.schemas.objects import Lead
 class ContactUsParams(graphene.InputObjectType):
     name = graphene.String(required=True)
     email = graphene.String(required=True)
-    phone = graphene.Int(required=True)
+    phone = graphene.String()
     company = graphene.String()
     subject = graphene.String(required=True)
     message = graphene.String(required=True)
