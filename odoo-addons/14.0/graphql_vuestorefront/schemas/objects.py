@@ -361,6 +361,9 @@ class Product(OdooObjectType):
         return None
 
     def resolve_categories(self, info):
+        website = self.env['website'].get_current_website()
+        if website:
+            return self.public_categ_ids.filtered(lambda c: c.website_id and c.website_id.id == website.id) or None
         return self.public_categ_ids or None
 
     def resolve_available_threshold(self, info):
