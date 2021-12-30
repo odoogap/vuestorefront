@@ -18,6 +18,7 @@
         'auth_signup',
         'contacts',
         'crm',
+        'theme_default',
     ],
     'data': [
         'data/website_data.xml',
