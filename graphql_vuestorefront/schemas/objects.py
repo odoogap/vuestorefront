@@ -482,7 +482,10 @@ class ShippingMethod(OdooObjectType):
     price = graphene.Float()
 
     def resolve_price(self, info):
-        return self.fixed_price or None
+        website = self.env['website'].get_current_website()
+        request.website = website
+        order = website.sale_get_order(force_create=True)
+        return self.rate_shipment(order)['price'] if self.free_over else self.fixed_price
 
 
 class Order(OdooObjectType):
