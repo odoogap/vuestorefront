@@ -104,6 +104,24 @@ class CartClear(graphene.Mutation):
         return order
 
 
+class SetShippingMethod(graphene.Mutation):
+    class Arguments:
+        shipping_method_id = graphene.Int(required=True)
+
+    Output = CartData
+
+    @staticmethod
+    def mutate(self, info, shipping_method_id):
+        env = info.context["env"]
+        website = env['website'].get_current_website()
+        request.website = website
+        order = website.sale_get_order(force_create=1)
+
+        order._check_carrier_quotation(force_carrier_id=shipping_method_id)
+
+        return CartData(order=order)
+
+
 # ---------------------------------------------------#
 #      Additional Mutations that can be useful       #
 # ---------------------------------------------------#
@@ -187,3 +205,4 @@ class ShopMutation(graphene.ObjectType):
     cart_add_multiple_items = CartAddMultipleItems.Field(description="Add Multiple Items")
     cart_update_multiple_items = CartUpdateMultipleItems.Field(description="Update Multiple Items")
     cart_remove_multiple_items = CartRemoveMultipleItems.Field(description="Remove Multiple Items")
+    set_shipping_method = SetShippingMethod.Field(description="Set Shipping Method on Cart")
