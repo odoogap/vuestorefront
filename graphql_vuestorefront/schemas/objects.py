@@ -503,6 +503,7 @@ class Order(OdooObjectType):
     shipping_method = graphene.Field(lambda: ShippingMethod)
     currency = graphene.Field(lambda: Currency)
     order_lines = graphene.List(graphene.NonNull(lambda: OrderLine))
+    website_order_line = graphene.List(graphene.NonNull(lambda: OrderLine))
     stage = OrderStage()
     order_url = graphene.String()
     transactions = graphene.List(graphene.NonNull(lambda: PaymentTransaction))
