@@ -8,14 +8,14 @@ from odoo import http
 from odoo.addons.graphql_base import GraphQLControllerMixin
 from odoo.addons.payment.controllers.portal import PaymentProcessing
 from odoo.addons.payment_adyen.controllers.main import AdyenController
-from odoo.http import request
+from odoo.http import request, Response
 
 from ..schema import schema
 
 
 class VSFWebsite(http.Controller):
 
-    @http.route(['/vsf/redirects'], type='http', auth='public', csrf=False)
+    @http.route('/vsf/redirects', type='http', auth='public', csrf=False)
     def vsf_redirects(self):
         redirects_list = []
         redirects = request.env['website.rewrite'].sudo().search([])
@@ -24,7 +24,9 @@ class VSFWebsite(http.Controller):
                 redirect_dict = {'from': redirect.url_from, 'to': redirect.url_to}
                 redirects_list.append(redirect_dict)
         result = json.dumps(redirects_list)
-        return result
+        return Response(result, headers={
+            'Content-Type': 'application/json',
+        })
 
 
 class VSFAdyenController(AdyenController):
