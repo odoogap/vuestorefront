@@ -32,8 +32,10 @@ class AddressQuery(graphene.ObjectType):
 
         # Get all addresses of a specific addressType - delivery or/and shipping
         if filter.get('address_type'):
+            types = [address_type.value for address_type in filter.get('address_type', [])]
+
             domain = [("id", "child_of", env.user.partner_id.commercial_partner_id.ids),
-                      ("type", "in", filter['address_type'])]
+                      ("type", "in", types)]
 
         # Get all addresses with addressType contact, delivery and invoice
         else:
