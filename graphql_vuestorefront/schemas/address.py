@@ -190,12 +190,6 @@ class UpdateAddress(graphene.Mutation):
         if values:
             partner.write(values)
 
-        # Update order with the new shipping or invoice address
-        if partner.type == 'invoice':
-            order.partner_invoice_id = partner.id
-        elif partner.type == 'delivery':
-            order.partner_shipping_id = partner.id
-
         return partner
 
 
@@ -250,12 +244,13 @@ class DeleteAddress(graphene.Mutation):
 
 class SelectAddress(graphene.Mutation):
     class Arguments:
+        type = AddressEnum(required=True)
         address = SelectAddressInput()
 
     Output = Partner
 
     @staticmethod
-    def mutate(self, info, address):
+    def mutate(self, info, type, address):
         env = info.context["env"]
         ResPartner = env['res.partner'].with_context(show_address=1).sudo()
         website = env['website'].get_current_website()
@@ -271,14 +266,14 @@ class SelectAddress(graphene.Mutation):
 
         partner = ResPartner.browse(address['id'])
 
-        # Validate if the address exists and if the user has access to this address before the delete
+        # Validate if the address exists and if the user has access to this address
         if not partner or not partner.exists() or partner.id not in shippings.ids:
             raise GraphQLError(_('Address not found.'))
 
         # Update order with the new shipping or invoice address
-        if partner.type == 'invoice':
+        if type.value == 'invoice':
             order.partner_invoice_id = partner.id
-        elif partner.type == 'delivery':
+        elif type.value == 'delivery':
             order.partner_shipping_id = partner.id
 
         return partner
