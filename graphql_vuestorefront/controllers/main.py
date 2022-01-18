@@ -6,62 +6,62 @@ import json
 import werkzeug
 from odoo import http
 from odoo.addons.graphql_base import GraphQLControllerMixin
-from odoo.addons.payment.controllers.portal import PaymentProcessing
-from odoo.addons.payment_adyen.controllers.main import AdyenController
+# from odoo.addons.payment.controllers.portal import PaymentProcessing
+# from odoo.addons.payment_adyen.controllers.main import AdyenController
 from odoo.http import request, Response
 
 from ..schema import schema
 
 
-class VSFWebsite(http.Controller):
-
-    @http.route('/vsf/redirects', type='http', auth='public', csrf=False)
-    def vsf_redirects(self):
-        redirects_list = []
-        redirects = request.env['website.rewrite'].sudo().search([])
-        if redirects:
-            for redirect in redirects:
-                redirect_dict = {'from': redirect.url_from, 'to': redirect.url_to}
-                redirects_list.append(redirect_dict)
-        result = json.dumps(redirects_list)
-        return Response(result, headers={
-            'Content-Type': 'application/json',
-        })
-
-
-class VSFAdyenController(AdyenController):
-
-    @http.route(['/payment/adyen/return'], type='http', auth='public', csrf=False)
-    def adyen_return(self, **post):
-        # Confirm payment transaction
-        super(VSFAdyenController, self).adyen_return(**post)
-
-        tx_ids_list = request.session.get("__payment_tx_ids__", [])
-
-        # If the session have tx_ids_list it means that the SO payment was done in Odoo
-        if tx_ids_list:
-            return werkzeug.utils.redirect('/payment/process')
-
-        # If the Session not have Transactions Associated it means that the SO payment was done in VSF
-        elif not tx_ids_list and post.get('merchantReference'):
-            transaction_reference = post['merchantReference']
-
-            payment_transaction = request.env['payment.transaction'].sudo().search([
-                ('reference', 'like', str(transaction_reference))
-            ])
-
-            request.session["__payment_tx_ids__"] = [payment_transaction.id]
-
-            # Confirm sale order
-            PaymentProcessing().payment_status_poll()
-
-            # Redirect to VSF
-            vsf_payment_return_url = request.env['ir.config_parameter'].sudo().get_param('vsf_payment_return_url', '')
-
-            # Clear the payment_tx_ids
-            request.session['__payment_tx_ids__'] = []
-
-            return werkzeug.utils.redirect(vsf_payment_return_url)
+# class VSFWebsite(http.Controller):
+#
+#     @http.route('/vsf/redirects', type='http', auth='public', csrf=False)
+#     def vsf_redirects(self):
+#         redirects_list = []
+#         redirects = request.env['website.rewrite'].sudo().search([])
+#         if redirects:
+#             for redirect in redirects:
+#                 redirect_dict = {'from': redirect.url_from, 'to': redirect.url_to}
+#                 redirects_list.append(redirect_dict)
+#         result = json.dumps(redirects_list)
+#         return Response(result, headers={
+#             'Content-Type': 'application/json',
+#         })
+#
+#
+# class VSFAdyenController(AdyenController):
+#
+#     @http.route(['/payment/adyen/return'], type='http', auth='public', csrf=False)
+#     def adyen_return(self, **post):
+#         # Confirm payment transaction
+#         super(VSFAdyenController, self).adyen_return(**post)
+#
+#         tx_ids_list = request.session.get("__payment_tx_ids__", [])
+#
+#         # If the session have tx_ids_list it means that the SO payment was done in Odoo
+#         if tx_ids_list:
+#             return werkzeug.utils.redirect('/payment/process')
+#
+#         # If the Session not have Transactions Associated it means that the SO payment was done in VSF
+#         elif not tx_ids_list and post.get('merchantReference'):
+#             transaction_reference = post['merchantReference']
+#
+#             payment_transaction = request.env['payment.transaction'].sudo().search([
+#                 ('reference', 'like', str(transaction_reference))
+#             ])
+#
+#             request.session["__payment_tx_ids__"] = [payment_transaction.id]
+#
+#             # Confirm sale order
+#             PaymentProcessing().payment_status_poll()
+#
+#             # Redirect to VSF
+#             vsf_payment_return_url = request.env['ir.config_parameter'].sudo().get_param('vsf_payment_return_url', '')
+#
+#             # Clear the payment_tx_ids
+#             request.session['__payment_tx_ids__'] = []
+#
+#             return werkzeug.utils.redirect(vsf_payment_return_url)
 
 
 class GraphQLController(http.Controller, GraphQLControllerMixin):

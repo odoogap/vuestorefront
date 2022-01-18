@@ -22,6 +22,11 @@ AddressType = graphene.Enum('AddressType', [('Contact', 'contact'), ('InvoiceAdd
                                             ('DeliveryAddress', 'delivery'), ('OtherAddress', 'other'),
                                             ('PrivateAddress', 'private')])
 
+VariantCreateMode = graphene.Enum('VariantCreateMode', [('Instantly', 'always'), ('Dynamically', 'dynamically'),
+                                                        ('NeverOption', 'no_variant')])
+
+FilterVisibility = graphene.Enum('FilterVisibility', [('Visible', 'visible'), ('Hidden', 'hidden')])
+
 OrderStage = graphene.Enum('OrderStage', [('Quotation', 'draft'), ('QuotationSent', 'sent'),
                                           ('SalesOrder', 'sale'), ('Locked', 'done'), ('Cancelled', 'cancel')])
 
@@ -29,12 +34,6 @@ InvoiceStatus = graphene.Enum('InvoiceStatus', [('UpsellingOpportunity', 'upsell
                                                 ('ToInvoice', 'to invoice'), ('NothingtoInvoice', 'no')])
 
 InvoiceState = graphene.Enum('InvoiceState', [('Draft', 'draft'), ('Posted', 'posted'), ('Cancelled', 'cancel')])
-
-InventoryAvailability = graphene.Enum('InventoryAvailability', [
-    ('SellRegardlessOfInventory', 'never'), ('ShowInventoryOnWebsiteAndPreventSalesIfNotEnoughStock', 'always'),
-    ('ShowInventoryBelowAThresholdAndPreventSalesIfNotEnoughStock', 'threshold'),
-    ('ShowProductSpecificNotifications', 'custom')
-])
 
 
 class SortEnum(graphene.Enum):
@@ -231,7 +230,15 @@ class Attribute(OdooObjectType):
     id = graphene.Int(required=True)
     name = graphene.String()
     display_type = graphene.String()
+    variant_create_mode = VariantCreateMode()
+    filter_visibility = FilterVisibility()
     values = graphene.List(graphene.NonNull(lambda: AttributeValue))
+
+    def resolve_variant_create_mode(self, info):
+        return self.create_variant or None
+
+    def resolve_filter_visibility(self, info):
+        return self.visibility or None
 
     def resolve_values(self, info):
         return self.value_ids or None
@@ -257,6 +264,15 @@ class ProductImage(OdooObjectType):
         return self.video_url or None
 
 
+class Ribbon(OdooObjectType):
+    id = graphene.Int(required=True)
+    html = graphene.String()
+    text_color = graphene.String()
+    html_class = graphene.String()
+    bg_color = graphene.String()
+    display_name = graphene.String()
+
+
 class Product(OdooObjectType):
     id = graphene.Int(required=True)
     type_id = graphene.String()
@@ -265,6 +281,7 @@ class Product(OdooObjectType):
     name = graphene.String()
     display_name = graphene.String()
     sku = graphene.String()
+    barcode = graphene.String()
     description = graphene.String()
     currency = graphene.Field(lambda: Currency)
     weight = graphene.Float()
@@ -275,11 +292,10 @@ class Product(OdooObjectType):
     small_image = graphene.String()
     thumbnail = graphene.String()
     categories = graphene.List(graphene.NonNull(lambda: Category))
-    inventory_availability = InventoryAvailability()
-    available_threshold = graphene.String(
-        description='Related W/Availability: Show inventory below a threshold and prevent sales if not enough stock'
-    )
-    custom_message = graphene.String(description='Related W/Availability: Show product-specific notifications')
+    allow_out_of_stock = graphene.Boolean()
+    show_available_qty = graphene.Boolean()
+    out_of_stock_message = graphene.String()
+    ribbon = graphene.Field(lambda: Ribbon)
     is_in_stock = graphene.Boolean()
     is_in_wishlist = graphene.Boolean()
     media_gallery = graphene.List(graphene.NonNull(lambda: ProductImage))
@@ -294,17 +310,16 @@ class Product(OdooObjectType):
     is_variant_possible = graphene.Boolean(description='Specific to Product Variant')
     variant_attribute_values = graphene.List(graphene.NonNull(lambda: AttributeValue),
                                              description='Specific to Product Variant')
+    product_template = graphene.Field((lambda: Product), description='Specific to Product Variant')
     # Specific to use in Product Template
     price = graphene.Float(description='Specific to Product Template')
     attribute_values = graphene.List(graphene.NonNull(lambda: AttributeValue),
                                      description='Specific to Product Template')
     product_variants = graphene.List(graphene.NonNull(lambda: Product), description='Specific to Product Template')
     first_variant = graphene.Int(description='Specific to use in Product Template')
-    barcode = graphene.String()
-    product_template = graphene.Field(lambda: Product)
 
     def resolve_type_id(self, info):
-        if self.type == 'product':
+        if self.detailed_type == 'product':
             return 'simple'
         else:
             return 'configurable'
@@ -366,11 +381,14 @@ class Product(OdooObjectType):
             return self.public_categ_ids.filtered(lambda c: c.website_id and c.website_id.id == website.id) or None
         return self.public_categ_ids or None
 
-    def resolve_available_threshold(self, info):
-        return self.available_threshold or None
+    def resolve_allow_out_of_stock(self, info):
+        return self.allow_out_of_stock_order or None
 
-    def resolve_custom_message(self, info):
-        return self.custom_message or None
+    def resolve_show_available_qty(self, info):
+        return self.show_availability or None
+
+    def resolve_ribbon(self, info):
+        return self.website_ribbon_id or None
 
     def resolve_is_in_stock(self, info):
         return bool(self.qty_available > 0)
@@ -396,6 +414,9 @@ class Product(OdooObjectType):
         return self.accessory_product_ids or None
 
     # Specific to use in Product Variant
+    def resolve_product_template(self, info):
+        return self.product_tmpl_id or None
+
     def resolve_variant_price(self, info):
         env = info.context["env"]
         pricing_info = get_product_pricing_info(env, self)
@@ -429,9 +450,6 @@ class Product(OdooObjectType):
 
     def resolve_first_variant(self, info):
         return self.product_variant_id or None
-
-    def resolve_product_template(self, info):
-        return self.product_tmpl_id or None
 
 
 class Payment(OdooObjectType):

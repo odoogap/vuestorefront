@@ -18,9 +18,9 @@ def get_search_order(sort):
         if sorting:
             sorting += ', '
         if field == 'price':
-            sorting += 'list_price %s' % val
+            sorting += 'list_price %s' % val.value
         else:
-            sorting += '%s %s' % (field, val)
+            sorting += '%s %s' % (field, val.value)
 
     # Add id as last factor so we can consistently get the same results
     if sorting:
