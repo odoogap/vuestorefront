@@ -6,8 +6,7 @@ import graphene
 
 from odoo.addons.graphql_base import OdooObjectType
 from odoo.addons.graphql_vuestorefront.schemas import (
-    country, category, product,
-    # order, invoice,
+    country, category, product, order, invoice,
     # contact_us, user_profile, sign, address,
     # wishlist, shop, payment,
 )
@@ -18,8 +17,8 @@ class Query(
     country.CountryQuery,
     category.CategoryQuery,
     product.ProductQuery,
-    # order.OrderQuery,
-    # invoice.InvoiceQuery,
+    order.OrderQuery,
+    invoice.InvoiceQuery,
     # user_profile.UserProfileQuery,
     # address.AddressQuery,
     # wishlist.WishlistQuery,
@@ -45,6 +44,6 @@ class Query(
 schema = graphene.Schema(
     query=Query,
     # mutation=Mutation,
-    types=[country.CountryList, category.CategoryList, product.ProductList, product.ProductVariantData]#, order.OrderList,
-    #        invoice.InvoiceList, wishlist.WishlistData, shop.CartData]
+    types=[country.CountryList, category.CategoryList, product.ProductList, product.ProductVariantData, order.OrderList,
+           invoice.InvoiceList,]# wishlist.WishlistData, shop.CartData]
 )

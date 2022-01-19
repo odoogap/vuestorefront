@@ -3,6 +3,7 @@
 # License LGPL-3.0 or later (http://www.gnu.org/licenses/lgpl).
 
 import graphene
+from graphene.types import generic
 from graphql import GraphQLError
 from odoo import _
 
@@ -461,19 +462,25 @@ class Payment(OdooObjectType):
 
 class PaymentTransaction(OdooObjectType):
     id = graphene.Int()
+    reference = graphene.String()
     payment = graphene.Field(lambda: Payment)
-    payment_token = graphene.String()
     amount = graphene.Float()
     acquirer = graphene.String()
+    acquirer_reference = graphene.String()
+    company = graphene.Field(lambda: Partner)
+    customer = graphene.Field(lambda: Partner)
 
     def resolve_payment(self, info):
         return self.payment_id or None
 
-    def resolve_payment_token(self, info):
-        return self.payment_token_id.name or None
-
     def resolve_acquirer(self, info):
         return self.acquirer_id.name or None
+
+    def resolve_company(self, info):
+        return self.company_id or None
+
+    def resolve_customer(self, info):
+        return self.partner_id or None
 
 
 class OrderLine(OdooObjectType):
@@ -513,6 +520,7 @@ class Order(OdooObjectType):
     partner_shipping = graphene.Field(lambda: Partner)
     partner_invoice = graphene.Field(lambda: Partner)
     date_order = graphene.String()
+    totals_json = generic.GenericScalar()
     amount_untaxed = graphene.Float()
     amount_tax = graphene.Float()
     amount_total = graphene.Float()
@@ -540,6 +548,9 @@ class Order(OdooObjectType):
 
     def resolve_date_order(self, info):
         return self.date_order or None
+
+    def resolve_totals_json(self, info):
+        return self.tax_totals_json or None
 
     def resolve_shipping_method(self, info):
         return self.carrier_id or None
@@ -585,6 +596,7 @@ class Invoice(OdooObjectType):
     partner_shipping = graphene.Field(lambda: Partner)
     invoice_date = graphene.String()
     invoice_date_due = graphene.String()
+    totals_json = generic.GenericScalar()
     amount_untaxed = graphene.Float()
     amount_tax = graphene.Float()
     amount_total = graphene.Float()
@@ -606,6 +618,9 @@ class Invoice(OdooObjectType):
 
     def resolve_invoice_date_due(self, info):
         return self.invoice_date_due or None
+
+    def resolve_totals_json(self, info):
+        return self.tax_totals_json or None
 
     def resolve_currency(self, info):
         return self.currency_id or None
