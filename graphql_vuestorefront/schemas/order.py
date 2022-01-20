@@ -90,20 +90,14 @@ class OrderQuery(graphene.ObjectType):
 
         # Filter by stages or default to sales and done
         if filter.get('stages', False):
-            filters = filter.get('stages')
-            stages = []
-            for f in filters:
-                stages.append(f.value)
+            stages = [stages.value for stages in filter.get('stages', [])]
             domain += [('state', 'in', stages)]
         else:
             domain += [('state', 'in', ['sale', 'done'])]
 
         # Filter by invoice status
         if filter.get('invoice_status', False):
-            filters = filter.get('invoice_status')
-            invoice_status = []
-            for f in filters:
-                invoice_status.append(f.value)
+            invoice_status = [invoice_status.value for invoice_status in filter.get('invoice_status', [])]
             domain += [('invoice_status', 'in', invoice_status)]
 
         # First offset is 0 but first page is 1
