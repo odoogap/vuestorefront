@@ -17,6 +17,8 @@ class ResUsers(models.Model):
 
     def api_action_reset_password(self):
         """ create signup token for each user, and send their signup url by email """
+        if self.filtered(lambda user: not user.active):
+            raise UserError(_("You cannot perform this action on an archived user."))
         # prepare reset password signup
         create_mode = bool(self.env.context.get('create_user'))
 
@@ -35,20 +37,22 @@ class ResUsers(models.Model):
         if domain and domain[-1] == '/':
             domain = domain[:-1]
 
-        template_values = {
-            'email_to': '${object.email|safe}',
+        email_values = {
             'email_cc': False,
             'auto_delete': True,
-            'partner_to': False,
-            'scheduled_date': False
+            'recipient_ids': [],
+            'partner_ids': [],
+            'scheduled_date': False,
         }
-        template.write(template_values)
 
         for user in self:
             token = user.signup_token
             signup_url = "%s?token=%s" % (domain, token)
             if not user.email:
-                raise UserError(_("Cannot send email: user %s has no email address.") % user.name)
+                raise UserError(_("Cannot send email: user %s has no email address.", user.name))
+            email_values['email_to'] = user.email
             with self.env.cr.savepoint():
-                template.with_context(lang=user.lang, signup_url=signup_url).send_mail(user.id, force_send=not create_mode, raise_exception=True)
+                force_send = not create_mode
+                template.with_context(lang=user.lang, signup_url=signup_url).send_mail(
+                    user.id, force_send=force_send, raise_exception=True, email_values=email_values)
             _logger.info("Password reset email sent for user <%s> to <%s>", user.login, user.email)

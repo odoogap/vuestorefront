@@ -40,6 +40,7 @@ class Logout(graphene.Mutation):
     @staticmethod
     def mutate(self, info):
         request.session.logout()
+        return True
 
 
 class Register(graphene.Mutation):

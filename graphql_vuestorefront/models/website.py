@@ -21,27 +21,27 @@ class Website(models.Model):
         ICP.set_param('auth_signup.reset_password', True)
 
 
-class WebsiteRewrite(models.Model):
-    _inherit = 'website.rewrite'
-
-    def _set_vsf_tags(self):
-        for website_rewrite in self:
-            tags = 'WR%s' % website_rewrite.id
-            website_rewrite._vsf_request_cache_invalidation(tags)
-
-    def _vsf_request_cache_invalidation(self, tags_list):
-        url = self.env['ir.config_parameter'].sudo().get_param('vsf_cache_invalidation_url')
-        key = self.env['ir.config_parameter'].sudo().get_param('vsf_cache_invalidation_key')
-        tags = tags_list
-
-        # Make the GET request to the /cache-invalidate
-        requests.get(url, params={'key': key, 'tag': tags})
-
-    def write(self, vals):
-        res = super(WebsiteRewrite, self).write(vals)
-        self._set_vsf_tags()
-        return res
-
-    def unlink(self):
-        self._set_vsf_tags()
-        return super(WebsiteRewrite, self).unlink()
+# class WebsiteRewrite(models.Model):
+#     _inherit = 'website.rewrite'
+#
+#     def _set_vsf_tags(self):
+#         for website_rewrite in self:
+#             tags = 'WR%s' % website_rewrite.id
+#             website_rewrite._vsf_request_cache_invalidation(tags)
+#
+#     def _vsf_request_cache_invalidation(self, tags_list):
+#         url = self.env['ir.config_parameter'].sudo().get_param('vsf_cache_invalidation_url')
+#         key = self.env['ir.config_parameter'].sudo().get_param('vsf_cache_invalidation_key')
+#         tags = tags_list
+#
+#         # Make the GET request to the /cache-invalidate
+#         requests.get(url, params={'key': key, 'tag': tags})
+#
+#     def write(self, vals):
+#         res = super(WebsiteRewrite, self).write(vals)
+#         self._set_vsf_tags()
+#         return res
+#
+#     def unlink(self):
+#         self._set_vsf_tags()
+#         return super(WebsiteRewrite, self).unlink()
