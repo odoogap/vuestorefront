@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2021 ODOOGAP/PROMPTEQUATION LDA
+# Copyright 2022 ODOOGAP/PROMPTEQUATION LDA
 # License LGPL-3.0 or later (http://www.gnu.org/licenses/lgpl).
 
 from datetime import datetime
@@ -24,9 +24,9 @@ class PaymentQuery(graphene.ObjectType):
     payment_acquirers = graphene.List(
         graphene.NonNull(PaymentAcquirer),
     )
-    payment_confirmation = graphene.Field(
-        Cart,
-    )
+    # payment_confirmation = graphene.Field(
+    #     Cart,
+    # )
 
     def resolve_payment_acquirer(self, info, id):
         domain = [
@@ -52,29 +52,33 @@ class PaymentQuery(graphene.ObjectType):
         ])
         return env['payment.acquirer'].search(domain)
 
-    def resolve_payment_confirmation(self, info):
-        env = info.context["env"]
+    # ----------------------- #
+    #    Needed be Migrate    #
+    # ----------------------- #
 
-        PaymentTransaction = env['payment.transaction']
-        Order = env['sale.order']
-
-        # Pass in the session the sale_order created in vsf
-        payment_transaction_id = request.session.get('__payment_tx_ids__')[0]
-
-        if payment_transaction_id:
-
-            payment_transaction = PaymentTransaction.sudo().search([
-                ('id', '=', payment_transaction_id)], limit=1)
-
-            sale_order_id = payment_transaction.sale_order_ids.ids[0]
-
-        if sale_order_id:
-            order = Order.sudo().search([('id', '=', sale_order_id)], limit=1)
-
-            if order.exists():
-                return CartData(order=order)
-
-        raise GraphQLError(_('Cart does not exist'))
+    # def resolve_payment_confirmation(self, info):
+    #     env = info.context["env"]
+    #
+    #     PaymentTransaction = env['payment.transaction']
+    #     Order = env['sale.order']
+    #
+    #     # Pass in the session the sale_order created in vsf
+    #     payment_transaction_id = request.session.get('__payment_tx_ids__')[0]
+    #
+    #     if payment_transaction_id:
+    #
+    #         payment_transaction = PaymentTransaction.sudo().search([
+    #             ('id', '=', payment_transaction_id)], limit=1)
+    #
+    #         sale_order_id = payment_transaction.sale_order_ids.ids[0]
+    #
+    #     if sale_order_id:
+    #         order = Order.sudo().search([('id', '=', sale_order_id)], limit=1)
+    #
+    #         if order.exists():
+    #             return CartData(order=order)
+    #
+    #     raise GraphQLError(_('Cart does not exist'))
 
 
 def validate_expiry(expiry_month, expiry_year):

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2021 ODOOGAP/PROMPTEQUATION LDA
+# Copyright 2022 ODOOGAP/PROMPTEQUATION LDA
 # License LGPL-3.0 or later (http://www.gnu.org/licenses/lgpl).
 
 import json
@@ -13,22 +13,22 @@ from odoo.http import request, Response
 from ..schema import schema
 
 
-# class VSFWebsite(http.Controller):
-#
-#     @http.route('/vsf/redirects', type='http', auth='public', csrf=False)
-#     def vsf_redirects(self):
-#         redirects_list = []
-#         redirects = request.env['website.rewrite'].sudo().search([])
-#         if redirects:
-#             for redirect in redirects:
-#                 redirect_dict = {'from': redirect.url_from, 'to': redirect.url_to}
-#                 redirects_list.append(redirect_dict)
-#         result = json.dumps(redirects_list)
-#         return Response(result, headers={
-#             'Content-Type': 'application/json',
-#         })
-#
-#
+class VSFWebsite(http.Controller):
+
+    @http.route('/vsf/redirects', type='http', auth='public', csrf=False)
+    def vsf_redirects(self):
+        redirects_list = []
+        redirects = request.env['website.rewrite'].sudo().search([])
+        if redirects:
+            for redirect in redirects:
+                redirect_dict = {'from': redirect.url_from, 'to': redirect.url_to}
+                redirects_list.append(redirect_dict)
+        result = json.dumps(redirects_list)
+        return Response(result, headers={
+            'Content-Type': 'application/json',
+        })
+
+
 # class VSFAdyenController(AdyenController):
 #
 #     @http.route(['/payment/adyen/return'], type='http', auth='public', csrf=False)
