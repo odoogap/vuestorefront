@@ -248,9 +248,7 @@ class ProductImage(OdooObjectType):
 
     def resolve_image(self, info):
         if self.image_1920:
-            base_url = info.context["env"]['ir.config_parameter'].sudo().get_param('web.base.url')
-            image_url = '{}/web/image/product.image/{}/image_1920'.format(base_url, self.id)
-            return image_url
+            return '/web/image/product.image/{}/image_1920'.format(self.id)
         return None
 
     def resolve_video(self, info):
@@ -341,23 +339,17 @@ class Product(OdooObjectType):
 
     def resolve_image(self, info):
         if self.image_1920:
-            env = info.context["env"]
-            base_url = env['ir.config_parameter'].sudo().get_param('web.base.url', '')
-            return '{}/web/image/{}/{}/image_1920'.format(base_url, self._name, self.id)
+            return '/web/image/{}/{}/image_1920'.format(self._name, self.id)
         return None
 
     def resolve_small_image(self, info):
         if self.image_1920:
-            env = info.context["env"]
-            base_url = env['ir.config_parameter'].sudo().get_param('web.base.url', '')
-            return '{}/web/image/{}/{}/image_128'.format(base_url, self._name, self.id)
+            return '/web/image/{}/{}/image_128'.format(self._name, self.id)
         return None
 
     def resolve_thumbnail(self, info):
         if self.image_1920:
-            env = info.context["env"]
-            base_url = env['ir.config_parameter'].sudo().get_param('web.base.url', '')
-            return '{}/web/image/{}/{}/image_512'.format(base_url, self._name, self.id)
+            return '/web/image/{}/{}/image_512'.format(self._name, self.id)
         return None
 
     def resolve_categories(self, info):
@@ -629,9 +621,7 @@ class PaymentIcon(OdooObjectType):
 
     def resolve_image(self, info):
         if self.image:
-            env = info.context['env']
-            base_url = env['ir.config_parameter'].sudo().get_param('web.base.url', '')
-            return '{}/web/image/payment.icon/{}/image'.format(base_url, self.id)
+            return '/web/image/payment.icon/{}/image'.format(self.id)
         return None
 
 
