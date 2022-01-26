@@ -34,14 +34,6 @@
                             </div>
                         </div>
                     </div>
-                    <div class="col-12 col-lg-6 o_setting_box" id="web_base_url_settings">
-                        <div class="o_setting_right_pane">
-                            <label for="web_base_url"/>
-                            <div class="content-group">
-                                <field name="web_base_url"/>
-                            </div>
-                        </div>
-                    </div>
                 </div>
             </xpath>
         </field>
