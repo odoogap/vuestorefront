@@ -1,4 +1,4 @@
 [submodule ".external/rest-framework"]
 	path = .external/rest-framework
-	url = git@github.com:OCA/rest-framework.git
+	url = https://github.com/OCA/rest-framework.git
     branch = 14.0
