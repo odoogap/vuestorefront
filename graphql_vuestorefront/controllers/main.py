@@ -81,13 +81,14 @@ class GraphQLController(http.Controller, GraphQLControllerMixin):
                     'lang': website.default_lang_id.code,
                 })
                 request.context = context
-
+                request.uid = website.user_id.id
         except:
             pass
 
     # The GraphiQL route, providing an IDE for developers
     @http.route("/graphiql/vsf", auth="user")
     def graphiql(self, **kwargs):
+        self.get_domain_of_request_host()
         return self._handle_graphiql_request(schema.graphql_schema)
 
     # Optional monkey patch, needed to accept application/json GraphQL
