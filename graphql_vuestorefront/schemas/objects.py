@@ -144,6 +144,7 @@ class Partner(OdooObjectType):
     contacts = graphene.List(graphene.NonNull(lambda: Partner))
     signup_token = graphene.String()
     signup_valid = graphene.String()
+    parent_id = graphene.Field(lambda: Partner)
 
     def resolve_country(self, info):
         return self.country_id or None
@@ -163,6 +164,9 @@ class Partner(OdooObjectType):
 
     def resolve_contacts(self, info):
         return self.child_ids or None
+
+    def resolve_parent_id(self, info):
+        return self.parent_id or None
 
 
 class User(OdooObjectType):
