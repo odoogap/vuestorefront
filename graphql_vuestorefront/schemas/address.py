@@ -154,18 +154,25 @@ class UpdateAddress(graphene.Mutation):
         if not order:
             raise GraphQLError(_('Shopping cart not found.'))
 
-        # Addresses that belong to this user
-        shippings = ResPartner.search([
-            ("id", "child_of", env.user.partner_id.commercial_partner_id.ids),
-            '|', ("type", "in", ["delivery", "invoice"]),
-            ("id", "=", env.user.partner_id.commercial_partner_id.id)
-        ], order='id desc')
-
         partner = ResPartner.browse(address['id'])
 
-        # Validate if the address exists and if the user has access to this address before the update
-        if not partner or not partner.exists() or partner.id not in shippings.ids:
-            raise GraphQLError(_('Address not found.'))
+        # Is public user
+        if not order.partner_id.user_ids or order.partner_id.id != website.user_id.sudo().partner_id.id:
+            # Validate if the address exists
+            if not partner or not partner.exists():
+                raise GraphQLError(_('Address not found.'))
+
+        else:
+            # Addresses that belong to this user
+            shippings = ResPartner.search([
+                ("id", "child_of", env.user.partner_id.commercial_partner_id.ids),
+                '|', ("type", "in", ["delivery", "invoice"]),
+                ("id", "=", env.user.partner_id.commercial_partner_id.id)
+            ])
+
+            # Validate if the address exists and if the user has access to this address
+            if not partner or not partner.exists() or partner.id not in shippings.ids:
+                raise GraphQLError(_('Address not found.'))
 
         values = {}
         if address.get('name'):
@@ -197,49 +204,52 @@ class DeleteAddress(graphene.Mutation):
     class Arguments:
         address = DeleteAddressInput()
 
-    Output = graphene.Boolean
+    result = graphene.Boolean()
 
     @staticmethod
     def mutate(self, info, address):
         env = info.context["env"]
         ResPartner = env['res.partner'].with_context(show_address=1).sudo()
+        website = env['website'].get_current_website()
+        request.website = website
+        order = website.sale_get_order()
 
-        # Addresses that belong to this user
-        shippings = ResPartner.search([
-            ("id", "child_of", env.user.partner_id.commercial_partner_id.ids),
-            '|', ("type", "in", ["delivery", "invoice"]),
-            ("id", "=", env.user.partner_id.commercial_partner_id.id)
-        ], order='id desc')
+        if not order:
+            raise GraphQLError(_('Shopping cart not found.'))
 
         partner = ResPartner.browse(address['id'])
 
-        # Validate if the address exists and if the user has access to this address before the delete
-        if not partner or not partner.exists() or partner.id not in shippings.ids:
-            raise GraphQLError(_('Address not found.'))
+        # Is public user
+        if not order.partner_id.user_ids or order.partner_id.id != website.user_id.sudo().partner_id.id:
+            # Validate if the address exists
+            if not partner or not partner.exists():
+                raise GraphQLError(_('Address not found.'))
 
-        # Check if any sale order is using this address as invoice or shipping address
-        sales = env['sale.order'].sudo().search([
-            ('|'),
-            ('partner_invoice_id', '=', partner.id),
-            ('partner_shipping_id', '=', partner.id),
-        ])
+        else:
+            # Addresses that belong to this user
+            shippings = ResPartner.search([
+                ("id", "child_of", env.user.partner_id.commercial_partner_id.ids),
+                '|', ("type", "in", ["delivery", "invoice"]),
+                ("id", "=", env.user.partner_id.commercial_partner_id.id)
+            ])
 
-        # Update sale order to use parent instead
-        for sale in sales:
-            if sale.partner_invoice_id.id == partner.id:
-                sale.write({
-                    'partner_invoice_id': partner.parent_id.id,
-                })
+            # Validate if the address exists and if the user has access to this address
+            if not partner or not partner.exists() or partner.id not in shippings.ids:
+                raise GraphQLError(_('Address not found.'))
 
-            elif sale.partner_shipping_id.id == partner.id:
-                sale.write({
-                    'partner_shipping_id': partner.parent_id.id,
-                })
+        if not partner.parent_id:
+            raise GraphQLError(_("You can't delete the primary address."))
+
+        if order.partner_invoice_id.id == partner.id:
+            order.partner_invoice_id = partner.parent_id.id
+
+        if order.partner_shipping_id.id == partner.id:
+            order.partner_shipping_id = partner.parent_id.id
 
         # Archive address, safer than delete since this address could be in use by other object
         partner.active = False
 
-        return True
+        return DeleteAddress(result=True)
 
 
 class SelectAddress(graphene.Mutation):
@@ -257,12 +267,15 @@ class SelectAddress(graphene.Mutation):
         request.website = website
         order = website.sale_get_order()
 
+        if not order:
+            raise GraphQLError(_('Shopping cart not found.'))
+
         # Addresses that belong to this user
         shippings = ResPartner.search([
             ("id", "child_of", env.user.partner_id.commercial_partner_id.ids),
             '|', ("type", "in", ["delivery", "invoice"]),
             ("id", "=", env.user.partner_id.commercial_partner_id.id)
-        ], order='id desc')
+        ])
 
         partner = ResPartner.browse(address['id'])
 
