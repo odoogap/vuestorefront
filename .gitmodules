@@ -1,4 +1,4 @@
 [submodule ".external/rest-framework"]
 	path = .external/rest-framework
-	url = https://github.com/OCA/rest-framework.git
-    branch = 14.0
+	url = https://github.com/odoogap/rest-framework.git
+    branch = 15.0
