@@ -173,6 +173,10 @@ class AddAddress(graphene.Mutation):
         elif values['type'] == 'delivery':
             order.partner_shipping_id = partner.id
 
+        # Trigger the change of fiscal position when the shipping address is modified
+        order.onchange_partner_shipping_id()
+        order._compute_tax_id()
+
         return partner
 
 
@@ -208,6 +212,11 @@ class UpdateAddress(graphene.Mutation):
             values.update({'state_id': address['state_id']})
         if address.get('country_id'):
             values.update({'country_id': address['country_id']})
+
+            # Trigger the change of fiscal position when the shipping address is modified
+            order.onchange_partner_shipping_id()
+            order._compute_tax_id()
+
         if address.get('email'):
             values.update({'email': address['email']})
 
@@ -244,6 +253,10 @@ class DeleteAddress(graphene.Mutation):
         # Archive address, safer than delete since this address could be in use by other object
         partner.active = False
 
+        # Trigger the change of fiscal position when the shipping address is modified
+        order.onchange_partner_shipping_id()
+        order._compute_tax_id()
+
         return DeleteAddress(result=True)
 
 
@@ -268,6 +281,10 @@ class SelectAddress(graphene.Mutation):
             order.partner_invoice_id = partner.id
         elif type.value == 'delivery':
             order.partner_shipping_id = partner.id
+
+        # Trigger the change of fiscal position when the shipping address is modified
+        order.onchange_partner_shipping_id()
+        order._compute_tax_id()
 
         return partner
 
