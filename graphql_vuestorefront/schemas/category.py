@@ -16,7 +16,7 @@ def get_search_order(sort):
     for field, val in sort.items():
         if sorting:
             sorting += ', '
-        sorting += '%s %s' % (field, val.value)
+        sorting += '%s %s' % (field, val)
 
     # Add id as last factor so we can consistently get the same results
     if sorting:
@@ -64,11 +64,7 @@ class CategoryQuery(graphene.ObjectType):
     @staticmethod
     def resolve_category(self, info, id):
         env = info.context['env']
-
-        domain = [('id', '=', id)]
-        domain += env['website'].get_current_website().website_domain()
-        category = info.context['env']['product.public.category'].search(
-            domain, limit=1)
+        category = env['product.public.category'].search([('id', '=', id)], limit=1)
         if not category:
             raise GraphQLError(_('Category does not exist.'))
         return category
@@ -77,7 +73,7 @@ class CategoryQuery(graphene.ObjectType):
     def resolve_categories(self, info, filter, current_page, page_size, search, sort):
         env = info.context["env"]
         order = get_search_order(sort)
-        domain = env['website'].get_current_website().website_domain()
+        domain = []
 
         if search:
             for srch in search.split(" "):

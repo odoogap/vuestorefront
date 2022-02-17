@@ -2,8 +2,9 @@
 # Copyright 2022 ODOOGAP/PROMPTEQUATION LDA
 # License LGPL-3.0 or later (http://www.gnu.org/licenses/lgpl).
 
-# from . import category
-# from . import product
+from . import country
+from . import category
+from . import product
 # from . import order
 # from . import invoice
 # from . import contact_us

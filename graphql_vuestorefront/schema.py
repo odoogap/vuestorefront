@@ -14,9 +14,9 @@ from odoo.addons.graphql_vuestorefront.schemas import (
 
 class Query(
     OdooObjectType,
-    # country.CountryQuery,
-    # category.CategoryQuery,
-    # product.ProductQuery,
+    country.CountryQuery,
+    category.CategoryQuery,
+    product.ProductQuery,
     # order.OrderQuery,
     # invoice.InvoiceQuery,
     # user_profile.UserProfileQuery,
@@ -42,8 +42,9 @@ class Mutation(
 
 
 schema = graphene.Schema(
-    # query=Query,
+    query=Query,
     # mutation=Mutation,
-    # types=[country.CountryList, product.ProductList, product.ProductVariantData, category.CategoryList, order.OrderList,
-    #        invoice.InvoiceList, wishlist.WishlistData, shop.CartData]
+    types=[country.CountryList, category.CategoryList, ]
+    # product.ProductList, product.ProductVariantData, order.OrderList,
+    # invoice.InvoiceList, wishlist.WishlistData, shop.CartData]
 )

@@ -241,22 +241,22 @@ class Attribute(OdooObjectType):
         return self.value_ids or None
 
 
-class ProductImage(OdooObjectType):
-    id = graphene.Int(required=True)
-    name = graphene.String()
-    image = graphene.String()
-    video = graphene.String()
-
-    def resolve_id(self, info):
-        return self.id or None
-
-    def resolve_image(self, info):
-        if self.image_1920:
-            return '/web/image/product.image/{}/image_1920'.format(self.id)
-        return None
-
-    def resolve_video(self, info):
-        return self.video_url or None
+# class ProductImage(OdooObjectType):
+#     id = graphene.Int(required=True)
+#     name = graphene.String()
+#     image = graphene.String()
+#     video = graphene.String()
+#
+#     def resolve_id(self, info):
+#         return self.id or None
+#
+#     def resolve_image(self, info):
+#         if self.image_1920:
+#             return '/web/image/product.image/{}/image_1920'.format(self.id)
+#         return None
+#
+#     def resolve_video(self, info):
+#         return self.video_url or None
 
 
 class Product(OdooObjectType):
@@ -283,8 +283,8 @@ class Product(OdooObjectType):
     )
     custom_message = graphene.String(description='Related W/Availability: Show product-specific notifications')
     is_in_stock = graphene.Boolean()
-    is_in_wishlist = graphene.Boolean()
-    media_gallery = graphene.List(graphene.NonNull(lambda: ProductImage))
+    # is_in_wishlist = graphene.Boolean()
+    # media_gallery = graphene.List(graphene.NonNull(lambda: ProductImage))
     qty = graphene.Float()
     slug = graphene.String()
     alternative_products = graphene.List(graphene.NonNull(lambda: Product))
@@ -296,6 +296,7 @@ class Product(OdooObjectType):
     is_variant_possible = graphene.Boolean(description='Specific to Product Variant')
     variant_attribute_values = graphene.List(graphene.NonNull(lambda: AttributeValue),
                                              description='Specific to Product Variant')
+    product_template = graphene.Field(lambda: Product, description='Specific to Product Variant')
     # Specific to use in Product Template
     price = graphene.Float(description='Specific to Product Template')
     attribute_values = graphene.List(graphene.NonNull(lambda: AttributeValue),
@@ -303,7 +304,7 @@ class Product(OdooObjectType):
     product_variants = graphene.List(graphene.NonNull(lambda: Product), description='Specific to Product Template')
     first_variant = graphene.Int(description='Specific to use in Product Template')
     barcode = graphene.String()
-    product_template = graphene.Field(lambda: Product)
+
 
     def resolve_type_id(self, info):
         if self.type == 'product':
@@ -342,24 +343,21 @@ class Product(OdooObjectType):
         return self.website_meta_description or None
 
     def resolve_image(self, info):
-        if self.image_1920:
-            return '/web/image/{}/{}/image_1920'.format(self._name, self.id)
+        if self.image:
+            return '/web/image/{}/{}/image'.format(self._name, self.id)
         return None
 
     def resolve_small_image(self, info):
-        if self.image_1920:
-            return '/web/image/{}/{}/image_128'.format(self._name, self.id)
+        if self.image_small:
+            return '/web/image/{}/{}/image_small'.format(self._name, self.id)
         return None
 
     def resolve_thumbnail(self, info):
-        if self.image_1920:
-            return '/web/image/{}/{}/image_512'.format(self._name, self.id)
+        if self.image_medium:
+            return '/web/image/{}/{}/image_small'.format(self._name, self.id)
         return None
 
     def resolve_categories(self, info):
-        website = self.env['website'].get_current_website()
-        if website:
-            return self.public_categ_ids.filtered(lambda c: c.website_id and c.website_id.id == website.id) or None
         return self.public_categ_ids or None
 
     def resolve_available_threshold(self, info):
@@ -371,13 +369,13 @@ class Product(OdooObjectType):
     def resolve_is_in_stock(self, info):
         return bool(self.qty_available > 0)
 
-    def resolve_is_in_wishlist(self, info):
-        env = info.context["env"]
-        is_in_wishlist = product_is_in_wishlist(env, self)
-        return bool(is_in_wishlist)
+    # def resolve_is_in_wishlist(self, info):
+    #     env = info.context["env"]
+    #     is_in_wishlist = product_is_in_wishlist(env, self)
+    #     return bool(is_in_wishlist)
 
-    def resolve_media_gallery(self, info):
-        return self.product_template_image_ids or None
+    # def resolve_media_gallery(self, info):
+    #     return self.product_template_image_ids or None
 
     def resolve_qty(self, info):
         return self.qty_available
@@ -413,6 +411,9 @@ class Product(OdooObjectType):
     def resolve_variant_attribute_values(self, info):
         return self.product_template_attribute_value_ids or None
 
+    def resolve_product_template(self, info):
+        return self.product_tmpl_id or None
+
     # Specific to use in Product Template
     def resolve_price(self, info):
         return self.list_price or None
@@ -425,9 +426,6 @@ class Product(OdooObjectType):
 
     def resolve_first_variant(self, info):
         return self.product_variant_id or None
-
-    def resolve_product_template(self, info):
-        return self.product_tmpl_id or None
 
 
 class Payment(OdooObjectType):

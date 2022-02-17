@@ -16,7 +16,7 @@ def get_search_order(sort):
     for field, val in sort.items():
         if sorting:
             sorting += ', '
-        sorting += '%s %s' % (field, val.value)
+        sorting += '%s %s' % (field, val)
 
     # Add id as last factor so we can consistently get the same results
     if sorting:
