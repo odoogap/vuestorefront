@@ -3,6 +3,7 @@
 # License LGPL-3.0 or later (http://www.gnu.org/licenses/lgpl).
 
 import graphene
+from graphene.types import generic
 from graphql import GraphQLError
 from odoo import _
 
@@ -268,6 +269,7 @@ class Product(OdooObjectType):
     name = graphene.String()
     display_name = graphene.String()
     sku = graphene.String()
+    barcode = graphene.String()
     description = graphene.String()
     currency = graphene.Field(lambda: Currency)
     weight = graphene.Float()
@@ -291,20 +293,21 @@ class Product(OdooObjectType):
     alternative_products = graphene.List(graphene.NonNull(lambda: Product))
     accessory_products = graphene.List(graphene.NonNull(lambda: Product))
     # Specific to use in Product Variant
+    combination_info_variant = generic.GenericScalar(description='Specific to Product Variant')
     variant_price = graphene.Float(description='Specific to Product Variant')
     variant_price_after_discount = graphene.Float(description='Specific to Product Variant')
     variant_has_discounted_price = graphene.Boolean(description='Specific to Product Variant')
     is_variant_possible = graphene.Boolean(description='Specific to Product Variant')
     variant_attribute_values = graphene.List(graphene.NonNull(lambda: AttributeValue),
                                              description='Specific to Product Variant')
+    product_template = graphene.Field((lambda: Product), description='Specific to Product Variant')
     # Specific to use in Product Template
+    combination_info = generic.GenericScalar(description='Specific to Product Template')
     price = graphene.Float(description='Specific to Product Template')
     attribute_values = graphene.List(graphene.NonNull(lambda: AttributeValue),
                                      description='Specific to Product Template')
     product_variants = graphene.List(graphene.NonNull(lambda: Product), description='Specific to Product Template')
     first_variant = graphene.Int(description='Specific to use in Product Template')
-    barcode = graphene.String()
-    product_template = graphene.Field(lambda: Product)
 
     def resolve_type_id(self, info):
         if self.type == 'product':
@@ -393,6 +396,11 @@ class Product(OdooObjectType):
         return self.accessory_product_ids or None
 
     # Specific to use in Product Variant
+    def resolve_combination_info_variant(self, info):
+        env = info.context["env"]
+        pricing_info = get_product_pricing_info(env, self)
+        return pricing_info or None
+
     def resolve_variant_price(self, info):
         env = info.context["env"]
         pricing_info = get_product_pricing_info(env, self)
@@ -414,7 +422,15 @@ class Product(OdooObjectType):
     def resolve_variant_attribute_values(self, info):
         return self.product_template_attribute_value_ids or None
 
+    def resolve_product_template(self, info):
+        return self.product_tmpl_id or None
+
     # Specific to use in Product Template
+    def resolve_combination_info(self, info):
+        env = info.context["env"]
+        pricing_info = get_product_pricing_info(env, self.product_variant_id)
+        return pricing_info or None
+
     def resolve_price(self, info):
         return self.list_price or None
 
@@ -426,9 +442,6 @@ class Product(OdooObjectType):
 
     def resolve_first_variant(self, info):
         return self.product_variant_id or None
-
-    def resolve_product_template(self, info):
-        return self.product_tmpl_id or None
 
 
 class Payment(OdooObjectType):
