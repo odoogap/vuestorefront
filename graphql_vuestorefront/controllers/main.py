@@ -82,12 +82,19 @@ class GraphQLController(http.Controller, GraphQLControllerMixin):
                 })
                 request.context = context
 
+                request_uid = http.request.env.uid
+                website_uid = website.sudo().user_id.id
+
+                if request_uid != website_uid and \
+                        request.env['res.users'].sudo().browse(request_uid).has_group('base.group_public'):
+                    request.uid = website_uid
         except:
             pass
 
     # The GraphiQL route, providing an IDE for developers
     @http.route("/graphiql/vsf", auth="user")
     def graphiql(self, **kwargs):
+        self.get_domain_of_request_host()
         return self._handle_graphiql_request(schema.graphql_schema)
 
     # Optional monkey patch, needed to accept application/json GraphQL

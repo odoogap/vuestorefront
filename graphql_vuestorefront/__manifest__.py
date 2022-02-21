@@ -15,6 +15,7 @@
         'graphql_base',
         'website_sale_wishlist',
         'website_sale_delivery',
+        'website_mass_mailing',
         'auth_signup',
         'contacts',
         'crm',

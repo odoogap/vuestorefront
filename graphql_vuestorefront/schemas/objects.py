@@ -121,6 +121,7 @@ class Country(OdooObjectType):
     name = graphene.String(required=True)
     code = graphene.String(required=True)
     states = graphene.List(graphene.NonNull(lambda: State))
+    image_url = graphene.String()
 
     def resolve_states(self, info):
         return self.state_ids or None
@@ -144,6 +145,7 @@ class Partner(OdooObjectType):
     contacts = graphene.List(graphene.NonNull(lambda: Partner))
     signup_token = graphene.String()
     signup_valid = graphene.String()
+    parent_id = graphene.Field(lambda: Partner)
 
     def resolve_country(self, info):
         return self.country_id or None
@@ -163,6 +165,9 @@ class Partner(OdooObjectType):
 
     def resolve_contacts(self, info):
         return self.child_ids or None
+
+    def resolve_parent_id(self, info):
+        return self.parent_id or None
 
 
 class User(OdooObjectType):
@@ -256,9 +261,7 @@ class ProductImage(OdooObjectType):
 
     def resolve_image(self, info):
         if self.image_1920:
-            base_url = info.context["env"]['ir.config_parameter'].sudo().get_param('web.base.url')
-            image_url = '{}/web/image/product.image/{}/image_1920'.format(base_url, self.id)
-            return image_url
+            return '/web/image/product.image/{}/image_1920'.format(self.id)
         return None
 
     def resolve_video(self, info):
@@ -359,23 +362,17 @@ class Product(OdooObjectType):
 
     def resolve_image(self, info):
         if self.image_1920:
-            env = info.context["env"]
-            base_url = env['ir.config_parameter'].sudo().get_param('web.base.url', '')
-            return '{}/web/image/{}/{}/image_1920'.format(base_url, self._name, self.id)
+            return '/web/image/{}/{}/image_1920'.format(self._name, self.id)
         return None
 
     def resolve_small_image(self, info):
         if self.image_1920:
-            env = info.context["env"]
-            base_url = env['ir.config_parameter'].sudo().get_param('web.base.url', '')
-            return '{}/web/image/{}/{}/image_128'.format(base_url, self._name, self.id)
+            return '/web/image/{}/{}/image_128'.format(self._name, self.id)
         return None
 
     def resolve_thumbnail(self, info):
         if self.image_1920:
-            env = info.context["env"]
-            base_url = env['ir.config_parameter'].sudo().get_param('web.base.url', '')
-            return '{}/web/image/{}/{}/image_512'.format(base_url, self._name, self.id)
+            return '/web/image/{}/{}/image_512'.format(self._name, self.id)
         return None
 
     def resolve_categories(self, info):
@@ -577,12 +574,7 @@ class Order(OdooObjectType):
         return self.state or None
 
     def resolve_order_url(self, info):
-        env = info.context["env"]
-        base_url = env['ir.config_parameter'].sudo().get_param('web.base.url', '')
-        url = urls.url_join(base_url, self.get_portal_url())
-        if url:
-            return url
-        return None
+        return self.get_portal_url() or None
 
     def resolve_transactions(self, info):
         return self.transaction_ids or None
@@ -644,12 +636,7 @@ class Invoice(OdooObjectType):
         return self.state or None
 
     def resolve_invoice_url(self, info):
-        env = info.context["env"]
-        base_url = env['ir.config_parameter'].sudo().get_param('web.base.url')
-        url = urls.url_join(base_url, self.get_portal_url())
-        if url:
-            return url
-        return None
+        return self.get_portal_url() or None
 
     def resolve_transactions(self, info):
         return self.transaction_ids or None
@@ -674,9 +661,7 @@ class PaymentIcon(OdooObjectType):
 
     def resolve_image(self, info):
         if self.image:
-            env = info.context['env']
-            base_url = env['ir.config_parameter'].sudo().get_param('web.base.url', '')
-            return '{}/web/image/payment.icon/{}/image'.format(base_url, self.id)
+            return '/web/image/payment.icon/{}/image'.format(self.id)
         return None
 
 

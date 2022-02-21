@@ -38,11 +38,11 @@
                             </div>
                         </div>
                     </div>
-                    <div class="col-12 col-lg-6 o_setting_box" id="web_base_url_settings">
+                    <div class="col-12 col-lg-6 o_setting_box" id="vsf_mailing_list_id_settings">
                         <div class="o_setting_right_pane">
-                            <label for="web_base_url"/>
+                            <label for="vsf_mailing_list_id"/>
                             <div class="content-group">
-                                <field name="web_base_url"/>
+                                <field name="vsf_mailing_list_id"/>
                             </div>
                         </div>
                     </div>
