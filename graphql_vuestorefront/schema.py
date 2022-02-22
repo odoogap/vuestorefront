@@ -44,7 +44,7 @@ class Mutation(
 schema = graphene.Schema(
     query=Query,
     # mutation=Mutation,
-    types=[country.CountryList, category.CategoryList, ]
-    # product.ProductList, product.ProductVariantData, order.OrderList,
+    types=[country.CountryList, category.CategoryList, product.ProductList, ]
+    # product.ProductVariantData, order.OrderList,
     # invoice.InvoiceList, wishlist.WishlistData, shop.CartData]
 )

@@ -69,16 +69,11 @@ def get_document_count_with_check_access(model, domain):
     return model.search_count(domain)
 
 
-def get_product_pricing_info(env, product):
-    website = env['website'].get_current_website()
-    pricelist = website.get_current_pricelist()
-    return product._get_combination_info_variant(pricelist=pricelist)
-
-
-def product_is_in_wishlist(env, product):
-    website = env['website'].get_current_website()
-    request.website = website
-    return product._is_in_wishlist()
+def _is_in_wishlist(env, product):
+    values = env['product.wishlist'].with_context(display_default_code=False).current()
+    if values.filtered(lambda v: v.product_id.id == product.id):
+        return True
+    return False
 
 
 # --------------------- #
@@ -194,6 +189,9 @@ class Category(OdooObjectType):
     parent = graphene.Field(lambda: Category)
     childs = graphene.List(graphene.NonNull(lambda: Category))
     slug = graphene.String()
+    image = graphene.String()
+    medium_image = graphene.String()
+    small_image = graphene.String()
     products = graphene.List(graphene.NonNull(lambda: Product))
 
     def resolve_parent(self, info):
@@ -205,14 +203,40 @@ class Category(OdooObjectType):
     def resolve_slug(self, info):
         return slug(self) or None
 
+    def resolve_image(self, info):
+        if self.image:
+            return '/web/image/product.public.category/{}/image'.format(self.id)
+        return None
+
+    def resolve_medium_image(self, info):
+        if self.image_medium:
+            return '/web/image/product.public.category/{}/image_medium'.format(self.id)
+        return None
+
+    def resolve_small_image(self, info):
+        if self.image_small:
+            return '/web/image/product.public.category/{}/image_small'.format(self.id)
+        return None
+
     def resolve_products(self, info):
         return self.product_tmpl_ids or None
+
+
+class AttributeLine(OdooObjectType):
+    id = graphene.Int(required=True)
+    attribute = graphene.Field(lambda: Attribute)
+    values = graphene.List(graphene.NonNull(lambda: AttributeValue))
+
+    def resolve_attribute(self, info):
+        return self.attribute_id or None
+
+    def resolve_values(self, info):
+        return self.value_ids or None
 
 
 class AttributeValue(OdooObjectType):
     id = graphene.Int(required=True)
     name = graphene.String()
-    display_type = graphene.String()
     html_color = graphene.String()
     search = graphene.String()
     price_extra = graphene.Float(description='Not use in the return Attributes List of the Products Query')
@@ -234,29 +258,25 @@ class AttributeValue(OdooObjectType):
 class Attribute(OdooObjectType):
     id = graphene.Int(required=True)
     name = graphene.String()
-    display_type = graphene.String()
+    type = graphene.String()
     values = graphene.List(graphene.NonNull(lambda: AttributeValue))
 
     def resolve_values(self, info):
         return self.value_ids or None
 
 
-# class ProductImage(OdooObjectType):
-#     id = graphene.Int(required=True)
-#     name = graphene.String()
-#     image = graphene.String()
-#     video = graphene.String()
-#
-#     def resolve_id(self, info):
-#         return self.id or None
-#
-#     def resolve_image(self, info):
-#         if self.image_1920:
-#             return '/web/image/product.image/{}/image_1920'.format(self.id)
-#         return None
-#
-#     def resolve_video(self, info):
-#         return self.video_url or None
+class ProductImage(OdooObjectType):
+    id = graphene.Int(required=True)
+    name = graphene.String()
+    image = graphene.String()
+
+    def resolve_id(self, info):
+        return self.id or None
+
+    def resolve_image(self, info):
+        if self.image:
+            return '/web/image/product.image/{}/image'.format(self.id)
+        return None
 
 
 class Product(OdooObjectType):
@@ -267,6 +287,7 @@ class Product(OdooObjectType):
     name = graphene.String()
     display_name = graphene.String()
     sku = graphene.String()
+    barcode = graphene.String()
     description = graphene.String()
     currency = graphene.Field(lambda: Currency)
     weight = graphene.Float()
@@ -283,28 +304,27 @@ class Product(OdooObjectType):
     )
     custom_message = graphene.String(description='Related W/Availability: Show product-specific notifications')
     is_in_stock = graphene.Boolean()
-    # is_in_wishlist = graphene.Boolean()
-    # media_gallery = graphene.List(graphene.NonNull(lambda: ProductImage))
+    media_gallery = graphene.List(graphene.NonNull(lambda: ProductImage))
     qty = graphene.Float()
     slug = graphene.String()
+    website_price = graphene.Float()
+    website_public_price = graphene.Float()
+    website_price_difference = graphene.Float()
     alternative_products = graphene.List(graphene.NonNull(lambda: Product))
     accessory_products = graphene.List(graphene.NonNull(lambda: Product))
     # Specific to use in Product Variant
-    variant_price = graphene.Float(description='Specific to Product Variant')
-    variant_price_after_discount = graphene.Float(description='Specific to Product Variant')
-    variant_has_discounted_price = graphene.Boolean(description='Specific to Product Variant')
-    is_variant_possible = graphene.Boolean(description='Specific to Product Variant')
+    price_extra = graphene.Float(description='Specific to Product Variant')
+    variant_is_in_wishlist = graphene.Boolean(description='Specific to Product Variant')
     variant_attribute_values = graphene.List(graphene.NonNull(lambda: AttributeValue),
                                              description='Specific to Product Variant')
     product_template = graphene.Field(lambda: Product, description='Specific to Product Variant')
     # Specific to use in Product Template
     price = graphene.Float(description='Specific to Product Template')
-    attribute_values = graphene.List(graphene.NonNull(lambda: AttributeValue),
+    is_in_wishlist = graphene.Boolean(description='Specific to Product Template')
+    attribute_lines = graphene.List(graphene.NonNull(lambda: AttributeLine),
                                      description='Specific to Product Template')
     product_variants = graphene.List(graphene.NonNull(lambda: Product), description='Specific to Product Template')
     first_variant = graphene.Int(description='Specific to use in Product Template')
-    barcode = graphene.String()
-
 
     def resolve_type_id(self, info):
         if self.type == 'product':
@@ -354,7 +374,7 @@ class Product(OdooObjectType):
 
     def resolve_thumbnail(self, info):
         if self.image_medium:
-            return '/web/image/{}/{}/image_small'.format(self._name, self.id)
+            return '/web/image/{}/{}/image_medium'.format(self._name, self.id)
         return None
 
     def resolve_categories(self, info):
@@ -369,13 +389,8 @@ class Product(OdooObjectType):
     def resolve_is_in_stock(self, info):
         return bool(self.qty_available > 0)
 
-    # def resolve_is_in_wishlist(self, info):
-    #     env = info.context["env"]
-    #     is_in_wishlist = product_is_in_wishlist(env, self)
-    #     return bool(is_in_wishlist)
-
-    # def resolve_media_gallery(self, info):
-    #     return self.product_template_image_ids or None
+    def resolve_media_gallery(self, info):
+        return self.product_image_ids or None
 
     def resolve_qty(self, info):
         return self.qty_available
@@ -390,26 +405,16 @@ class Product(OdooObjectType):
         return self.accessory_product_ids or None
 
     # Specific to use in Product Variant
-    def resolve_variant_price(self, info):
-        env = info.context["env"]
-        pricing_info = get_product_pricing_info(env, self)
-        return pricing_info['list_price'] or None
+    def resolve_price_extra(self, info):
+        return self.price_extra or None
 
-    def resolve_variant_price_after_discount(self, info):
+    def resolve_variant_is_in_wishlist(self, info):
         env = info.context["env"]
-        pricing_info = get_product_pricing_info(env, self)
-        return pricing_info['price'] or None
-
-    def resolve_variant_has_discounted_price(self, info):
-        env = info.context["env"]
-        pricing_info = get_product_pricing_info(env, self)
-        return pricing_info['has_discounted_price']
-
-    def resolve_is_variant_possible(self, info):
-        return self._is_variant_possible()
+        is_in_wishlist = _is_in_wishlist(env, self)
+        return bool(is_in_wishlist)
 
     def resolve_variant_attribute_values(self, info):
-        return self.product_template_attribute_value_ids or None
+        return self.attribute_value_ids or None
 
     def resolve_product_template(self, info):
         return self.product_tmpl_id or None
@@ -418,8 +423,13 @@ class Product(OdooObjectType):
     def resolve_price(self, info):
         return self.list_price or None
 
-    def resolve_attribute_values(self, info):
-        return self.attribute_line_ids.product_template_value_ids or None
+    def resolve_is_in_wishlist(self, info):
+        env = info.context["env"]
+        is_in_wishlist = _is_in_wishlist(env, self.product_variant_id)
+        return bool(is_in_wishlist)
+
+    def resolve_attribute_lines(self, info):
+        return self.attribute_line_ids or None
 
     def resolve_product_variants(self, info):
         return self.product_variant_ids or None

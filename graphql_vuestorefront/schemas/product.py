@@ -66,6 +66,7 @@ def get_search_domain(env, search, **kwargs):
 def get_product_list(env, current_page, page_size, search, sort, **kwargs):
     Product = env['product.template'].sudo()
     ProductAttribute = env['product.attribute'].sudo()
+    ProductAttributeLine = env['product.attribute.line']
     domain = get_search_domain(env, search, **kwargs)
     # First offset is 0 but first page is 1
     if current_page > 1:
@@ -75,8 +76,24 @@ def get_product_list(env, current_page, page_size, search, sort, **kwargs):
     order = get_search_order(sort)
     products = Product.search(domain, limit=page_size, offset=offset, order=order)
     total_count = Product.search_count(domain)
+    # Used to get the Attribute List
     search_products = Product.search(domain, order=order)
-    attributes = ProductAttribute.search([('product_tmpl_ids', 'in', search_products.ids)])
+    list_attribute_line_ids = []
+    for product in search_products:
+        line_ids = product.attribute_line_ids.ids
+        if line_ids:
+            for line in line_ids:
+                if line not in list_attribute_line_ids:
+                    list_attribute_line_ids.append(line)
+    # Get all the Product Attribute Lines
+    attribute_lines = ProductAttributeLine.search([('id', 'in', list_attribute_line_ids)])
+    list_attribute_ids = []
+    for attribute_line in attribute_lines:
+        attribute_id = attribute_line.attribute_id.id
+        if attribute_id and attribute_id not in list_attribute_ids:
+            list_attribute_ids.append(attribute_id)
+    # Geta all the Product Attributes
+    attributes = ProductAttribute.search([('id', 'in', list_attribute_ids)])
     return products, total_count, attributes
 
 
