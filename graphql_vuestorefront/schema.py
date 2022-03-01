@@ -17,9 +17,9 @@ class Query(
     country.CountryQuery,
     category.CategoryQuery,
     product.ProductQuery,
-    # order.OrderQuery,
-    # invoice.InvoiceQuery,
-    # user_profile.UserProfileQuery,
+    order.OrderQuery,
+    invoice.InvoiceQuery,
+    user_profile.UserProfileQuery,
     # address.AddressQuery,
     # wishlist.WishlistQuery,
     # shop.ShoppingCartQuery,
@@ -30,8 +30,8 @@ class Query(
 
 class Mutation(
     OdooObjectType,
-    # contact_us.ContactUsMutation,
-    # user_profile.UserProfileMutation,
+    contact_us.ContactUsMutation,
+    user_profile.UserProfileMutation,
     # sign.SignMutation,
     # address.AddressMutation,
     # wishlist.WishlistMutation,
@@ -43,8 +43,7 @@ class Mutation(
 
 schema = graphene.Schema(
     query=Query,
-    # mutation=Mutation,
-    types=[country.CountryList, category.CategoryList, product.ProductList, ]
-    # product.ProductVariantData, order.OrderList,
-    # invoice.InvoiceList, wishlist.WishlistData, shop.CartData]
+    mutation=Mutation,
+    types=[country.CountryList, category.CategoryList, product.ProductList, order.OrderList, invoice.InvoiceList, ]
+    # wishlist.WishlistData, shop.CartData]
 )

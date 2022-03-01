@@ -18,9 +18,9 @@ def get_search_order(sort):
         if sorting:
             sorting += ', '
         if field == 'price':
-            sorting += 'list_price %s' % val.value
+            sorting += 'list_price %s' % val
         else:
-            sorting += '%s %s' % (field, val.value)
+            sorting += '%s %s' % (field, val)
 
     # Add id as last factor so we can consistently get the same results
     if sorting:
@@ -65,8 +65,6 @@ def get_search_domain(env, search, **kwargs):
 
 def get_product_list(env, current_page, page_size, search, sort, **kwargs):
     Product = env['product.template'].sudo()
-    ProductAttribute = env['product.attribute'].sudo()
-    ProductAttributeLine = env['product.attribute.line']
     domain = get_search_domain(env, search, **kwargs)
     # First offset is 0 but first page is 1
     if current_page > 1:
@@ -76,24 +74,10 @@ def get_product_list(env, current_page, page_size, search, sort, **kwargs):
     order = get_search_order(sort)
     products = Product.search(domain, limit=page_size, offset=offset, order=order)
     total_count = Product.search_count(domain)
-    # Used to get the Attribute List
+    # Get all the Attributes
     search_products = Product.search(domain, order=order)
-    list_attribute_line_ids = []
-    for product in search_products:
-        line_ids = product.attribute_line_ids.ids
-        if line_ids:
-            for line in line_ids:
-                if line not in list_attribute_line_ids:
-                    list_attribute_line_ids.append(line)
-    # Get all the Product Attribute Lines
-    attribute_lines = ProductAttributeLine.search([('id', 'in', list_attribute_line_ids)])
-    list_attribute_ids = []
-    for attribute_line in attribute_lines:
-        attribute_id = attribute_line.attribute_id.id
-        if attribute_id and attribute_id not in list_attribute_ids:
-            list_attribute_ids.append(attribute_id)
-    # Geta all the Product Attributes
-    attributes = ProductAttribute.search([('id', 'in', list_attribute_ids)])
+    attribute_lines = search_products.mapped('attribute_line_ids')
+    attributes = attribute_lines.mapped('attribute_id')
     return products, total_count, attributes
 
 
@@ -122,22 +106,6 @@ class ProductSortInput(graphene.InputObjectType):
     price = SortEnum()
 
 
-class ProductVariant(graphene.Interface):
-    product = graphene.Field(Product)
-    product_template_id = graphene.Int()
-    display_name = graphene.String()
-    display_image = graphene.Boolean()
-    price = graphene.Float()
-    list_price = graphene.String()
-    has_discounted_price = graphene.Boolean()
-    is_combination_possible = graphene.Boolean()
-
-
-class ProductVariantData(graphene.ObjectType):
-    class Meta:
-        interfaces = (ProductVariant,)
-
-
 class ProductQuery(graphene.ObjectType):
     product = graphene.Field(
         Product,
@@ -156,12 +124,6 @@ class ProductQuery(graphene.ObjectType):
         Attribute,
         required=True,
         id=graphene.Int(),
-    )
-    product_variant = graphene.Field(
-        ProductVariant,
-        required=True,
-        product_template_id=graphene.Int(),
-        combination_id=graphene.List(graphene.Int)
     )
 
     @staticmethod
@@ -189,41 +151,3 @@ class ProductQuery(graphene.ObjectType):
         if not attribute:
             raise GraphQLError(_('Attribute does not exist.'))
         return attribute
-
-    @staticmethod
-    def resolve_product_variant(self, info, product_template_id, combination_id):
-        env = info.context["env"]
-
-        website = env['website'].get_current_website()
-        request.website = website
-        pricelist = website.get_current_pricelist()
-
-        product_template = env['product.template'].browse(product_template_id)
-        combination = env['product.template.attribute.value'].browse(combination_id)
-
-        variant_info = product_template._get_combination_info(combination, pricelist)
-
-        product = env['product.product'].browse(variant_info['product_id'])
-
-        # Condition to verify if Product exist
-        if not product:
-            raise GraphQLError(_('Product does not exist'))
-
-        is_combination_possible = product_template._is_combination_possible(combination)
-
-        # Condition to Verify if Product is active or if combination exist
-        if not product.active or not is_combination_possible:
-            variant_info['is_combination_possible'] = False
-        else:
-            variant_info['is_combination_possible'] = True
-
-        return ProductVariantData(
-            product=product,
-            product_template_id=variant_info['product_template_id'],
-            display_name=variant_info['display_name'],
-            display_image=variant_info['display_image'],
-            price=variant_info['price'],
-            list_price=variant_info['list_price'],
-            has_discounted_price=variant_info['has_discounted_price'],
-            is_combination_possible=variant_info['is_combination_possible']
-        )

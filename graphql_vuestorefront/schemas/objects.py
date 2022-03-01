@@ -28,7 +28,8 @@ OrderStage = graphene.Enum('OrderStage', [('Quotation', 'draft'), ('QuotationSen
 InvoiceStatus = graphene.Enum('InvoiceStatus', [('UpsellingOpportunity', 'upselling'), ('FullyInvoiced', 'invoiced'),
                                                 ('ToInvoice', 'to invoice'), ('NothingtoInvoice', 'no')])
 
-InvoiceState = graphene.Enum('InvoiceState', [('Draft', 'draft'), ('Posted', 'posted'), ('Cancelled', 'cancel')])
+InvoiceState = graphene.Enum('InvoiceState', [('Draft', 'draft'), ('Open', 'open'), ('Paid', 'paid'),
+                                              ('Cancelled', 'cancel')])
 
 InventoryAvailability = graphene.Enum('InventoryAvailability', [
     ('SellRegardlessOfInventory', 'never'), ('ShowInventoryOnWebsiteAndPreventSalesIfNotEnoughStock', 'always'),
@@ -222,18 +223,6 @@ class Category(OdooObjectType):
         return self.product_tmpl_ids or None
 
 
-class AttributeLine(OdooObjectType):
-    id = graphene.Int(required=True)
-    attribute = graphene.Field(lambda: Attribute)
-    values = graphene.List(graphene.NonNull(lambda: AttributeValue))
-
-    def resolve_attribute(self, info):
-        return self.attribute_id or None
-
-    def resolve_values(self, info):
-        return self.value_ids or None
-
-
 class AttributeValue(OdooObjectType):
     id = graphene.Int(required=True)
     name = graphene.String()
@@ -321,7 +310,7 @@ class Product(OdooObjectType):
     # Specific to use in Product Template
     price = graphene.Float(description='Specific to Product Template')
     is_in_wishlist = graphene.Boolean(description='Specific to Product Template')
-    attribute_lines = graphene.List(graphene.NonNull(lambda: AttributeLine),
+    attribute_values = graphene.List(graphene.NonNull(lambda: AttributeValue),
                                      description='Specific to Product Template')
     product_variants = graphene.List(graphene.NonNull(lambda: Product), description='Specific to Product Template')
     first_variant = graphene.Int(description='Specific to use in Product Template')
@@ -428,8 +417,8 @@ class Product(OdooObjectType):
         is_in_wishlist = _is_in_wishlist(env, self.product_variant_id)
         return bool(is_in_wishlist)
 
-    def resolve_attribute_lines(self, info):
-        return self.attribute_line_ids or None
+    def resolve_attribute_values(self, info):
+        return self.attribute_line_ids.mapped('value_ids') or None
 
     def resolve_product_variants(self, info):
         return self.product_variant_ids or None
@@ -442,24 +431,55 @@ class Payment(OdooObjectType):
     id = graphene.Int()
     name = graphene.String()
     amount = graphene.Float()
-    payment_reference = graphene.String()
+    payment_date = graphene.String()
+    memo = graphene.String()
+    payment_transaction = graphene.Field(lambda: PaymentTransaction)
+
+    def resolve_payment_date(self, info):
+        return self.payment_date or None
+
+    def resolve_memo(self, info):
+        return self.communication or None
+
+    def resolve_payment_transaction(self, info):
+        return self.payment_transaction_id or None
 
 
 class PaymentTransaction(OdooObjectType):
     id = graphene.Int()
-    payment = graphene.Field(lambda: Payment)
-    payment_token = graphene.String()
+    reference = graphene.String()
+    order = graphene.Field(lambda: Order)
     amount = graphene.Float()
-    acquirer = graphene.String()
+    currency = graphene.Field(lambda: Currency)
+    fees = graphene.Float()
+    partner = graphene.Field(lambda: Partner)
+    acquirer = graphene.Field(lambda: PaymentAcquirer)
+    acquirer_reference = graphene.String()
+    payment_token = graphene.String()
 
-    def resolve_payment(self, info):
-        return self.payment_id or None
+    def resolve_reference(self, info):
+        return self.reference or None
+
+    def resolve_order(self, info):
+        return self.sale_order_id or None
+
+    def resolve_currency(self, info):
+        return self.currency_id or None
+
+    def resolve_fees(self, info):
+        return self.fees or None
+
+    def resolve_partner(self, info):
+        return self.partner_id or None
+
+    def resolve_acquirer(self, info):
+        return self.acquirer_id or None
+
+    def resolve_acquirer_reference(self, info):
+        return self.acquirer_reference or None
 
     def resolve_payment_token(self, info):
         return self.payment_token_id.name or None
-
-    def resolve_acquirer(self, info):
-        return self.acquirer_id.name or None
 
 
 class OrderLine(OdooObjectType):
@@ -503,7 +523,6 @@ class Order(OdooObjectType):
     amount_tax = graphene.Float()
     amount_total = graphene.Float()
     amount_delivery = graphene.Float()
-    currency_rate = graphene.String()
     shipping_method = graphene.Field(lambda: ShippingMethod)
     currency = graphene.Field(lambda: Currency)
     order_lines = graphene.List(graphene.NonNull(lambda: OrderLine))
@@ -511,7 +530,9 @@ class Order(OdooObjectType):
     stage = OrderStage()
     order_url = graphene.String()
     transactions = graphene.List(graphene.NonNull(lambda: PaymentTransaction))
-    client_order_ref = graphene.String()
+    transaction_count = graphene.Int()
+    customer_reference = graphene.String()
+    invoices = graphene.List(graphene.NonNull(lambda: Invoice))
     invoice_status = InvoiceStatus()
     invoice_count = graphene.Int()
 
@@ -540,10 +561,19 @@ class Order(OdooObjectType):
         return self.state or None
 
     def resolve_order_url(self, info):
-        return self.get_portal_url()
+        return self.get_share_url() or None
 
     def resolve_transactions(self, info):
-        return self.transaction_ids or None
+        return self.payment_tx_ids or None
+
+    def resolve_transaction_count(self, info):
+        return self.payment_transaction_count or None
+
+    def resolve_customer_reference(self, info):
+        return self.client_order_ref or None
+
+    def resolve_invoices(self, info):
+        return self.invoice_ids or None
 
 
 class InvoiceLine(OdooObjectType):
@@ -562,6 +592,7 @@ class InvoiceLine(OdooObjectType):
 class Invoice(OdooObjectType):
     id = graphene.Int(required=True)
     name = graphene.String()
+    number = graphene.String()
     partner = graphene.Field(lambda: Partner)
     partner_shipping = graphene.Field(lambda: Partner)
     invoice_date = graphene.String()
@@ -574,7 +605,7 @@ class Invoice(OdooObjectType):
     invoice_lines = graphene.List(graphene.NonNull(lambda: InvoiceLine))
     state = InvoiceState()
     invoice_url = graphene.String()
-    transactions = graphene.List(graphene.NonNull(lambda: PaymentTransaction))
+    payments = graphene.List(graphene.NonNull(lambda: Payment))
 
     def resolve_partner(self, info):
         return self.partner_id or None
@@ -583,10 +614,13 @@ class Invoice(OdooObjectType):
         return self.partner_shipping_id or None
 
     def resolve_invoice_date(self, info):
-        return self.invoice_date or None
+        return self.date_invoice or None
 
     def resolve_invoice_date_due(self, info):
-        return self.invoice_date_due or None
+        return self.date_due or None
+
+    def resolve_amount_residual(self, info):
+        return self.residual or None
 
     def resolve_currency(self, info):
         return self.currency_id or None
@@ -598,10 +632,10 @@ class Invoice(OdooObjectType):
         return self.state or None
 
     def resolve_invoice_url(self, info):
-        return self.get_portal_url()
+        return self.get_share_url()
 
-    def resolve_transactions(self, info):
-        return self.transaction_ids or None
+    def resolve_payments(self, info):
+        return self.payment_ids or None
 
 
 class WishlistItem(OdooObjectType):

@@ -19,7 +19,10 @@ def get_search_order(sort):
     for field, val in sort.items():
         if sorting:
             sorting += ', '
-        sorting += '%s %s' % (field, val.value)
+        if field == 'invoice_date':
+            sorting += 'date_invoice %s' % val
+        else:
+            sorting += '%s %s' % (field, val)
 
     # Add id as last factor so we can consistently get the same results
     if sorting:
@@ -62,9 +65,9 @@ class InvoiceQuery(graphene.ObjectType):
 
     @staticmethod
     def resolve_invoice(self, info, id):
-        AccountMove = info.context["env"]['account.move']
+        AccountInvoice = info.context["env"]['account.invoice']
         error_msg = 'Invoice does not exist.'
-        invoice = get_document_with_check_access(AccountMove, [('id', '=', id)], error_msg=error_msg)
+        invoice = get_document_with_check_access(AccountInvoice, [('id', '=', id)], error_msg=error_msg)
         if not invoice:
             raise GraphQLError(_(error_msg))
         return invoice.sudo()
@@ -85,8 +88,8 @@ class InvoiceQuery(graphene.ObjectType):
         else:
             offset = 0
 
-        AccountMove = env["account.move"]
-        invoices = get_document_with_check_access(AccountMove, domain, sort_order, page_size, offset,
+        AccountInvoice = env["account.invoice"]
+        invoices = get_document_with_check_access(AccountInvoice, domain, sort_order, page_size, offset,
                                                   error_msg='Invoice does not exist.')
-        total_count = get_document_count_with_check_access(AccountMove, domain)
+        total_count = get_document_count_with_check_access(AccountInvoice, domain)
         return InvoiceList(invoices=invoices and invoices.sudo() or invoices, total_count=total_count)
