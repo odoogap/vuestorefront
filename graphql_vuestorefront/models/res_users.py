@@ -15,6 +15,7 @@ _logger = logging.getLogger(__name__)
 class ResUsers(models.Model):
     _inherit = 'res.users'
 
+    @api.multi
     def api_action_reset_password(self):
         """ create signup token for each user, and send their signup url by email """
         # prepare reset password signup
@@ -30,8 +31,7 @@ class ResUsers(models.Model):
 
         assert template._name == 'mail.template'
 
-        website = request.env['website'].get_current_website()
-        domain = website.domain
+        domain = self.env['ir.config_parameter'].sudo().get_param('vsf_website_domain')
         if domain and domain[-1] == '/':
             domain = domain[:-1]
 

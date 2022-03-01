@@ -21,10 +21,10 @@
         'theme_default',
     ],
     'data': [
-        # 'data/website_data.xml',
-        # 'data/mail_template.xml',
-        # 'data/ir_config_parameter_data.xml',
-        # 'views/res_config_settings_views.xml',
+        'data/website_data.xml',
+        'data/mail_template.xml',
+        'data/ir_config_parameter_data.xml',
+        'views/res_config_settings_views.xml',
     ],
     'demo': [
         # 'data/demo_product_attribute.xml',

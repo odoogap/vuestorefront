@@ -313,7 +313,8 @@ class Product(OdooObjectType):
     attribute_values = graphene.List(graphene.NonNull(lambda: AttributeValue),
                                      description='Specific to Product Template')
     product_variants = graphene.List(graphene.NonNull(lambda: Product), description='Specific to Product Template')
-    first_variant = graphene.Int(description='Specific to use in Product Template')
+    first_variant = graphene.Int(description='Specific to use in Product Template '
+                                             '(Is a useful tool to use in the Wishlist)')
 
     def resolve_type_id(self, info):
         if self.type == 'product':
