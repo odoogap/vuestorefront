@@ -159,7 +159,7 @@ class AddAddress(graphene.Mutation):
             order.partner_id = partner_id
             order.with_context(not_self_saleperson=True).onchange_partner_id()
 
-        values['type'] = type.value
+        values['type'] = type
         values['parent_id'] = partner_id
 
         # Create the new shipping or invoice address
@@ -262,9 +262,9 @@ class SelectAddress(graphene.Mutation):
         partner = get_partner(env, address['id'], order, website)
 
         # Update order with the new shipping or invoice address
-        if type.value == 'invoice':
+        if type == 'invoice':
             order.partner_invoice_id = partner.id
-        elif type.value == 'delivery':
+        elif type == 'delivery':
             order.partner_shipping_id = partner.id
 
         return partner

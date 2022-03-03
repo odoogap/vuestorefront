@@ -20,9 +20,9 @@ class Query(
     order.OrderQuery,
     invoice.InvoiceQuery,
     user_profile.UserProfileQuery,
-    # address.AddressQuery,
+    address.AddressQuery,
     wishlist.WishlistQuery,
-    # shop.ShoppingCartQuery,
+    shop.ShoppingCartQuery,
     # payment.PaymentQuery,
 ):
     pass
@@ -33,9 +33,9 @@ class Mutation(
     contact_us.ContactUsMutation,
     user_profile.UserProfileMutation,
     sign.SignMutation,
-    # address.AddressMutation,
+    address.AddressMutation,
     wishlist.WishlistMutation,
-    # shop.ShopMutation,
+    shop.ShopMutation,
     # payment.PaymentMutation,
 ):
     pass
@@ -45,6 +45,5 @@ schema = graphene.Schema(
     query=Query,
     mutation=Mutation,
     types=[country.CountryList, category.CategoryList, product.ProductList, order.OrderList, invoice.InvoiceList,
-           wishlist.WishlistData, ]
-    # shop.CartData]
+           wishlist.WishlistData, shop.CartData]
 )
