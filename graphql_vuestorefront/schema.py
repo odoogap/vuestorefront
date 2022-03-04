@@ -23,7 +23,7 @@ class Query(
     address.AddressQuery,
     wishlist.WishlistQuery,
     shop.ShoppingCartQuery,
-    # payment.PaymentQuery,
+    payment.PaymentQuery,
 ):
     pass
 
@@ -36,7 +36,7 @@ class Mutation(
     address.AddressMutation,
     wishlist.WishlistMutation,
     shop.ShopMutation,
-    # payment.PaymentMutation,
+    payment.PaymentMutation,
 ):
     pass
 

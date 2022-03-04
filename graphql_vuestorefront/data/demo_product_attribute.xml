@@ -8,7 +8,7 @@
     <!-- Variant Size -->
     <record id="product_attribute_size" model="product.attribute">
         <field name="name">Size</field>
-        <field name="display_type">select</field>
+        <field name="type">select</field>
         <field name="sequence">40</field>
     </record>
     <record id="product_attribute_size_one_size" model="product.attribute.value">
@@ -181,7 +181,7 @@
     <!-- Variant Color -->
     <record id="product_attribute_color" model="product.attribute">
         <field name="name">Color</field>
-        <field name="display_type">color</field>
+        <field name="type">color</field>
         <field name="sequence">60</field>
     </record>
     <record id="product_attribute_color_black" model="product.attribute.value">

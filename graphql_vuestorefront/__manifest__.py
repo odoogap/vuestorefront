@@ -27,9 +27,9 @@
         'views/res_config_settings_views.xml',
     ],
     'demo': [
-        # 'data/demo_product_attribute.xml',
-        # 'data/demo_product_public_category.xml',
-        # 'data/demo_products_women_clothing.xml',
+        'data/demo_product_attribute.xml',
+        'data/demo_product_public_category.xml',
+        'data/demo_products_women_clothing.xml',
         # 'data/demo_products_women_shoes.xml',
         # 'data/demo_products_women_bags.xml',
         # 'data/demo_products_men_clothing_1.xml',

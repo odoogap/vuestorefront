@@ -16,32 +16,34 @@ class ProductTemplate(models.Model):
              "customers find all the items within a category. To publish them, go to the Shop page, "
              "hit Customize and turn *Product Categories* on. A product can belong to several categories.")
 
-    # def _set_vsf_tags(self):
-    #     for product in self:
-    #         tags = []
-    #         product_tag = 'P%s' % product.id
-    #         tags.append(product_tag)
-    #         category_ids = product.public_categ_ids.ids
-    #         for category_id in category_ids:
-    #             tags.append('C%s' % category_id)
-    #         product._vsf_request_cache_invalidation(tags)
-    #
-    # def _vsf_request_cache_invalidation(self, tags_list):
-    #     url = self.env['ir.config_parameter'].sudo().get_param('vsf_cache_invalidation_url')
-    #     key = self.env['ir.config_parameter'].sudo().get_param('vsf_cache_invalidation_key')
-    #     tags = tags_list
-    #
-    #     # Make the GET request to the /cache-invalidate
-    #     requests.get(url, params={'key': key, 'tag': tags})
-    #
-    # def write(self, vals):
-    #     res = super(ProductTemplate, self).write(vals)
-    #     self._set_vsf_tags()
-    #     return res
-    #
-    # def unlink(self):
-    #     self._set_vsf_tags()
-    #     return super(ProductTemplate, self).unlink()
+    def _set_vsf_tags(self):
+        for product in self:
+            tags = []
+            product_tag = 'P%s' % product.id
+            tags.append(product_tag)
+            category_ids = product.public_categ_ids.ids
+            for category_id in category_ids:
+                tags.append('C%s' % category_id)
+            product._vsf_request_cache_invalidation(tags)
+
+    def _vsf_request_cache_invalidation(self, tags_list):
+        url = self.env['ir.config_parameter'].sudo().get_param('vsf_cache_invalidation_url')
+        key = self.env['ir.config_parameter'].sudo().get_param('vsf_cache_invalidation_key')
+        tags = tags_list
+
+        # Make the GET request to the /cache-invalidate
+        requests.get(url, params={'key': key, 'tag': tags})
+
+    @api.multi
+    def write(self, vals):
+        res = super(ProductTemplate, self).write(vals)
+        self._set_vsf_tags()
+        return res
+
+    @api.multi
+    def unlink(self):
+        self._set_vsf_tags()
+        return super(ProductTemplate, self).unlink()
 
 
 class ProductPublicCategory(models.Model):
@@ -49,24 +51,26 @@ class ProductPublicCategory(models.Model):
 
     product_tmpl_ids = fields.Many2many('product.template', relation='product_public_category_product_template_rel')
 
-    # def _set_vsf_tags(self):
-    #     for category in self:
-    #         tags = 'C%s' % category.id
-    #         category._vsf_request_cache_invalidation(tags)
-    #
-    # def _vsf_request_cache_invalidation(self, tags_list):
-    #     url = self.env['ir.config_parameter'].sudo().get_param('vsf_cache_invalidation_url')
-    #     key = self.env['ir.config_parameter'].sudo().get_param('vsf_cache_invalidation_key')
-    #     tags = tags_list
-    #
-    #     # Make the GET request to the /cache-invalidate
-    #     requests.get(url, params={'key': key, 'tag': tags})
-    #
-    # def write(self, vals):
-    #     res = super(ProductPublicCategory, self).write(vals)
-    #     self._set_vsf_tags()
-    #     return res
-    #
-    # def unlink(self):
-    #     self._set_vsf_tags()
-    #     return super(ProductPublicCategory, self).unlink()
+    def _set_vsf_tags(self):
+        for category in self:
+            tags = 'C%s' % category.id
+            category._vsf_request_cache_invalidation(tags)
+
+    def _vsf_request_cache_invalidation(self, tags_list):
+        url = self.env['ir.config_parameter'].sudo().get_param('vsf_cache_invalidation_url')
+        key = self.env['ir.config_parameter'].sudo().get_param('vsf_cache_invalidation_key')
+        tags = tags_list
+
+        # Make the GET request to the /cache-invalidate
+        requests.get(url, params={'key': key, 'tag': tags})
+
+    @api.multi
+    def write(self, vals):
+        res = super(ProductPublicCategory, self).write(vals)
+        self._set_vsf_tags()
+        return res
+
+    @api.multi
+    def unlink(self):
+        self._set_vsf_tags()
+        return super(ProductPublicCategory, self).unlink()

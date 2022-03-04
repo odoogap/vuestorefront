@@ -31,7 +31,8 @@ class ResUsers(models.Model):
 
         assert template._name == 'mail.template'
 
-        domain = self.env['ir.config_parameter'].sudo().get_param('vsf_website_domain')
+        website = request.env['website'].get_current_website()
+        domain = website.domain
         if domain and domain[-1] == '/':
             domain = domain[:-1]
 

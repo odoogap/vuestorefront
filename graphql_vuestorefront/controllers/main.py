@@ -2,33 +2,53 @@
 # Copyright 2022 ODOOGAP/PROMPTEQUATION LDA
 # License LGPL-3.0 or later (http://www.gnu.org/licenses/lgpl).
 
-# import json
-# import werkzeug
+import json
+import werkzeug
 from odoo import http
 from odoo.addons.graphql_base import GraphQLControllerMixin
+from odoo.addons.website_sale.controllers.main import WebsiteSale
 # from odoo.addons.payment.controllers.portal import PaymentProcessing
 # from odoo.addons.payment_adyen.controllers.main import AdyenController
-# from odoo.http import request, Response
+from odoo.http import request, Response
 
 from ..schema import schema
 
 
-# class VSFWebsite(http.Controller):
-#
-#     @http.route('/vsf/redirects', type='http', auth='public', csrf=False)
-#     def vsf_redirects(self):
-#         redirects_list = []
-#         redirects = request.env['website.rewrite'].sudo().search([])
-#         if redirects:
-#             for redirect in redirects:
-#                 redirect_dict = {'from': redirect.url_from, 'to': redirect.url_to}
-#                 redirects_list.append(redirect_dict)
-#         result = json.dumps(redirects_list)
-#         return Response(result, headers={
-#             'Content-Type': 'application/json',
-#         })
-#
-#
+class VSFWebsite(http.Controller):
+
+    @http.route('/vsf/redirects', type='http', auth='public', csrf=False)
+    def vsf_redirects(self):
+        redirects_list = []
+        redirects = request.env['website.redirect'].sudo().search([])
+        if redirects:
+            for redirect in redirects:
+                redirect_dict = {'from': redirect.url_from, 'to': redirect.url_to}
+                redirects_list.append(redirect_dict)
+        result = json.dumps(redirects_list)
+        return Response(result, headers={
+            'Content-Type': 'application/json',
+        })
+
+
+class VSFWebsiteSale(WebsiteSale):
+    @http.route(['/shop/confirmation'], type='http', auth="public", website=True)
+    def payment_confirmation(self, **post):
+        super(VSFWebsiteSale, self).payment_confirmation(**post)
+        """ End of checkout process controller. Confirmation is basically seing
+        the status of a sale.order. State at this point :
+
+         - should not have any context / session info: clean them
+         - take a sale.order id, because we request a sale.order and are not
+           session dependant anymore
+        """
+        sale_order_id = request.session.get('sale_last_order_id')
+        if sale_order_id:
+            # Redirect to VSF
+            vsf_payment_return_url = request.env['ir.config_parameter'].sudo().get_param('vsf_payment_return_url', '')
+
+            return werkzeug.utils.redirect(vsf_payment_return_url)
+
+
 # class VSFAdyenController(AdyenController):
 #
 #     @http.route(['/payment/adyen/return'], type='http', auth='public', csrf=False)
@@ -66,35 +86,35 @@ from ..schema import schema
 
 class GraphQLController(http.Controller, GraphQLControllerMixin):
 
-    # def get_domain_of_request_host(self):
-    #     """ Trying get the http_request_host, to update the language that will be used """
-    #     try:
-    #         request_host = request.httprequest.headers.environ['HTTP_RESQUEST_HOST']
-    #
-    #         domain = 'https://%s' % request_host
-    #
-    #         website = request.env['website'].search([('domain', '=', domain)], limit=1)
-    #         if website:
-    #             context = dict(request.context)
-    #             context.update({
-    #                 'website_id': website.id,
-    #                 'lang': website.default_lang_id.code,
-    #             })
-    #             request.context = context
-    #
-    #             request_uid = http.request.env.uid
-    #             website_uid = website.sudo().user_id.id
-    #
-    #             if request_uid != website_uid and \
-    #                     request.env['res.users'].sudo().browse(request_uid).has_group('base.group_public'):
-    #                 request.uid = website_uid
-    #     except:
-    #         pass
+    def get_domain_of_request_host(self):
+        """ Trying get the http_request_host, to update the language that will be used """
+        try:
+            request_host = request.httprequest.headers.environ['HTTP_RESQUEST_HOST']
+
+            domain = 'https://%s' % request_host
+
+            website = request.env['website'].search([('domain', '=', domain)], limit=1)
+            if website:
+                context = dict(request.context)
+                context.update({
+                    'website_id': website.id,
+                    'lang': website.default_lang_id.code,
+                })
+                request.context = context
+
+                # request_uid = http.request.env.uid
+                # website_uid = website.sudo().user_id.id
+
+                # if request_uid != website_uid and \
+                #         request.env['res.users'].sudo().browse(request_uid).has_group('base.group_public'):
+                #     request.uid = website_uid
+        except:
+            pass
 
     # The GraphiQL route, providing an IDE for developers
     @http.route("/graphiql/vsf", auth="user")
     def graphiql(self, **kwargs):
-        # self.get_domain_of_request_host()
+        self.get_domain_of_request_host()
         return self._handle_graphiql_request(schema)
 
     # Optional monkey patch, needed to accept application/json GraphQL
@@ -108,5 +128,5 @@ class GraphQLController(http.Controller, GraphQLControllerMixin):
     # (such as origin restrictions) to this route.
     @http.route("/graphql/vsf", auth="public", csrf=False)
     def graphql(self, **kwargs):
-        # self.get_domain_of_request_host()
+        self.get_domain_of_request_host()
         return self._handle_graphql_request(schema)
