@@ -14,7 +14,7 @@ class NewsletterSubscribe(graphene.Mutation):
 
     @staticmethod
     def mutate(self, info, email):
-        list_id = int(info.context["env"]['ir.config_parameter'].sudo().set_param('vsf_mailing_list_id', 0))
+        list_id = int(info.context["env"]['ir.config_parameter'].sudo().get_param('vsf_mailing_list_id', 0))
         if list_id:
             MassMailController().subscribe(list_id, email)
             return NewsletterSubscribe(subscribed=True)
