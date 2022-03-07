@@ -5,7 +5,9 @@
 import graphene
 from graphql import GraphQLError
 from odoo.http import request
+from odoo import _
 
+from odoo.addons.website_sale_wishlist.controllers.main import WebsiteSaleWishlist
 from odoo.addons.graphql_vuestorefront.schemas.objects import WishlistItem
 
 
@@ -42,42 +44,14 @@ class WishlistAddItem(graphene.Mutation):
     @staticmethod
     def mutate(self, info, product_id):
         env = info.context["env"]
-        Wishlist = env['product.wishlist']
         website = env['website'].get_current_website()
         request.website = website
-        pricelist = website.get_current_pricelist()
 
-        # Partner
-        if request.website.is_public_user():
-            Wishlist = Wishlist.sudo()
-            partner_id = False
-        else:
-            partner_id = request.env.user.partner_id.id
+        values = env['product.wishlist'].with_context(display_default_code=False).current()
+        if values.filtered(lambda v: v.product_id.id == product_id):
+            raise GraphQLError(_('Product already exists in the Wishlist.'))
 
-        product = env['product.product'].search([('id', '=', product_id)])
-
-        #  Conditions
-        if not product:
-            raise GraphQLError('Product does not Exist.')
-
-        if product._is_in_wishlist():
-            raise GraphQLError('Product is already in the Wishlist.')
-
-        # Price
-        price = product._get_combination_info_variant()['price']
-
-        # Add wish_id to Wishlist
-        wish_id = Wishlist._add_to_wishlist(
-            pricelist.id,
-            pricelist.currency_id.id,
-            website.id,
-            price,
-            product_id,
-            partner_id
-        )
-
-        if not partner_id:
-            request.session['wishlist_ids'] = request.session.get('wishlist_ids', []) + [wish_id.id]
+        WebsiteSaleWishlist().add_to_wishlist(product_id)
 
         wishlist_items = env['product.wishlist'].current()
         return WishlistData(wishlist_items=wishlist_items)
