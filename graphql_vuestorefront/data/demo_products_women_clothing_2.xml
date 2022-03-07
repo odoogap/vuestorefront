@@ -1,0 +1,304 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Copyright 2022 ODOOGAP/PROMPTEQUATION LDA
+    License LGPL-3.0 or later (http://www.gnu.org/licenses/lgpl).
+-->
+<odoo noupdate="1">
+
+    <!-- Products women-clothing-trouser -->
+    <record id="women_clothing_trouser_1" model="product.template">
+        <field name="name">Jogging Pants Moschino Cheap And Chic black</field>
+        <field name="categ_id" ref="graphql_vuestorefront.product_category_pants"/>
+        <field name="list_price">286.25</field>
+        <field name="website_published" eval="True"/>
+        <field name="standard_price">286.25</field>
+        <field name="type">product</field>
+        <field name="taxes_id" eval="False"/>
+        <field name="uom_id" ref="product.product_uom_unit"/>
+        <field name="uom_po_id" ref="product.product_uom_unit"/>
+        <field name="description_sale">The Karissa V-Neck Tee features a semi-fitted shape that's flattering for every figure. You can hit the gym with confidence while it hugs curves and hides common "problem" areas. Find stunning women's cocktail dresses and party dresses.</field>
+        <field name="default_code">578902-00</field>
+        <field name="invoice_policy">delivery</field>
+        <field name="public_categ_ids" eval="[(6, 0, [ref('graphql_vuestorefront.public_category_women'), ref('graphql_vuestorefront.public_category_women_clothing_all'), ref('graphql_vuestorefront.public_category_women_clothing_trouser')])]"/>
+        <field name="image" type="base64" file="graphql_vuestorefront/static/women/clothing/trouser/trouser-1.jpg"/>
+    </record>
+
+    <!-- Products -->
+    <record id="women_clothing_trouser_1a" model="product.product">
+        <field name="default_code">578902-00</field>
+        <field name="standard_price">286.25</field>
+        <field name="product_tmpl_id" ref="women_clothing_trouser_1"/>
+        <field name="attribute_value_ids" eval="[(6,0, [ref('product_attribute_material_cotton'), ref('product_attribute_size_36')])]"/>
+    </record>
+    <record id="women_clothing_trouser_1b" model="product.product">
+        <field name="default_code">578902-00</field>
+        <field name="standard_price">286.25</field>
+        <field name="product_tmpl_id" ref="women_clothing_trouser_1"/>
+        <field name="attribute_value_ids" eval="[(6,0, [ref('product_attribute_material_cotton'), ref('product_attribute_size_40')])]"/>
+    </record>
+
+    <!-- Attribute Lines -->
+    <record id="women_clothing_trouser_1_attribute_1" model="product.attribute.line">
+        <field name="product_tmpl_id" ref="women_clothing_trouser_1"/>
+        <field name="attribute_id" ref="product_attribute_material"/>
+        <field name="value_ids" eval="[(6, 0, [ref('product_attribute_material_cotton')])]"/>
+    </record>
+    <record id="women_clothing_trouser_1_attribute_2" model="product.attribute.line">
+        <field name="product_tmpl_id" ref="women_clothing_trouser_1"/>
+        <field name="attribute_id" ref="product_attribute_size"/>
+        <field name="value_ids" eval="[(6, 0, [ref('product_attribute_size_36'), ref('product_attribute_size_40')])]"/>
+    </record>
+
+    <!-- Product Template -->
+    <record id="women_clothing_trouser_1" model="product.template">
+        <field name="attribute_line_ids" eval="[(6,0,[ref('women_clothing_trouser_1_attribute_1'), ref('women_clothing_trouser_1_attribute_2')])]"/>
+    </record>
+
+
+    <record id="women_clothing_trouser_2" model="product.template">
+        <field name="name">Chino Pinko multi</field>
+        <field name="categ_id" ref="graphql_vuestorefront.product_category_pants"/>
+        <field name="list_price">287.50</field>
+        <field name="website_published" eval="True"/>
+        <field name="standard_price">287.50</field>
+        <field name="type">product</field>
+        <field name="taxes_id" eval="False"/>
+        <field name="uom_id" ref="product.product_uom_unit"/>
+        <field name="uom_po_id" ref="product.product_uom_unit"/>
+        <field name="description_sale">The Karissa V-Neck Tee features a semi-fitted shape that's flattering for every figure. You can hit the gym with confidence while it hugs curves and hides common "problem" areas. Find stunning women's cocktail dresses and party dresses.</field>
+        <field name="default_code">578902-00</field>
+        <field name="invoice_policy">delivery</field>
+        <field name="public_categ_ids" eval="[(6, 0, [ref('graphql_vuestorefront.public_category_women'), ref('graphql_vuestorefront.public_category_women_clothing_all'), ref('graphql_vuestorefront.public_category_women_clothing_trouser')])]"/>
+        <field name="image" type="base64" file="graphql_vuestorefront/static/women/clothing/trouser/trouser-2.jpg"/>
+    </record>
+
+    <!-- Products -->
+    <record id="women_clothing_trouser_2a" model="product.product">
+        <field name="default_code">578902-00</field>
+        <field name="standard_price">287.50</field>
+        <field name="product_tmpl_id" ref="women_clothing_trouser_2"/>
+        <field name="attribute_value_ids" eval="[(6,0, [ref('product_attribute_material_cotton'), ref('product_attribute_size_36')])]"/>
+    </record>
+    <record id="women_clothing_trouser_2b" model="product.product">
+        <field name="default_code">578902-00</field>
+        <field name="standard_price">287.50</field>
+        <field name="product_tmpl_id" ref="women_clothing_trouser_2"/>
+        <field name="attribute_value_ids" eval="[(6,0, [ref('product_attribute_material_cotton'), ref('product_attribute_size_40')])]"/>
+    </record>
+
+    <!-- Attribute Lines -->
+    <record id="women_clothing_trouser_2_attribute_line_1" model="product.attribute.line">
+        <field name="product_tmpl_id" ref="women_clothing_trouser_2"/>
+        <field name="attribute_id" ref="product_attribute_material"/>
+        <field name="value_ids" eval="[(6, 0, [ref('product_attribute_material_cotton')])]"/>
+    </record>
+    <record id="women_clothing_trouser_2_attribute_line_2" model="product.attribute.line">
+        <field name="product_tmpl_id" ref="women_clothing_trouser_2"/>
+        <field name="attribute_id" ref="product_attribute_size"/>
+        <field name="value_ids" eval="[(6, 0, [ref('product_attribute_size_36'), ref('product_attribute_size_40')])]"/>
+    </record>
+
+    <!-- Product Template -->
+    <record id="women_clothing_trouser_2" model="product.template">
+        <field name="attribute_line_ids" eval="[(6,0,[ref('women_clothing_trouser_2_attribute_line_1'), ref('women_clothing_trouser_2_attribute_line_2')])]"/>
+    </record>
+
+
+    <!-- Products women-clothing-skirts -->
+    <record id="women_clothing_skirts_1" model="product.template">
+        <field name="name">Skirt Ki 6? Who are you? blue </field>
+        <field name="categ_id" ref="graphql_vuestorefront.product_category_pants"/>
+        <field name="list_price">185.00</field>
+        <field name="website_published" eval="True"/>
+        <field name="standard_price">185.00</field>
+        <field name="type">product</field>
+        <field name="taxes_id" eval="False"/>
+        <field name="uom_id" ref="product.product_uom_unit"/>
+        <field name="uom_po_id" ref="product.product_uom_unit"/>
+        <field name="description_sale">The Karissa V-Neck Tee features a semi-fitted shape that's flattering for every figure. You can hit the gym with confidence while it hugs curves and hides common "problem" areas. Find stunning women's cocktail dresses and party dresses.</field>
+        <field name="default_code">578902-00</field>
+        <field name="invoice_policy">delivery</field>
+        <field name="public_categ_ids" eval="[(6, 0, [ref('graphql_vuestorefront.public_category_women'), ref('graphql_vuestorefront.public_category_women_clothing_all'), ref('graphql_vuestorefront.public_category_women_clothing_skirts')])]"/>
+        <field name="image" type="base64" file="graphql_vuestorefront/static/women/clothing/skirts/skirts-1.jpg"/>
+    </record>
+
+    <!-- Products -->
+    <record id="women_clothing_skirts_1a" model="product.product">
+        <field name="default_code">578902-00</field>
+        <field name="standard_price">185.00</field>
+        <field name="product_tmpl_id" ref="women_clothing_skirts_1"/>
+        <field name="attribute_value_ids" eval="[(6,0, [ref('product_attribute_material_cotton'), ref('product_attribute_size_36')])]"/>
+    </record>
+    <record id="women_clothing_skirts_1b" model="product.product">
+        <field name="default_code">578902-00</field>
+        <field name="standard_price">185.00</field>
+        <field name="product_tmpl_id" ref="women_clothing_skirts_1"/>
+        <field name="attribute_value_ids" eval="[(6,0, [ref('product_attribute_material_cotton'), ref('product_attribute_size_40')])]"/>
+    </record>
+
+    <!-- Attribute Lines -->
+    <record id="women_clothing_skirts_1_attribute_line_1" model="product.attribute.line">
+        <field name="product_tmpl_id" ref="women_clothing_skirts_1"/>
+        <field name="attribute_id" ref="product_attribute_material"/>
+        <field name="value_ids" eval="[(6, 0, [ref('product_attribute_material_cotton')])]"/>
+    </record>
+    <record id="women_clothing_skirts_1_attribute_line_2" model="product.attribute.line">
+        <field name="product_tmpl_id" ref="women_clothing_skirts_1"/>
+        <field name="attribute_id" ref="product_attribute_size"/>
+        <field name="value_ids" eval="[(6, 0, [ref('product_attribute_size_36'), ref('product_attribute_size_40')])]"/>
+    </record>
+
+    <!-- Product Template -->
+    <record id="women_clothing_skirts_1" model="product.template">
+        <field name="attribute_line_ids" eval="[(6,0,[ref('women_clothing_skirts_1_attribute_line_1'), ref('women_clothing_skirts_1_attribute_line_2')])]"/>
+    </record>
+
+
+    <record id="women_clothing_skirts_2" model="product.template">
+        <field name="name">Skirt Pinko beige</field>
+        <field name="categ_id" ref="graphql_vuestorefront.product_category_pants"/>
+        <field name="list_price">185.00</field>
+        <field name="website_published" eval="True"/>
+        <field name="standard_price">185.00</field>
+        <field name="type">product</field>
+        <field name="taxes_id" eval="False"/>
+        <field name="uom_id" ref="product.product_uom_unit"/>
+        <field name="uom_po_id" ref="product.product_uom_unit"/>
+        <field name="description_sale">The Karissa V-Neck Tee features a semi-fitted shape that's flattering for every figure. You can hit the gym with confidence while it hugs curves and hides common "problem" areas. Find stunning women's cocktail dresses and party dresses.</field>
+        <field name="default_code">578902-00</field>
+        <field name="invoice_policy">delivery</field>
+        <field name="public_categ_ids" eval="[(6, 0, [ref('graphql_vuestorefront.public_category_women'), ref('graphql_vuestorefront.public_category_women_clothing_all'), ref('graphql_vuestorefront.public_category_women_clothing_skirts')])]"/>
+        <field name="image" type="base64" file="graphql_vuestorefront/static/women/clothing/skirts/skirts-2.jpg"/>
+    </record>
+
+    <!-- Products -->
+    <record id="women_clothing_skirts_2a" model="product.product">
+        <field name="default_code">578902-00</field>
+        <field name="standard_price">185.00</field>
+        <field name="product_tmpl_id" ref="women_clothing_skirts_2"/>
+        <field name="attribute_value_ids" eval="[(6,0, [ref('product_attribute_material_cotton'), ref('product_attribute_size_36')])]"/>
+    </record>
+    <record id="women_clothing_skirts_2b" model="product.product">
+        <field name="default_code">578902-00</field>
+        <field name="standard_price">185.00</field>
+        <field name="product_tmpl_id" ref="women_clothing_skirts_2"/>
+        <field name="attribute_value_ids" eval="[(6,0, [ref('product_attribute_material_cotton'), ref('product_attribute_size_40')])]"/>
+    </record>
+
+    <!-- Attribute Lines -->
+    <record id="women_clothing_skirts_2_attribute_line_1" model="product.attribute.line">
+        <field name="product_tmpl_id" ref="women_clothing_skirts_2"/>
+        <field name="attribute_id" ref="product_attribute_material"/>
+        <field name="value_ids" eval="[(6, 0, [ref('product_attribute_material_cotton')])]"/>
+    </record>
+    <record id="women_clothing_skirts_2_attribute_line_2" model="product.attribute.line">
+        <field name="product_tmpl_id" ref="women_clothing_skirts_2"/>
+        <field name="attribute_id" ref="product_attribute_size"/>
+        <field name="value_ids" eval="[(6, 0, [ref('product_attribute_size_36'), ref('product_attribute_size_40')])]"/>
+    </record>
+
+    <!-- Product Template -->
+    <record id="women_clothing_skirts_2" model="product.template">
+        <field name="attribute_line_ids" eval="[(6,0,[ref('women_clothing_skirts_2_attribute_line_1'), ref('women_clothing_skirts_2_attribute_line_2')])]"/>
+    </record>
+
+
+    <!-- Products women-clothing-dresses -->
+    <record id="women_clothing_dresses_1" model="product.template">
+        <field name="name">Dress Ki 6? Who are you? black</field>
+        <field name="categ_id" ref="graphql_vuestorefront.product_category_pants"/>
+        <field name="list_price">206.25</field>
+        <field name="website_published" eval="True"/>
+        <field name="standard_price">206.25</field>
+        <field name="type">product</field>
+        <field name="taxes_id" eval="False"/>
+        <field name="uom_id" ref="product.product_uom_unit"/>
+        <field name="uom_po_id" ref="product.product_uom_unit"/>
+        <field name="description_sale">The Karissa V-Neck Tee features a semi-fitted shape that's flattering for every figure. You can hit the gym with confidence while it hugs curves and hides common "problem" areas. Find stunning women's cocktail dresses and party dresses.</field>
+        <field name="default_code">578902-00</field>
+        <field name="invoice_policy">delivery</field>
+        <field name="public_categ_ids" eval="[(6, 0, [ref('graphql_vuestorefront.public_category_women'), ref('graphql_vuestorefront.public_category_women_clothing_all'), ref('graphql_vuestorefront.public_category_women_clothing_dresses')])]"/>
+        <field name="image" type="base64" file="graphql_vuestorefront/static/women/clothing/dresses/dresses-1.jpg"/>
+    </record>
+
+    <!-- Products -->
+    <record id="women_clothing_dresses_1a" model="product.product">
+        <field name="default_code">578902-00</field>
+        <field name="standard_price">206.25</field>
+        <field name="product_tmpl_id" ref="women_clothing_dresses_1"/>
+        <field name="attribute_value_ids" eval="[(6,0, [ref('product_attribute_material_cotton'), ref('product_attribute_size_36')])]"/>
+    </record>
+    <record id="women_clothing_dresses_1b" model="product.product">
+        <field name="default_code">578902-00</field>
+        <field name="standard_price">206.25</field>
+        <field name="product_tmpl_id" ref="women_clothing_dresses_1"/>
+        <field name="attribute_value_ids" eval="[(6,0, [ref('product_attribute_material_cotton'), ref('product_attribute_size_40')])]"/>
+    </record>
+
+    <!-- Attribute Lines -->
+    <record id="women_clothing_dresses_1_attribute_line_1" model="product.attribute.line">
+        <field name="product_tmpl_id" ref="women_clothing_dresses_1"/>
+        <field name="attribute_id" ref="product_attribute_material"/>
+        <field name="value_ids" eval="[(6, 0, [ref('product_attribute_material_cotton')])]"/>
+    </record>
+    <record id="women_clothing_dresses_1_attribute_line_2" model="product.attribute.line">
+        <field name="product_tmpl_id" ref="women_clothing_dresses_1"/>
+        <field name="attribute_id" ref="product_attribute_size"/>
+        <field name="value_ids" eval="[(6, 0, [ref('product_attribute_size_36'), ref('product_attribute_size_40')])]"/>
+    </record>
+
+    <!-- Product Template -->
+    <record id="women_clothing_dresses_1" model="product.template">
+        <field name="attribute_line_ids" eval="[(6,0,[ref('women_clothing_dresses_1_attribute_line_1'), ref('women_clothing_dresses_1_attribute_line_2')])]"/>
+    </record>
+
+
+    <record id="women_clothing_dresses_2" model="product.template">
+        <field name="name">Dress Moschino Cheap And Chic multi</field>
+        <field name="categ_id" ref="graphql_vuestorefront.product_category_pants"/>
+        <field name="list_price">320.00</field>
+        <field name="website_published" eval="True"/>
+        <field name="standard_price">320.00</field>
+        <field name="type">product</field>
+        <field name="taxes_id" eval="False"/>
+        <field name="uom_id" ref="product.product_uom_unit"/>
+        <field name="uom_po_id" ref="product.product_uom_unit"/>
+        <field name="description_sale">The Karissa V-Neck Tee features a semi-fitted shape that's flattering for every figure. You can hit the gym with confidence while it hugs curves and hides common "problem" areas. Find stunning women's cocktail dresses and party dresses.</field>
+        <field name="default_code">578902-00</field>
+        <field name="invoice_policy">delivery</field>
+        <field name="public_categ_ids" eval="[(6, 0, [ref('graphql_vuestorefront.public_category_women'), ref('graphql_vuestorefront.public_category_women_clothing_all'), ref('graphql_vuestorefront.public_category_women_clothing_dresses')])]"/>
+        <field name="image" type="base64" file="graphql_vuestorefront/static/women/clothing/dresses/dresses-2.jpg"/>
+    </record>
+
+    <!-- Products -->
+    <record id="women_clothing_dresses_2a" model="product.product">
+        <field name="default_code">578902-00</field>
+        <field name="standard_price">320.00</field>
+        <field name="product_tmpl_id" ref="women_clothing_dresses_2"/>
+        <field name="attribute_value_ids" eval="[(6,0, [ref('product_attribute_material_cotton'), ref('product_attribute_size_36')])]"/>
+    </record>
+    <record id="women_clothing_dresses_2b" model="product.product">
+        <field name="default_code">578902-00</field>
+        <field name="standard_price">320.00</field>
+        <field name="product_tmpl_id" ref="women_clothing_dresses_2"/>
+        <field name="attribute_value_ids" eval="[(6,0, [ref('product_attribute_material_cotton'), ref('product_attribute_size_40')])]"/>
+    </record>
+
+    <!-- Attribute Lines -->
+    <record id="women_clothing_dresses_2_attribute_line_1" model="product.attribute.line">
+        <field name="product_tmpl_id" ref="women_clothing_dresses_2"/>
+        <field name="attribute_id" ref="product_attribute_material"/>
+        <field name="value_ids" eval="[(6, 0, [ref('product_attribute_material_cotton')])]"/>
+    </record>
+    <record id="women_clothing_dresses_2_attribute_line_2" model="product.attribute.line">
+        <field name="product_tmpl_id" ref="women_clothing_dresses_2"/>
+        <field name="attribute_id" ref="product_attribute_size"/>
+        <field name="value_ids" eval="[(6, 0, [ref('product_attribute_size_36'), ref('product_attribute_size_40')])]"/>
+    </record>
+
+    <!-- Product Template -->
+    <record id="women_clothing_dresses_2" model="product.template">
+        <field name="attribute_line_ids" eval="[(6,0,[ref('women_clothing_dresses_2_attribute_line_1'), ref('women_clothing_dresses_2_attribute_line_2')])]"/>
+    </record>
+
+</odoo>
