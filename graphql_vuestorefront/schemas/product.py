@@ -6,6 +6,7 @@ import graphene
 from graphql import GraphQLError
 from odoo.http import request
 from odoo import _
+from odoo.osv import expression
 
 from odoo.addons.graphql_vuestorefront.schemas.objects import (
     SortEnum, Product, Attribute
@@ -33,34 +34,34 @@ def get_search_order(sort):
 
 def get_search_domain(env, search, **kwargs):
     # Only get published products
-    domain = [('website_published', '=', True)]
+    domains = [env['website'].get_current_website().sale_product_domain()]
 
     # Filter with Category
     if kwargs.get('category_id', False):
-        domain += [('public_categ_ids', 'in', kwargs['category_id'])]
+        domains.append([('public_categ_ids', 'in', kwargs['category_id'])])
 
     # Filter with Attribute Value
     if kwargs.get('attribute_value_id', False):
-        domain += [('attribute_line_ids.value_ids', 'in', kwargs['attribute_value_id'])]
+        domains.append([('attribute_line_ids.value_ids', 'in', kwargs['attribute_value_id'])])
 
     # Filter With Name
     if kwargs.get('name', False):
         name = kwargs['name']
         for n in name.split(" "):
-            domain += [('name', 'ilike', n)]
+            domains.append([('name', 'ilike', n)])
 
     if search:
         for srch in search.split(" "):
-            domain += ['|', '|', ('name', 'ilike', srch), ('description_sale', 'like', srch),
-                       ('default_code', 'like', srch)]
+            domains.append([
+                '|', '|', ('name', 'ilike', srch), ('description_sale', 'like', srch), ('default_code', 'like', srch)])
 
     # Product Price Filter
     if kwargs.get('min_price', False):
-        domain += [('list_price', '>=', float(kwargs['min_price']))]
+        domains.append([('list_price', '>=', float(kwargs['min_price']))])
     if kwargs.get('max_price', False):
-        domain += [('list_price', '<=', float(kwargs['max_price']))]
+        domains.append([('list_price', '<=', float(kwargs['max_price']))])
 
-    return domain
+    return expression.AND(domains)
 
 
 def get_product_list(env, current_page, page_size, search, sort, **kwargs):
@@ -149,14 +150,19 @@ class ProductQuery(graphene.ObjectType):
 
     @staticmethod
     def resolve_product(self, info, id=None, barcode=None):
+        env = info.context["env"]
+
         if id:
-            product = info.context["env"]["product.template"].sudo().search([('id', '=', id)], limit=1)
+            product = env["product.template"].sudo().search([('id', '=', id)], limit=1)
         elif barcode:
-            product = info.context["env"]["product.template"].sudo().search([('barcode', '=', barcode)], limit=1)
+            product = env["product.template"].sudo().search([('barcode', '=', barcode)], limit=1)
         else:
             product = None
 
-        if not product:
+        website = env['website'].get_current_website()
+        request.website = website
+
+        if not product or not product.can_access_from_current_website():
             raise GraphQLError(_('Product does not exist.'))
         return product
 
