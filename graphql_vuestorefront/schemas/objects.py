@@ -70,11 +70,10 @@ def get_document_count_with_check_access(model, domain):
     return model.search_count(domain)
 
 
-def _is_in_wishlist(env, product):
-    values = env['product.wishlist'].with_context(display_default_code=False).current()
-    if values.filtered(lambda v: v.product_id.id == product.id):
-        return True
-    return False
+def product_is_in_wishlist(env, product):
+    website = env['website'].get_current_website()
+    request.website = website
+    return product._is_in_wishlist()
 
 
 # --------------------- #
@@ -299,6 +298,7 @@ class Product(OdooObjectType):
     )
     custom_message = graphene.String(description='Related W/Availability: Show product-specific notifications')
     is_in_stock = graphene.Boolean()
+    is_in_wishlist = graphene.Boolean()
     media_gallery = graphene.List(graphene.NonNull(lambda: ProductImage))
     qty = graphene.Float()
     slug = graphene.String()
@@ -309,18 +309,15 @@ class Product(OdooObjectType):
     accessory_products = graphene.List(graphene.NonNull(lambda: Product))
     # Specific to use in Product Variant
     price_extra = graphene.Float(description='Specific to Product Variant')
-    variant_is_in_wishlist = graphene.Boolean(description='Specific to Product Variant')
     variant_attribute_values = graphene.List(graphene.NonNull(lambda: AttributeValue),
                                              description='Specific to Product Variant')
     product_template = graphene.Field(lambda: Product, description='Specific to Product Variant')
     # Specific to use in Product Template
     price = graphene.Float(description='Specific to Product Template')
-    is_in_wishlist = graphene.Boolean(description='Specific to Product Template')
     attribute_values = graphene.List(graphene.NonNull(lambda: AttributeValue),
                                      description='Specific to Product Template')
     product_variants = graphene.List(graphene.NonNull(lambda: Product), description='Specific to Product Template')
-    first_variant = graphene.Int(description='Specific to use in Product Template '
-                                             '(Is a useful tool to use in the Wishlist)')
+    first_variant = graphene.Int(description='Specific to use in Product Template')
 
     def resolve_type_id(self, info):
         if self.type == 'product':
@@ -385,6 +382,11 @@ class Product(OdooObjectType):
     def resolve_is_in_stock(self, info):
         return bool(self.qty_available > 0)
 
+    def resolve_is_in_wishlist(self, info):
+        env = info.context["env"]
+        is_in_wishlist = product_is_in_wishlist(env, self)
+        return bool(is_in_wishlist)
+
     def resolve_media_gallery(self, info):
         return self.product_image_ids or None
 
@@ -404,11 +406,6 @@ class Product(OdooObjectType):
     def resolve_price_extra(self, info):
         return self.price_extra or None
 
-    def resolve_variant_is_in_wishlist(self, info):
-        env = info.context["env"]
-        is_in_wishlist = _is_in_wishlist(env, self)
-        return bool(is_in_wishlist)
-
     def resolve_variant_attribute_values(self, info):
         return self.attribute_value_ids or None
 
@@ -418,11 +415,6 @@ class Product(OdooObjectType):
     # Specific to use in Product Template
     def resolve_price(self, info):
         return self.list_price or None
-
-    def resolve_is_in_wishlist(self, info):
-        env = info.context["env"]
-        is_in_wishlist = _is_in_wishlist(env, self.product_variant_id)
-        return bool(is_in_wishlist)
 
     def resolve_attribute_values(self, info):
         return self.attribute_line_ids.mapped('value_ids') or None

@@ -61,10 +61,6 @@ def get_search_domain(env, search, **kwargs):
     if kwargs.get('max_price', False):
         domains.append([('list_price', '<=', float(kwargs['max_price']))])
 
-    print('\n\n')
-    print(domains)
-    print('\n')
-    print(expression.AND(domains))
     return expression.AND(domains)
 
 

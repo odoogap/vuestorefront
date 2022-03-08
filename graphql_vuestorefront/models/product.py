@@ -16,6 +16,11 @@ class ProductTemplate(models.Model):
              "customers find all the items within a category. To publish them, go to the Shop page, "
              "hit Customize and turn *Product Categories* on. A product can belong to several categories.")
 
+    @api.multi
+    def _is_in_wishlist(self):
+        self.ensure_one()
+        return self in self.env['product.wishlist'].current().mapped('product_id.product_tmpl_id')
+
     def _set_vsf_tags(self):
         for product in self:
             tags = []
@@ -44,6 +49,15 @@ class ProductTemplate(models.Model):
     def unlink(self):
         self._set_vsf_tags()
         return super(ProductTemplate, self).unlink()
+
+
+class ProductProduct(models.Model):
+    _inherit = 'product.product'
+
+    @api.multi
+    def _is_in_wishlist(self):
+        self.ensure_one()
+        return self in self.env['product.wishlist'].current().mapped('product_id')
 
 
 class ProductPublicCategory(models.Model):
