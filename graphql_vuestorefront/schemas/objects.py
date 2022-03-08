@@ -117,9 +117,15 @@ class Country(OdooObjectType):
     name = graphene.String(required=True)
     code = graphene.String(required=True)
     states = graphene.List(graphene.NonNull(lambda: State))
+    image = graphene.String()
 
     def resolve_states(self, info):
         return self.state_ids or None
+
+    def resolve_image(self, info):
+        if self.image:
+            return '/web/image/res.country/{}/image'.format(self.id)
+        return None
 
 
 class Partner(OdooObjectType):

@@ -8,7 +8,7 @@ from odoo.addons.graphql_base import OdooObjectType
 from odoo.addons.graphql_vuestorefront.schemas import (
     country, category, product, order, invoice,
     contact_us, user_profile, sign, address,
-    wishlist, shop, payment,
+    wishlist, shop, payment, mailing_list,
 )
 
 
@@ -37,6 +37,7 @@ class Mutation(
     wishlist.WishlistMutation,
     shop.ShopMutation,
     payment.PaymentMutation,
+    mailing_list.NewsletterSubscribeMutation,
 ):
     pass
 
