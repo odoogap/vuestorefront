@@ -151,8 +151,9 @@ class AddAddress(graphene.Mutation):
 
         partner_id = order.partner_id.id
 
-        # Check if is public user
-        if partner_id == request.env.user._is_public():
+        # Check public user
+        user = env['res.users'].sudo().search([('partner_id', '=', partner_id), ('active', '=', False)], limit=1)
+        if user and user.has_group('base.group_public'):
             # Create main contact
             values['type'] = 'contact'
             partner_id = ResPartner.create(values).id
