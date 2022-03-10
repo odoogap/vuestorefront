@@ -42,7 +42,7 @@ def get_search_domain(env, search, **kwargs):
 
     # Filter with Category
     if kwargs.get('category_id', False):
-        domains.append([('public_categ_ids', 'in', kwargs['category_id'])])
+        domains.append([('public_categ_ids', 'child_of', kwargs['category_id'])])
 
     # Filter with Attribute Value
     if kwargs.get('attribute_value_id', False):
