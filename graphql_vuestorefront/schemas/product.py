@@ -36,6 +36,10 @@ def get_search_domain(env, search, **kwargs):
     # Only get published products
     domains = [env['website'].get_current_website().sale_product_domain()]
 
+    # Filter with ids
+    if kwargs.get('ids', False):
+        domains.append([('id', 'in', kwargs['ids'])])
+
     # Filter with Category
     if kwargs.get('category_id', False):
         domains.append([('public_categ_ids', 'in', kwargs['category_id'])])
@@ -93,6 +97,7 @@ class ProductList(graphene.ObjectType):
 
 
 class ProductFilterInput(graphene.InputObjectType):
+    ids = graphene.List(graphene.Int)
     category_id = graphene.List(graphene.Int)
     attribute_value_id = graphene.List(graphene.Int)
     name = graphene.String()
