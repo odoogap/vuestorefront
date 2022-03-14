@@ -217,8 +217,7 @@ class AttributeValue(OdooObjectType):
     html_color = graphene.String()
     search = graphene.String()
     price_extra = graphene.Float(description='Not use in the return Attributes List of the Products Query')
-    attribute_id = graphene.Int()
-    attribute_name = graphene.String()
+    attribute = graphene.Field(lambda: Attribute)
 
     def resolve_id(self, info):
         return self.id or None
@@ -228,8 +227,8 @@ class AttributeValue(OdooObjectType):
         attribute_value_id = self.id
         return '{}-{}'.format(attribute_id, attribute_value_id) or None
 
-    def resolve_attribute_name(self, info):
-        return self.attribute_id.name or None
+    def resolve_attribute(self, info):
+        return self.attribute_id or None
 
 
 class Attribute(OdooObjectType):
