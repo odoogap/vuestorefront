@@ -81,7 +81,7 @@ def get_product_list(env, current_page, page_size, search, sort, **kwargs):
     total_count = Product.search_count(domain)
     # Get all the Attributes
     search_products = Product.search(domain, order=order)
-    attribute_values = search_products.mapped('product_variant_ids').mapped('attribute_value_ids')
+    attribute_values = search_products.mapped('public_categ_ids').mapped('attribute_value_ids')
     return products, total_count, attribute_values
 
 

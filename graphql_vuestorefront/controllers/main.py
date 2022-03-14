@@ -102,12 +102,12 @@ class GraphQLController(http.Controller, GraphQLControllerMixin):
                 })
                 request.context = context
 
-                # request_uid = http.request.env.uid
-                # website_uid = website.sudo().user_id.id
+                request_uid = http.request.env.uid
+                website_uid = website.sudo().user_id.id
 
-                # if request_uid != website_uid and \
-                #         request.env['res.users'].sudo().browse(request_uid).has_group('base.group_public'):
-                #     request.uid = website_uid
+                if request_uid != website_uid and \
+                        request.env['res.users'].sudo().browse(request_uid).has_group('base.group_public'):
+                    request.uid = website_uid
         except:
             pass
 

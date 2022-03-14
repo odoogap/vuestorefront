@@ -3,7 +3,7 @@
 # License LGPL-3.0 or later (http://www.gnu.org/licenses/lgpl).
 
 import requests
-from odoo import models, fields, api
+from odoo import models, fields, api, tools
 
 
 class ProductTemplate(models.Model):
@@ -64,6 +64,19 @@ class ProductPublicCategory(models.Model):
     _inherit = 'product.public.category'
 
     product_tmpl_ids = fields.Many2many('product.template', relation='product_public_category_product_template_rel')
+    attribute_value_ids = fields.Many2many('product.attribute.value', readonly=True)
+
+    @api.model
+    def _compute_attribute_value_ids(self):
+        """ TODO: """
+        ProductTemplate = self.env['product.template']
+
+        for category in self.env['product.public.category'].search([]):
+            products = ProductTemplate.search([('public_categ_ids', 'child_of', category.id)])
+
+            category.attribute_value_ids = [(6, 0, products. \
+                                             mapped('product_variant_ids'). \
+                                             mapped('attribute_value_ids').ids)]
 
     def _set_vsf_tags(self):
         for category in self:
