@@ -9,7 +9,7 @@ from odoo import _
 from odoo.osv import expression
 
 from odoo.addons.graphql_vuestorefront.schemas.objects import (
-    SortEnum, Product, Attribute
+    SortEnum, Product, Attribute, AttributeValue
 )
 
 
@@ -70,7 +70,6 @@ def get_search_domain(env, search, **kwargs):
 
 def get_product_list(env, current_page, page_size, search, sort, **kwargs):
     Product = env['product.template'].sudo()
-    ProductAttribute = env['product.attribute'].sudo()
     domain = get_search_domain(env, search, **kwargs)
     # First offset is 0 but first page is 1
     if current_page > 1:
@@ -81,14 +80,14 @@ def get_product_list(env, current_page, page_size, search, sort, **kwargs):
     products = Product.search(domain, limit=page_size, offset=offset, order=order)
     total_count = Product.search_count(domain)
     search_products = Product.search(domain, order=order)
-    attributes = ProductAttribute.search([('product_tmpl_ids', 'in', search_products.ids)])
-    return products, total_count, attributes
+    attribute_values = search_products.mapped('public_categ_ids').mapped('attribute_value_ids')
+    return products, total_count, attribute_values
 
 
 class Products(graphene.Interface):
     products = graphene.List(Product)
     total_count = graphene.Int(required=True)
-    attributes = graphene.List(Attribute)
+    attribute_values = graphene.List(AttributeValue)
 
 
 class ProductList(graphene.ObjectType):
@@ -174,8 +173,8 @@ class ProductQuery(graphene.ObjectType):
     @staticmethod
     def resolve_products(self, info, filter, current_page, page_size, search, sort):
         env = info.context["env"]
-        products, total_count, attributes = get_product_list(env, current_page, page_size, search, sort, **filter)
-        return ProductList(products=products, total_count=total_count, attributes=attributes)
+        products, total_count, attribute_values = get_product_list(env, current_page, page_size, search, sort, **filter)
+        return ProductList(products=products, total_count=total_count, attribute_values=attribute_values)
 
     @staticmethod
     def resolve_attribute(self, info, id):
