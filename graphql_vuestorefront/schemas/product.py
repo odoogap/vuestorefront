@@ -9,7 +9,7 @@ from odoo import _
 from odoo.osv import expression
 
 from odoo.addons.graphql_vuestorefront.schemas.objects import (
-    SortEnum, Product, Attribute
+    SortEnum, Product, Attribute, AttributeValue
 )
 
 
@@ -81,15 +81,14 @@ def get_product_list(env, current_page, page_size, search, sort, **kwargs):
     total_count = Product.search_count(domain)
     # Get all the Attributes
     search_products = Product.search(domain, order=order)
-    attribute_lines = search_products.mapped('attribute_line_ids')
-    attributes = attribute_lines.mapped('attribute_id')
-    return products, total_count, attributes
+    attribute_values = search_products.mapped('product_variant_ids').mapped('attribute_value_ids')
+    return products, total_count, attribute_values
 
 
 class Products(graphene.Interface):
     products = graphene.List(Product)
     total_count = graphene.Int(required=True)
-    attributes = graphene.List(Attribute)
+    attribute_values = graphene.List(AttributeValue)
 
 
 class ProductList(graphene.ObjectType):
@@ -153,8 +152,8 @@ class ProductQuery(graphene.ObjectType):
     @staticmethod
     def resolve_products(self, info, filter, current_page, page_size, search, sort):
         env = info.context["env"]
-        products, total_count, attributes = get_product_list(env, current_page, page_size, search, sort, **filter)
-        return ProductList(products=products, total_count=total_count, attributes=attributes)
+        products, total_count, attribute_values = get_product_list(env, current_page, page_size, search, sort, **filter)
+        return ProductList(products=products, total_count=total_count, attribute_values=attribute_values)
 
     @staticmethod
     def resolve_attribute(self, info, id):
