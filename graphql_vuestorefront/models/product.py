@@ -52,7 +52,8 @@ class ProductPublicCategory(models.Model):
         ProductTemplate = self.env['product.template']
 
         for category in self.env['product.public.category'].search([]):
-            products = ProductTemplate.search([('public_categ_ids', 'child_of', category.id)])
+            products = ProductTemplate.search([
+                ('public_categ_ids', 'child_of', category.id), ('website_published', '=', True)])
 
             category.attribute_value_ids = [
                 (6, 0, products.
