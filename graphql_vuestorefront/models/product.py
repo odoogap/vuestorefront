@@ -41,17 +41,24 @@ class ProductPublicCategory(models.Model):
     _inherit = 'product.public.category'
 
     @api.model
-    def _compute_attribute_value_ids(self):
-        """ TODO: """
+    def _update_website_filtering(self):
+        """
+        Filtering attribute values on the website should be based on the ecommerce categories.
+        For each category, this method computes a list of attribute values from variants of published products.
+        This will ensure that the available attribute values on the website filtering will return results.
+        By default, Odoo only shows attributes that will return results but doesn't consider that a particular
+        attribute value may not have a variant.
+        """
         ProductTemplate = self.env['product.template']
 
         for category in self.env['product.public.category'].search([]):
             products = ProductTemplate.search([('public_categ_ids', 'child_of', category.id)])
 
-            category.attribute_value_ids = [(6, 0, products.\
-                mapped('product_variant_ids').\
-                mapped('product_template_attribute_value_ids').\
-                mapped('product_attribute_value_id').ids)]
+            category.attribute_value_ids = [
+                (6, 0, products.
+                    mapped('product_variant_ids').
+                    mapped('product_template_attribute_value_ids').
+                    mapped('product_attribute_value_id').ids)]
 
     attribute_value_ids = fields.Many2many('product.attribute.value', readonly=True)
 
