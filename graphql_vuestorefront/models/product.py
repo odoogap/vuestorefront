@@ -81,9 +81,6 @@ class ProductPublicCategory(models.Model):
             products = ProductTemplate.search([
                 ('public_categ_ids', 'child_of', category.id), ('website_published', '=', True)])
 
-            print('\n\n\n')
-            print(products)
-
             category.attribute_value_ids = [
                 (6, 0, products.
                  mapped('product_variant_ids').
