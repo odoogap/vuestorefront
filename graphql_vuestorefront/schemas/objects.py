@@ -355,19 +355,13 @@ class Product(OdooObjectType):
         return self.website_meta_description or None
 
     def resolve_image(self, info):
-        if self.image:
-            return '/web/image/{}/{}/image'.format(self._name, self.id)
-        return None
+        return '/web/image/{}/{}/image'.format(self._name, self.id) or None
 
     def resolve_small_image(self, info):
-        if self.image_small:
-            return '/web/image/{}/{}/image_small'.format(self._name, self.id)
-        return None
+        return '/web/image/{}/{}/image_small'.format(self._name, self.id) or None
 
     def resolve_thumbnail(self, info):
-        if self.image_medium:
-            return '/web/image/{}/{}/image_medium'.format(self._name, self.id)
-        return None
+        return '/web/image/{}/{}/image_medium'.format(self._name, self.id) or None
 
     def resolve_categories(self, info):
         return self.public_categ_ids or None
