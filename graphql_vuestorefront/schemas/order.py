@@ -120,3 +120,26 @@ class OrderQuery(graphene.ObjectType):
         request.website = website
         order = website.sale_get_order()
         return order._get_delivery_methods()
+
+
+class ApplyCoupon(graphene.Mutation):
+    class Arguments:
+        promo = graphene.String()
+
+    applied = graphene.Boolean()
+
+    @staticmethod
+    def mutate(self, info, promo):
+        env = info.context["env"]
+        website = env['website'].get_current_website()
+        request.website = website
+        order = website.sale_get_order(force_create=1)
+
+        coupon_status = request.env['sale.coupon.apply.code'].sudo().apply_coupon(order, promo)
+
+        applied = not bool(coupon_status.get('not_found') or coupon_status.get('error'))
+        return ApplyCoupon(applied=applied)
+
+
+class OrderMutation(graphene.ObjectType):
+    apply_coupon = ApplyCoupon.Field(description='Apply Coupon')

@@ -39,6 +39,7 @@ class Mutation(
     shop.ShopMutation,
     # payment.PaymentMutation,
     mailing_list.NewsletterSubscribeMutation,
+    order.OrderMutation,
 ):
     pass
 
