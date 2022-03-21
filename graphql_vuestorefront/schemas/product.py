@@ -69,11 +69,11 @@ def get_search_domain(env, search, **kwargs):
             elif attribute_id == attrib:
                 ids.append(attribute_value_id)
             else:
-                domains.append([('attribute_value_ids', 'in', ids)])
+                domains.append([('attribute_line_ids.value_ids', 'in', ids)])
                 attrib = attribute_id
                 ids = [attribute_value_id]
         if attrib:
-            domains.append([('attribute_value_ids', 'in', ids)])
+            domains.append([('attribute_line_ids.value_ids', 'in', ids)])
 
     # Filter With Name
     if kwargs.get('name', False):
