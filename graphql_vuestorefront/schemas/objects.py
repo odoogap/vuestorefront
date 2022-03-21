@@ -50,7 +50,7 @@ def get_document_with_check_access(model, domain, order=None, limit=20, offset=0
                                    error_msg='This document does not exist.'):
     document = model.search(domain, order=order, limit=limit, offset=offset)
     document_sudo = document.with_user(SUPERUSER_ID).exists()
-    if not document_sudo:
+    if document and not document_sudo:
         raise GraphQLError(_(error_msg))
     try:
         document.check_access_rights('read')
