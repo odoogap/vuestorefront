@@ -3,11 +3,13 @@
 # License LGPL-3.0 or later (http://www.gnu.org/licenses/lgpl).
 
 import requests
-from odoo import models, api
+from odoo import models, fields, api
 
 
 class Website(models.Model):
     _inherit = 'website'
+
+    vsf_payment_return_url = fields.Char('Payment Return Url', required=True, default='Dummy')
 
     @api.model
     def enable_b2c_reset_password(self):

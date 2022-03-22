@@ -56,7 +56,7 @@ class VSFAdyenController(AdyenController):
             PaymentProcessing().payment_status_poll()
 
             # Redirect to VSF
-            vsf_payment_return_url = request.env['ir.config_parameter'].sudo().get_param('vsf_payment_return_url', '')
+            vsf_payment_return_url = request.website.vsf_payment_return_url
 
             # Clear the payment_tx_ids
             request.session['__payment_tx_ids__'] = []
