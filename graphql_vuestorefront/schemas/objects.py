@@ -49,16 +49,16 @@ class SortEnum(graphene.Enum):
 
 def get_document_with_check_access(model, domain, order=None, limit=20, offset=0,
                                    error_msg='This document does not exist.'):
-    try:
-        model.check_access_rights('read')
-        model.check_access_rule('read')
-    except AccessError:
-        return []
     document = model.search(domain, order=order, limit=limit, offset=offset)
     document_sudo = document.sudo().exists()
     if document and not document_sudo:
         raise GraphQLError(_(error_msg))
-    return document
+    try:
+        document.check_access_rights('read')
+        document.check_access_rule('read')
+    except AccessError:
+        return []
+    return document_sudo
 
 
 def get_document_count_with_check_access(model, domain):
