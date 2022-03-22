@@ -43,15 +43,17 @@ class ProductTemplate(models.Model):
             combination=combination, product_id=product_id, add_qty=add_qty, pricelist=pricelist,
             parent_combination=parent_combination, only_template=only_template)
 
-        if combination_info.get('has_discounted_price', False):
-            discount = combination_info['list_price'] - combination_info['price']
-            discount_perc = combination_info['discount'] * 100 / combination_info['list_price']
-        else:
-            discount = 0
-            discount_perc = 0
+        discount = 0
+        discount_perc = 0
 
-        combination_info['discount'] = round(discount, 2)
-        combination_info['discount_perc'] = round(discount_perc, 2)
+        if combination_info['has_discounted_price']:
+            discount = combination_info['list_price'] - combination_info['price']
+            discount_perc = discount * 100 / combination_info['list_price']
+
+        combination_info.update({
+            'discount': round(discount, 2),
+            'discount_perc': round(discount_perc, 2),
+        })
 
         return combination_info
 
