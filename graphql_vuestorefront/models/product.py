@@ -36,6 +36,25 @@ class ProductTemplate(models.Model):
         self._set_vsf_tags()
         return super(ProductTemplate, self).unlink()
 
+    def _get_combination_info(self, combination=False, product_id=False, add_qty=1, pricelist=False,
+                              parent_combination=False, only_template=False):
+        """ Add discount value and percentage based """
+        combination_info = super(ProductTemplate, self)._get_combination_info(
+            combination=combination, product_id=product_id, add_qty=add_qty, pricelist=pricelist,
+            parent_combination=parent_combination, only_template=only_template)
+
+        if combination_info.get('has_discounted_price', False):
+            discount = combination_info['list_price'] - combination_info['price']
+            discount_perc = combination_info['discount'] * 100 / combination_info['list_price']
+        else:
+            discount = 0
+            discount_perc = 0
+
+        combination_info['discount'] = round(discount, 2)
+        combination_info['discount_perc'] = round(discount_perc, 2)
+
+        return combination_info
+
 
 class ProductPublicCategory(models.Model):
     _inherit = 'product.public.category'
