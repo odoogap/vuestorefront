@@ -55,8 +55,10 @@ class VSFAdyenController(AdyenController):
             # Confirm sale order
             PaymentProcessing().payment_status_poll()
 
+            # Get Website
+            website = request.env['website'].get_current_website()
             # Redirect to VSF
-            vsf_payment_return_url = request.website.vsf_payment_return_url
+            vsf_payment_return_url = website.vsf_payment_return_url
 
             # Clear the payment_tx_ids
             request.session['__payment_tx_ids__'] = []
