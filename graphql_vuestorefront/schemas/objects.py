@@ -204,7 +204,7 @@ class Category(OdooObjectType):
         return self.child_id or None
 
     def resolve_slug(self, info):
-        return slug(self) or None
+        return self.slug or slug(self)
 
     def resolve_products(self, info):
         return self.product_tmpl_ids or None
@@ -399,7 +399,7 @@ class Product(OdooObjectType):
         return self.qty_available
 
     def resolve_slug(self, info):
-        return slug(self) or None
+        return self.slug or slug(self)
 
     def resolve_alternative_products(self, info):
         return self.alternative_product_ids or None

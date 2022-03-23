@@ -26,6 +26,8 @@ class ProductTemplate(models.Model):
 
         # Make the GET request to the /cache-invalidate
         requests.get(url, params={'key': key, 'tag': tags})
+    
+    slug = fields.Char('Slug')
 
     def write(self, vals):
         res = super(ProductTemplate, self).write(vals)
@@ -83,6 +85,7 @@ class ProductPublicCategory(models.Model):
                     mapped('product_attribute_value_id').ids)]
 
     attribute_value_ids = fields.Many2many('product.attribute.value', readonly=True)
+    slug = fields.Char('Slug')
 
     def _set_vsf_tags(self):
         for category in self:
