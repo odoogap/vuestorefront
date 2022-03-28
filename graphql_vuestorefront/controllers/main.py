@@ -50,15 +50,20 @@ class VSFAdyenController(AdyenController):
                 ('reference', 'like', str(transaction_reference))
             ])
 
+            sale_order_ids = payment_transaction.sale_order_ids.ids
+            sale_order = request.env['sale.order'].sudo().search([
+                ('id', 'in', sale_order_ids), ('website_id', '!=', False)
+            ], limit=1)
+
+            # Get Website
+            website = sale_order.website_id
+            # Redirect to VSF
+            vsf_payment_return_url = website.vsf_payment_return_url
+
             request.session["__payment_tx_ids__"] = [payment_transaction.id]
 
             # Confirm sale order
             PaymentProcessing().payment_status_poll()
-
-            # Get Website
-            website = request.env['website'].get_current_website()
-            # Redirect to VSF
-            vsf_payment_return_url = website.vsf_payment_return_url
 
             # Clear the payment_tx_ids
             request.session['__payment_tx_ids__'] = []
