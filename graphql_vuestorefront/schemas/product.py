@@ -104,10 +104,10 @@ def get_product_list(env, current_page, page_size, search, sort, **kwargs):
     else:
         offset = 0
     order = get_search_order(sort)
-    products = Product.search(domain, limit=page_size, offset=offset, order=order)
-    total_count = Product.search_count(domain)
-    search_products = Product.search(domain, order=order)
-    attribute_values = search_products.mapped('public_categ_ids').mapped('attribute_value_ids')
+    products = Product.search(domain, order=order)
+    attribute_values = products.mapped('public_categ_ids').mapped('attribute_value_ids')
+    total_count = len(products)
+    products = products[offset:offset + page_size]
     return products, total_count, attribute_values
 
 
