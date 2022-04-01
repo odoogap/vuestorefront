@@ -9,6 +9,7 @@ from odoo import models, fields, api, tools
 class ProductTemplate(models.Model):
     _inherit = 'product.template'
 
+    slug = fields.Char('Slug')
     public_categ_ids = fields.Many2many(
         'product.public.category', relation='product_public_category_product_template_rel',
         string='Website Product Category',
@@ -65,6 +66,7 @@ class ProductPublicCategory(models.Model):
 
     product_tmpl_ids = fields.Many2many('product.template', relation='product_public_category_product_template_rel')
     attribute_value_ids = fields.Many2many('product.attribute.value', readonly=True)
+    slug = fields.Char('Slug')
 
     @api.model
     def _update_website_filtering(self):

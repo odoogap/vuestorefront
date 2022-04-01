@@ -44,9 +44,36 @@ def get_search_domain(env, search, **kwargs):
     if kwargs.get('category_id', False):
         domains.append([('public_categ_ids', 'child_of', kwargs['category_id'])])
 
-    # Filter with Attribute Value
+    # Deprecated: Filter with Attribute Value
     if kwargs.get('attribute_value_id', False):
         domains.append([('attribute_line_ids.value_ids', 'in', kwargs['attribute_value_id'])])
+
+    # Filter with Attribute Value
+    if kwargs.get('attrib_values', False):
+        attrib = None
+        ids = []
+        for value in kwargs['attrib_values']:
+            try:
+                value = value.split('-')
+                if len(value) != 2:
+                    continue
+
+                attribute_id = int(value[0])
+                attribute_value_id = int(value[1])
+            except ValueError:
+                continue
+
+            if not attrib:
+                attrib = attribute_id
+                ids.append(attribute_value_id)
+            elif attribute_id == attrib:
+                ids.append(attribute_value_id)
+            else:
+                domains.append([('attribute_line_ids.value_ids', 'in', ids)])
+                attrib = attribute_id
+                ids = [attribute_value_id]
+        if attrib:
+            domains.append([('attribute_line_ids.value_ids', 'in', ids)])
 
     # Filter With Name
     if kwargs.get('name', False):
@@ -77,11 +104,10 @@ def get_product_list(env, current_page, page_size, search, sort, **kwargs):
     else:
         offset = 0
     order = get_search_order(sort)
-    products = Product.search(domain, limit=page_size, offset=offset, order=order)
-    total_count = Product.search_count(domain)
-    # Get all the Attributes
-    search_products = Product.search(domain, order=order)
-    attribute_values = search_products.mapped('public_categ_ids').mapped('attribute_value_ids')
+    products = Product.search(domain, order=order)
+    attribute_values = products.mapped('public_categ_ids').mapped('attribute_value_ids')
+    total_count = len(products)
+    products = products[offset:offset + page_size]
     return products, total_count, attribute_values
 
 
@@ -99,7 +125,9 @@ class ProductList(graphene.ObjectType):
 class ProductFilterInput(graphene.InputObjectType):
     ids = graphene.List(graphene.Int)
     category_id = graphene.List(graphene.Int)
+    # Deprecated
     attribute_value_id = graphene.List(graphene.Int)
+    attrib_values = graphene.List(graphene.String)
     name = graphene.String()
     min_price = graphene.Float()
     max_price = graphene.Float()
@@ -145,7 +173,7 @@ class ProductQuery(graphene.ObjectType):
         website = env['website'].get_current_website()
         request.website = website
 
-        if not product or not product.website_published:
+        if not product:
             raise GraphQLError(_('Product does not exist.'))
         return product
 
