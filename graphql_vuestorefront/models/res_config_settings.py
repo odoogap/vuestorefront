@@ -17,7 +17,7 @@ class ResConfigSettings(models.TransientModel):
 
     # VSF Images
     vsf_image_quality = fields.Integer('Quality', required=True)
-    vsf_image_background_rgb = fields.Char('Background RGB', required=True)
+    vsf_image_background_rgba = fields.Char('Background RGBA', required=True)
 
     def get_values(self):
         res = super(ResConfigSettings, self).get_values()
@@ -27,7 +27,7 @@ class ResConfigSettings(models.TransientModel):
             vsf_cache_invalidation_url=ICP.get_param('vsf_cache_invalidation_url'),
             vsf_mailing_list_id=int(ICP.get_param('vsf_mailing_list_id', 0)),
             vsf_image_quality=int(ICP.get_param('vsf_image_quality', 100)),
-            vsf_image_background_rgb=ICP.get_param('vsf_image_background_rgb', '(255, 255, 255)'),
+            vsf_image_background_rgba=ICP.get_param('vsf_image_background_rgba', '(255, 255, 255, 1)'),
         )
         return res
 
@@ -41,4 +41,4 @@ class ResConfigSettings(models.TransientModel):
         ICP.set_param('vsf_cache_invalidation_url', self.vsf_cache_invalidation_url)
         ICP.set_param('vsf_mailing_list_id', self.vsf_mailing_list_id.id)
         ICP.set_param('vsf_image_quality', self.vsf_image_quality)
-        ICP.set_param('vsf_image_background_rgb', self.vsf_image_background_rgb)
+        ICP.set_param('vsf_image_background_rgba', self.vsf_image_background_rgba)

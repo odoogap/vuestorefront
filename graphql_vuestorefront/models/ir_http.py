@@ -29,18 +29,18 @@ class Http(models.AbstractModel):
 
                 image_base64 = image_process(image_base64, size=(width, height))
                 img = Image.open(io.BytesIO(codecs.decode(image_base64, 'base64')))
-                if img.mode != 'RGB':
-                    img = img.convert('RGB')
+                if img.mode != 'RGBA':
+                    img = img.convert('RGBA')
 
                 # Get background color from settings
                 try:
-                    background_rgb = safe_eval(ICP.get_param('vsf_image_background_rgb', '(255, 255, 255)'))
+                    background_rgba = safe_eval(ICP.get_param('vsf_image_background_rgba', '(255, 255, 255, 255)'))
                 except:
-                    background_rgb = (255, 255, 255)
+                    background_rgba = (255, 255, 255, 255)
 
                 # Create a new background, merge the background with the image centered
                 img_w, img_h = img.size
-                background = Image.new('RGB', (width, height), background_rgb)
+                background = Image.new('RGBA', (width, height), background_rgba)
                 bg_w, bg_h = background.size
                 offset = ((bg_w - img_w) // 2, (bg_h - img_h) // 2)
                 background.paste(img, offset)

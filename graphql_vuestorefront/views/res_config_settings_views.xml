@@ -57,11 +57,11 @@
                             </div>
                         </div>
                     </div>
-                    <div class="col-12 col-lg-6 o_setting_box" id="vsf_image_background_rgb_settings">
+                    <div class="col-12 col-lg-6 o_setting_box" id="vsf_image_background_rgba_settings">
                         <div class="o_setting_right_pane">
-                            <label for="vsf_image_background_rgb"/>
+                            <label for="vsf_image_background_rgba"/>
                             <div class="content-group">
-                                <field name="vsf_image_background_rgb"/>
+                                <field name="vsf_image_background_rgba"/>
                             </div>
                         </div>
                     </div>
