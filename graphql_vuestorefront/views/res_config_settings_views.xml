@@ -47,6 +47,25 @@
                         </div>
                     </div>
                 </div>
+                <h2>Vue Storefront Images</h2>
+                <div class="row mt16 o_settings_container" id="vsf_images_settings">
+                    <div class="col-12 col-lg-6 o_setting_box" id="vsf_image_quality_settings">
+                        <div class="o_setting_right_pane">
+                            <label for="vsf_image_quality"/>
+                            <div class="content-group">
+                                <field name="vsf_image_quality"/> %
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12 col-lg-6 o_setting_box" id="vsf_image_background_rgb_settings">
+                        <div class="o_setting_right_pane">
+                            <label for="vsf_image_background_rgb"/>
+                            <div class="content-group">
+                                <field name="vsf_image_background_rgb"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </xpath>
         </field>
     </record>
