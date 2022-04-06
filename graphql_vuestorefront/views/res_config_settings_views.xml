@@ -65,6 +65,14 @@
                             </div>
                         </div>
                     </div>
+                    <div class="col-12 col-lg-6 o_setting_box" id="vsf_image_resize_whitelist_settings">
+                        <div class="o_setting_right_pane">
+                            <label for="vsf_image_resize_whitelist"/>
+                            <div class="content-group">
+                                <field name="vsf_image_resize_whitelist"/>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </xpath>
         </field>

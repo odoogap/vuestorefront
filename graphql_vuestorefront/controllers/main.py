@@ -5,12 +5,54 @@
 import json
 import werkzeug
 from odoo import http
+from odoo.addons.web.controllers.main import Binary
 from odoo.addons.graphql_base import GraphQLControllerMixin
 # from odoo.addons.payment.controllers.portal import PaymentProcessing
 # from odoo.addons.payment_adyen.controllers.main import AdyenController
 from odoo.http import request, Response
+from odoo.tools.safe_eval import safe_eval
 
 from ..schema import schema
+
+
+class VSFBinary(Binary):
+    @http.route(['/web/image',
+                 '/web/image/<string:xmlid>',
+                 '/web/image/<string:xmlid>/<string:filename>',
+                 '/web/image/<string:xmlid>/<int:width>x<int:height>',
+                 '/web/image/<string:xmlid>/<int:width>x<int:height>/<string:filename>',
+                 '/web/image/<string:model>/<int:id>/<string:field>',
+                 '/web/image/<string:model>/<int:id>/<string:field>/<string:filename>',
+                 '/web/image/<string:model>/<int:id>/<string:field>/<int:width>x<int:height>',
+                 '/web/image/<string:model>/<int:id>/<string:field>/<int:width>x<int:height>/<string:filename>',
+                 '/web/image/<int:id>',
+                 '/web/image/<int:id>/<string:filename>',
+                 '/web/image/<int:id>/<int:width>x<int:height>',
+                 '/web/image/<int:id>/<int:width>x<int:height>/<string:filename>',
+                 '/web/image/<int:id>-<string:unique>',
+                 '/web/image/<int:id>-<string:unique>/<string:filename>',
+                 '/web/image/<int:id>-<string:unique>/<int:width>x<int:height>',
+                 '/web/image/<int:id>-<string:unique>/<int:width>x<int:height>/<string:filename>'], type='http',
+                auth="public")
+    def content_image(self, xmlid=None, model='ir.attachment', id=None, field='datas',
+                      filename_field='name', unique=None, filename=None, mimetype=None,
+                      download=None, width=0, height=0, crop=False, access_token=None,
+                      **kwargs):
+        """ Validate width and height against a whitelist """
+        try:
+            ICP = request.env['ir.config_parameter'].sudo()
+            resize_whitelist = safe_eval(ICP.get_param('vsf_image_resize_whitelist', '[]'))
+
+            if resize_whitelist and width and height and \
+                    (int(width) not in resize_whitelist or int(height) not in resize_whitelist):
+                return request.not_found()
+        except Exception:
+            return request.not_found()
+
+        return super(VSFBinary, self).content_image(
+            xmlid=xmlid, model=model, id=id, field=field, filename_field=filename_field, unique=unique,
+            filename=filename, mimetype=mimetype, download=download, width=width, height=height, crop=crop,
+            access_token=access_token, **kwargs)
 
 
 class VSFWebsite(http.Controller):
