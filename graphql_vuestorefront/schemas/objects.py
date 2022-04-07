@@ -7,10 +7,7 @@ from graphene.types import generic
 from graphql import GraphQLError
 from odoo import SUPERUSER_ID, _
 
-from werkzeug import urls
-
 from odoo.addons.graphql_base import OdooObjectType
-from odoo.addons.http_routing.models.ir_http import slug
 from odoo.exceptions import AccessError
 from odoo.http import request
 
@@ -204,7 +201,7 @@ class Category(OdooObjectType):
         return self.child_id or None
 
     def resolve_slug(self, info):
-        return self.slug or slug(self)
+        return self.website_slug
 
     def resolve_products(self, info):
         return self.product_tmpl_ids or None
@@ -399,7 +396,7 @@ class Product(OdooObjectType):
         return self.qty_available
 
     def resolve_slug(self, info):
-        return self.slug or slug(self)
+        return self.website_slug
 
     def resolve_alternative_products(self, info):
         return self.alternative_product_ids or None
