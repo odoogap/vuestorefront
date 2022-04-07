@@ -11,7 +11,7 @@
         <field name="inherit_id" ref="website_sale.product_public_category_form_view"/>
         <field name="arch" type="xml">
             <xpath expr="//field[@name='website_id']" position="before">
-                <field name="slug"/>
+                <field name="website_slug"/>
             </xpath>
         </field>
     </record>
@@ -22,7 +22,7 @@
         <field name="inherit_id" ref="website_sale.product_template_form_view"/>
         <field name="arch" type="xml">
             <xpath expr="//field[@name='website_id']" position="before">
-                <field name="slug"/>
+                <field name="website_slug"/>
             </xpath>
         </field>
     </record>

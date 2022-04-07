@@ -159,6 +159,7 @@ class ProductQuery(graphene.ObjectType):
     product = graphene.Field(
         Product,
         id=graphene.Int(default_value=None),
+        slug=graphene.String(default_value=None),
         barcode=graphene.String(default_value=None),
     )
     products = graphene.Field(
@@ -182,11 +183,13 @@ class ProductQuery(graphene.ObjectType):
     )
 
     @staticmethod
-    def resolve_product(self, info, id=None, barcode=None):
+    def resolve_product(self, info, id=None, slug=None, barcode=None):
         env = info.context["env"]
 
         if id:
             product = env["product.template"].sudo().search([('id', '=', id)], limit=1)
+        elif slug:
+            product = env["product.template"].sudo().search([('website_slug', '=', slug)], limit=1)
         elif barcode:
             product = env["product.template"].sudo().search([('barcode', '=', barcode)], limit=1)
         else:

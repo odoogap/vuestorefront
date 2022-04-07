@@ -3,11 +3,43 @@
 # License LGPL-3.0 or later (http://www.gnu.org/licenses/lgpl).
 
 import requests
-from odoo import models, fields, api, tools
+from odoo import models, fields, api, tools, _
+from odoo.addons.http_routing.models.ir_http import slug
+from odoo.exceptions import ValidationError
+
+
+class WebsiteSeoMetadata(models.AbstractModel):
+    _inherit = 'website.seo.metadata'
+
+    @api.depends('name')
+    def _compute_slug(self):
+        for rec in self:
+            if rec.is_slug_dirty or isinstance(rec.id, models.NewId):
+                rec.website_slug = rec.website_slug
+            else:
+                rec.website_slug = '/{}'.format(slug(rec))
+
+    def _inverse_slug(self):
+        for rec in self:
+            if rec.search([('website_slug', '=', rec.website_slug), ('id', '!=', rec.id)], limit=1):
+                raise ValidationError(_('Slug is already in use.'))
+            rec.website_slug = rec.website_slug
+            rec.is_slug_dirty = True
+
+    website_slug = fields.Char('Website Slug', compute='_compute_slug', inverse='_inverse_slug', store=True)
+    is_slug_dirty = fields.Boolean(defualt=False, readonly=True)
 
 
 class ProductTemplate(models.Model):
     _inherit = 'product.template'
+
+    @api.depends('name')
+    def _compute_slug(self):
+        for rec in self:
+            if rec.is_slug_dirty or isinstance(rec.id, models.NewId):
+                rec.website_slug = rec.website_slug
+            else:
+                rec.website_slug = '/product/{}'.format(slug(rec))
 
     def _set_vsf_tags(self):
         for product in self:
@@ -26,8 +58,6 @@ class ProductTemplate(models.Model):
 
         # Make the GET request to the /cache-invalidate
         requests.get(url, params={'key': key, 'tag': tags})
-    
-    slug = fields.Char('Slug')
 
     def write(self, vals):
         res = super(ProductTemplate, self).write(vals)
@@ -63,6 +93,14 @@ class ProductTemplate(models.Model):
 class ProductPublicCategory(models.Model):
     _inherit = 'product.public.category'
 
+    @api.depends('name')
+    def _compute_slug(self):
+        for rec in self:
+            if rec.is_slug_dirty or isinstance(rec.id, models.NewId):
+                rec.website_slug = rec.website_slug
+            else:
+                rec.website_slug = '/category/{}'.format(slug(rec))
+
     @api.model
     def _update_website_filtering(self):
         """
@@ -85,7 +123,6 @@ class ProductPublicCategory(models.Model):
                     mapped('product_attribute_value_id').ids)]
 
     attribute_value_ids = fields.Many2many('product.attribute.value', readonly=True)
-    slug = fields.Char('Slug')
 
     def _set_vsf_tags(self):
         for category in self:
