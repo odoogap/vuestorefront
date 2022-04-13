@@ -235,6 +235,7 @@ class AttributeValue(OdooObjectType):
     search = graphene.String()
     price_extra = graphene.Float(description='Not use in the return Attributes List of the Products Query')
     attribute = graphene.Field(lambda: Attribute)
+    display_type = graphene.String()
 
     def resolve_id(self, info):
         return self.id or None

@@ -112,3 +112,9 @@ class ProductPublicCategory(models.Model):
     def unlink(self):
         self._set_vsf_tags()
         return super(ProductPublicCategory, self).unlink()
+
+
+class ProductAttributevalue(models.Model):
+    _inherit = "product.attribute.value"
+
+    display_type = fields.Selection(related='attribute_id.type')
