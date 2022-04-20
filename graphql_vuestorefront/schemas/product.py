@@ -46,7 +46,7 @@ def get_search_domain(env, search, **kwargs):
 
     # Filter with Category Slug
     if kwargs.get('category_slug', False):
-        domains.append([('public_categ_ids.website_slug', '=', kwargs['category_slug'])])
+        domains.append([('public_categ_slug_ids.website_slug', '=', kwargs['category_slug'])])
 
     # Deprecated: filter with Attribute Value
     if kwargs.get('attribute_value_id', False):
