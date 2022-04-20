@@ -40,9 +40,13 @@ def get_search_domain(env, search, **kwargs):
     if kwargs.get('ids', False):
         domains.append([('id', 'in', kwargs['ids'])])
 
-    # Filter with Category
+    # Filter with Category ID
     if kwargs.get('category_id', False):
         domains.append([('public_categ_ids', 'child_of', kwargs['category_id'])])
+
+    # Filter with Category Slug
+    if kwargs.get('category_slug', False):
+        domains.append([('public_categ_ids.website_slug', '=', kwargs['category_slug'])])
 
     # Deprecated: filter with Attribute Value
     if kwargs.get('attribute_value_id', False):
@@ -125,6 +129,7 @@ class ProductList(graphene.ObjectType):
 class ProductFilterInput(graphene.InputObjectType):
     ids = graphene.List(graphene.Int)
     category_id = graphene.List(graphene.Int)
+    category_slug = graphene.String()
     # Deprecated
     attribute_value_id = graphene.List(graphene.Int)
     attrib_values = graphene.List(graphene.String)
