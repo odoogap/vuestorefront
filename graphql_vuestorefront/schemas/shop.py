@@ -3,7 +3,8 @@
 # License LGPL-3.0 or later (http://www.gnu.org/licenses/lgpl).
 
 import graphene
-from odoo.addons.graphql_vuestorefront.schemas.objects import Order
+from odoo.addons.graphql_vuestorefront.schemas.objects import Order, Partner
+from odoo.addons.website_mass_mailing.controllers.main import MassMailController
 from odoo.http import request
 
 
@@ -197,6 +198,50 @@ class CartRemoveMultipleItems(graphene.Mutation):
         return CartData(order=order)
 
 
+class CreateUpdatePartner(graphene.Mutation):
+    class Arguments:
+        name = graphene.String(required=True)
+        email = graphene.String(required=True)
+        subscribe_newsletter = graphene.Boolean(required=True)
+
+    Output = Partner
+
+    @staticmethod
+    def mutate(self, info, name, email, subscribe_newsletter):
+        env = info.context['env']
+        website = env['website'].get_current_website()
+        request.website = website
+        order = website.sale_get_order(force_create=1)
+
+        data = {
+            'name': name,
+            'email': email,
+        }
+
+        partner = order.partner_id
+
+        # Is public user
+        user = env['res.users'].search([('partner_id', '=', partner.id), ('active', '=', False)], limit=1)
+        if user and user.has_group('base.group_public'):
+            partner = env['res.partner'].sudo().create(data)
+
+            order.write({
+                'partner_id': partner.id,
+                'partner_invoice_id': partner.id,
+                'partner_shipping_id': partner.id,
+            })
+        else:
+            order.partner_id.write(data)
+
+        # Subscribe to newsletter
+        if subscribe_newsletter:
+            list_id = int(env['ir.config_parameter'].sudo().get_param('vsf_mailing_list_id', 0))
+            if list_id:
+                MassMailController().subscribe(list_id, email)
+
+        return partner
+
+
 class ShopMutation(graphene.ObjectType):
     cart_add_item = CartAddItem.Field(description="Add Item")
     cart_update_item = CartUpdateItem.Field(description="Update Item")
@@ -206,3 +251,4 @@ class ShopMutation(graphene.ObjectType):
     cart_update_multiple_items = CartUpdateMultipleItems.Field(description="Update Multiple Items")
     cart_remove_multiple_items = CartRemoveMultipleItems.Field(description="Remove Multiple Items")
     set_shipping_method = SetShippingMethod.Field(description="Set Shipping Method on Cart")
+    create_update_partner = CreateUpdatePartner.Field(description="Create or update a partner for guest checkout")
