@@ -249,9 +249,7 @@ class ProductImage(OdooObjectType):
         return self.id or None
 
     def resolve_image(self, info):
-        if self.image_1920:
-            return '/web/image/product.image/{}/image_1920'.format(self.id)
-        return None
+        return '/web/image/product.image/{}/image_1920'.format(self.id)
 
     def resolve_video(self, info):
         return self.video_url or None
@@ -372,7 +370,10 @@ class Product(OdooObjectType):
         return bool(is_in_wishlist)
 
     def resolve_media_gallery(self, info):
-        return self.product_template_image_ids or None
+        if self._name == 'product.template':
+            return self.product_template_image_ids or None
+        else:
+            return self.product_variant_image_ids or None
 
     def resolve_qty(self, info):
         return self.qty_available
@@ -619,9 +620,7 @@ class PaymentIcon(OdooObjectType):
     image = graphene.String()
 
     def resolve_image(self, info):
-        if self.image:
-            return '/web/image/payment.icon/{}/image'.format(self.id)
-        return None
+        return '/web/image/payment.icon/{}/image'.format(self.id)
 
 
 class PaymentAcquirer(OdooObjectType):
