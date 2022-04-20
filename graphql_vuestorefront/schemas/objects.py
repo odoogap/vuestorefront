@@ -7,6 +7,7 @@ from graphene.types import generic
 from graphql import GraphQLError
 from odoo import SUPERUSER_ID, _
 
+from odoo.addons.http_routing.models.ir_http import slugify
 from odoo.addons.graphql_base import OdooObjectType
 from odoo.exceptions import AccessError
 from odoo.http import request
@@ -290,6 +291,7 @@ class Product(OdooObjectType):
     meta_description = graphene.String()
     image = graphene.String()
     small_image = graphene.String()
+    image_filename = graphene.String()
     thumbnail = graphene.String()
     categories = graphene.List(graphene.NonNull(lambda: Category))
     allow_out_of_stock = graphene.Boolean()
@@ -361,6 +363,9 @@ class Product(OdooObjectType):
 
     def resolve_small_image(self, info):
         return '/web/image/{}/{}/image_128'.format(self._name, self.id)
+
+    def resolve_image_filename(self, info):
+        return slugify(self.name)
 
     def resolve_thumbnail(self, info):
         return '/web/image/{}/{}/image_512'.format(self._name, self.id)
