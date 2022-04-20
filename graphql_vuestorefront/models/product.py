@@ -26,7 +26,8 @@ class WebsiteSeoMetadata(models.AbstractModel):
             rec.website_slug = rec.website_slug
             rec.is_slug_dirty = True
 
-    website_slug = fields.Char('Website Slug', compute='_compute_slug', inverse='_inverse_slug', store=True)
+    website_slug = fields.Char('Website Slug', compute='_compute_slug', inverse='_inverse_slug', store=True,
+                               translate=True)
     is_slug_dirty = fields.Boolean(default=False, readonly=True)
 
 
