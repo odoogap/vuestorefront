@@ -59,6 +59,30 @@ class ProductTemplate(models.Model):
         # Make the GET request to the /cache-invalidate
         requests.get(url, params={'key': key, 'tag': tags})
 
+    def _get_public_categ_slug(self, category_ids, category):
+        category_ids.append(category.id)
+
+        if category.parent_id:
+            return self._get_public_categ_slug(category_ids, category.parent_id)
+
+        return category_ids
+
+    @api.depends('public_categ_ids')
+    def _compute_public_categ_slug_ids(self):
+        """ To allow search of website_slug on parent categories """
+        for product in self:
+            category_ids = []
+
+            for category in product.public_categ_ids:
+                category_ids = product._get_public_categ_slug(category_ids, category)
+
+            product.public_categ_slug_ids = [(6, 0, category_ids)]
+
+    public_categ_slug_ids = fields.Many2many('product.public.category',
+                                             'product_template_product_public_category_slug_rel',
+                                             compute='_compute_public_categ_slug_ids',
+                                             store=True, readonly=True)
+
     def write(self, vals):
         res = super(ProductTemplate, self).write(vals)
         self._set_vsf_tags()
