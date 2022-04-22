@@ -16,13 +16,10 @@ def get_search_order(sort):
     for field, val in sort.items():
         if sorting:
             sorting += ', '
-        sorting += '%s %s' % (field, val)
+        sorting += '%s %s' % (field, val.value)
 
-    # Add id as last factor so we can consistently get the same results
-    if sorting:
-        sorting += ', id ASC'
-    else:
-        sorting = 'id ASC'
+    if not sorting:
+        sorting = 'sequence ASC, id ASC'
 
     return sorting
 
