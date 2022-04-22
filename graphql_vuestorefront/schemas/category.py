@@ -5,7 +5,6 @@
 import graphene
 from graphql import GraphQLError
 from odoo import _
-from odoo.http import request
 
 from odoo.addons.graphql_vuestorefront.schemas.objects import (
     SortEnum, Category
@@ -19,11 +18,8 @@ def get_search_order(sort):
             sorting += ', '
         sorting += '%s %s' % (field, val.value)
 
-    # Add id as last factor so we can consistently get the same results
-    if sorting:
-        sorting += ', id ASC'
-    else:
-        sorting = 'id ASC'
+    if not sorting:
+        sorting = 'sequence ASC, id ASC'
 
     return sorting
 
