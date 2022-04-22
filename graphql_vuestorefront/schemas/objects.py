@@ -122,9 +122,7 @@ class Country(OdooObjectType):
         return self.state_ids or None
 
     def resolve_image(self, info):
-        if self.image:
-            return '/web/image/res.country/{}/image'.format(self.id)
-        return None
+        return '/web/image/res.country/{}/image'.format(self.id)
 
 
 class Partner(OdooObjectType):
@@ -210,19 +208,13 @@ class Category(OdooObjectType):
         return self.slug or slug(self)
 
     def resolve_image(self, info):
-        if self.image:
-            return '/web/image/product.public.category/{}/image'.format(self.id)
-        return None
+        return '/web/image/product.public.category/{}/image'.format(self.id)
 
     def resolve_medium_image(self, info):
-        if self.image_medium:
-            return '/web/image/product.public.category/{}/image_medium'.format(self.id)
-        return None
+        return '/web/image/product.public.category/{}/image_medium'.format(self.id)
 
     def resolve_small_image(self, info):
-        if self.image_small:
-            return '/web/image/product.public.category/{}/image_small'.format(self.id)
-        return None
+        return '/web/image/product.public.category/{}/image_small'.format(self.id)
 
     def resolve_products(self, info):
         return self.product_tmpl_ids or None
@@ -268,9 +260,7 @@ class ProductImage(OdooObjectType):
         return self.id or None
 
     def resolve_image(self, info):
-        if self.image:
-            return '/web/image/product.image/{}/image'.format(self.id)
-        return None
+        return '/web/image/product.image/{}/image'.format(self.id)
 
 
 class Product(OdooObjectType):
@@ -356,13 +346,13 @@ class Product(OdooObjectType):
         return self.website_meta_description or None
 
     def resolve_image(self, info):
-        return '/web/image/{}/{}/image'.format(self._name, self.id) or None
+        return '/web/image/{}/{}/image'.format(self._name, self.id)
 
     def resolve_small_image(self, info):
-        return '/web/image/{}/{}/image_small'.format(self._name, self.id) or None
+        return '/web/image/{}/{}/image_small'.format(self._name, self.id)
 
     def resolve_thumbnail(self, info):
-        return '/web/image/{}/{}/image_medium'.format(self._name, self.id) or None
+        return '/web/image/{}/{}/image_medium'.format(self._name, self.id)
 
     def resolve_categories(self, info):
         return self.public_categ_ids or None
@@ -649,9 +639,7 @@ class PaymentIcon(OdooObjectType):
     image = graphene.String()
 
     def resolve_image(self, info):
-        if self.image:
-            return '/web/image/payment.icon/{}/image'.format(self.id)
-        return None
+        return '/web/image/payment.icon/{}/image'.format(self.id)
 
 
 class PaymentAcquirer(OdooObjectType):
