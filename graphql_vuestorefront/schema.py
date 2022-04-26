@@ -37,7 +37,7 @@ class Mutation(
     address.AddressMutation,
     wishlist.WishlistMutation,
     shop.ShopMutation,
-    # payment.PaymentMutation,
+    payment.PaymentMutation,
     mailing_list.NewsletterSubscribeMutation,
     order.OrderMutation,
 ):
