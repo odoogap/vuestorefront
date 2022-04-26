@@ -15,7 +15,7 @@ from odoo.addons.graphql_vuestorefront.schemas.objects import PaymentAcquirer
 from odoo.addons.graphql_vuestorefront.schemas.shop import Cart, CartData
 from odoo.addons.website_sale.controllers.main import WebsiteSale, PaymentPortal
 from odoo.addons.payment.controllers.post_processing import PaymentPostProcessing
-from odoo.addons.payment_adyen.controllers.main import AdyenController
+from odoo.addons.payment_adyen_og.controllers.main import AdyenOGController
 
 
 class PaymentQuery(graphene.ObjectType):
@@ -59,29 +59,29 @@ class PaymentQuery(graphene.ObjectType):
     #    Needed be Migrate    #
     # ----------------------- #
 
-    # def resolve_payment_confirmation(self, info):
-    #     env = info.context["env"]
-    #
-    #     PaymentTransaction = env['payment.transaction']
-    #     Order = env['sale.order']
-    #
-    #     # Pass in the session the sale_order created in vsf
-    #     payment_transaction_id = request.session.get('__payment_tx_ids__')[0]
-    #
-    #     if payment_transaction_id:
-    #
-    #         payment_transaction = PaymentTransaction.sudo().search([
-    #             ('id', '=', payment_transaction_id)], limit=1)
-    #
-    #         sale_order_id = payment_transaction.sale_order_ids.ids[0]
-    #
-    #     if sale_order_id:
-    #         order = Order.sudo().search([('id', '=', sale_order_id)], limit=1)
-    #
-    #         if order.exists():
-    #             return CartData(order=order)
-    #
-    #     raise GraphQLError(_('Cart does not exist'))
+    def resolve_payment_confirmation(self, info):
+        env = info.context["env"]
+
+        PaymentTransaction = env['payment.transaction']
+        Order = env['sale.order']
+
+        # Pass in the session the sale_order created in vsf
+        payment_transaction_id = request.session.get('__payment_monitored_tx_ids__')[0]
+
+        if payment_transaction_id:
+
+            payment_transaction = PaymentTransaction.sudo().search([
+                ('id', '=', payment_transaction_id)], limit=1)
+
+            sale_order_id = payment_transaction.sale_order_ids.ids[0]
+
+        if sale_order_id:
+            order = Order.sudo().search([('id', '=', sale_order_id)], limit=1)
+
+            if order.exists():
+                return CartData(order=order)
+
+        raise GraphQLError(_('Cart does not exist'))
 
 
 def validate_expiry(expiry_month, expiry_year):
@@ -141,7 +141,7 @@ class SelectPaymentAcquirer(graphene.Mutation):
             if payment_acquirer.name == 'Adyen':
 
                 return SelectPaymentAcquirerResult(
-                    form=AdyenController().adyen_payment_methods(
+                    form=AdyenOGController().adyen_payment_methods(
                         acquirer_id=payment_acquire_id, amount=order.amount_total, currency_id=order.currency_id.id,
                         partner_id=order.partner_id.id
                     )
@@ -212,7 +212,7 @@ class MakePayment(graphene.Mutation):
         }
 
         # Create Payment
-        payment = AdyenController().adyen_payments(
+        payment = AdyenOGController().adyen_payments(
             acquirer_id=payment_acquire_id,
             reference=transaction['reference'],
             converted_amount=transaction['converted_amount'],
