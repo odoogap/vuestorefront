@@ -16,7 +16,10 @@
     'license': 'LGPL-3',
 
     # Dependencies
-    'depends': ['payment'],
+    'depends': [
+        'payment',
+        'payment_adyen'
+    ],
 
     # Views
     'data': ['views/payment_adyen_templates.xml',

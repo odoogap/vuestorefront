@@ -155,7 +155,7 @@ class PaymentTransaction(models.Model):
             'billing_partner_state': self.partner_state_id,
             'api_url': self.acquirer_id._adyen_get_api_url(),
         })
-        processing_values.setdefault('return_url', '/payment/process')
+        processing_values.setdefault('return_url', '/payment/status')
         if self.provider == 'adyen_og' and len(self.acquirer_id.adyen_skin_hmac_key) == 64:
             tmp_date = datetime.datetime.today() + relativedelta.relativedelta(days=1)
 
@@ -169,7 +169,7 @@ class PaymentTransaction(models.Model):
                 'shopperLocale': processing_values.get('partner_lang', ''),
                 'sessionValidity': tmp_date.isoformat('T')[:19] + "Z",
                 'resURL': urls.url_join(base_url, AdyenOGController._return_url),
-                'merchantReturnData': '{"return_url": "/payment/process"}',
+                'merchantReturnData': '{"return_url": "/payment/status"}',
                 'shopperEmail': processing_values.get('partner_email') or processing_values.get(
                     'billing_partner_email') or '',
             })
@@ -188,7 +188,7 @@ class PaymentTransaction(models.Model):
                 'shopperLocale': processing_values.get('partner_lang'),
                 'sessionValidity': tmp_date,
                 'resURL': urls.url_join(base_url, AdyenOGController._return_url),
-                'merchantReturnData': '{"return_url": "/payment/process"}',
+                'merchantReturnData': '{"return_url": "/payment/status"}',
             })
             processing_values['merchantSig'] = self._adyen_generate_merchant_sig('in', processing_values)
 
@@ -251,6 +251,7 @@ class PaymentTransaction(models.Model):
         :return: None
         :raise: ValidationError if inconsistent data were received
         """
+        super()._process_feedback_data(data)
         if self.provider != 'adyen_og':
             return
 
