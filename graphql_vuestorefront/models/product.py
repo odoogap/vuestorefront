@@ -4,43 +4,56 @@
 
 import requests
 from odoo import models, fields, api, tools, _
-from odoo.addons.http_routing.models.ir_http import slug
+from odoo.addons.http_routing.models.ir_http import slug, slugify
 from odoo.exceptions import ValidationError
 
 
 class WebsiteSeoMetadata(models.AbstractModel):
     _inherit = 'website.seo.metadata'
 
-    @api.depends('name')
-    def _compute_slug(self):
-        for rec in self:
-            if rec.is_slug_dirty or isinstance(rec.id, models.NewId):
-                rec.website_slug = rec.website_slug
-            else:
-                rec.website_slug = '/{}'.format(slug(rec))
+    def _get_website_slug(self):
+        self.ensure_one()
+        return '{}/{}'.format(self.website_slug_prefix, slug(self))
 
-    def _inverse_slug(self):
-        for rec in self:
-            if rec.search([('website_slug', '=', rec.website_slug), ('id', '!=', rec.id)], limit=1):
-                raise ValidationError(_('Slug is already in use.'))
-            rec.website_slug = rec.website_slug
-            rec.is_slug_dirty = True
+    def _get_website_slugify(self, name):
+        self.ensure_one()
+        return '{}/{}-{}'.format(self.website_slug_prefix, slugify(name), self.id)
 
-    website_slug = fields.Char('Website Slug', compute='_compute_slug', inverse='_inverse_slug', store=True,
-                               translate=True)
-    is_slug_dirty = fields.Boolean(default=False, readonly=True)
+    def _validate_website_slug(self):
+        self.ensure_one()
+        if self.search([('website_slug', '=', self.website_slug), ('id', '!=', self.id)], limit=1):
+            raise ValidationError(_('Slug is already in use.'))
+
+    @api.model
+    def create(self, vals):
+        rec = super(WebsiteSeoMetadata, self).create(vals)
+
+        if vals.get('website_slug', False):
+            rec._validate_website_slug()
+        else:
+            rec.website_slug = rec._get_website_slug()
+
+        return rec
+
+    def write(self, vals):
+        if vals.get('name', False) and not vals.get('website_slug', False):
+            for rec in self:
+                if rec._get_website_slug() == rec.website_slug:
+                    rec.website_slug = rec._get_website_slugify(vals['name'])
+
+        res = super(WebsiteSeoMetadata, self).write(vals)
+
+        for rec in self:
+            rec._validate_website_slug()
+
+        return res
+
+    website_slug = fields.Char('Website Slug', translate=True)
+    website_slug_prefix = fields.Char(default='')
 
 
 class ProductTemplate(models.Model):
     _inherit = 'product.template'
-
-    @api.depends('name')
-    def _compute_slug(self):
-        for rec in self:
-            if rec.is_slug_dirty or isinstance(rec.id, models.NewId):
-                rec.website_slug = rec.website_slug
-            else:
-                rec.website_slug = '/product/{}'.format(slug(rec))
 
     def _set_vsf_tags(self):
         for product in self:
@@ -80,6 +93,7 @@ class ProductTemplate(models.Model):
 
             product.public_categ_slug_ids = [(6, 0, category_ids)]
 
+    website_slug_prefix = fields.Char(default='/product')
     public_categ_slug_ids = fields.Many2many('product.public.category',
                                              'product_template_product_public_category_slug_rel',
                                              compute='_compute_public_categ_slug_ids',
@@ -119,14 +133,6 @@ class ProductTemplate(models.Model):
 class ProductPublicCategory(models.Model):
     _inherit = 'product.public.category'
 
-    @api.depends('name')
-    def _compute_slug(self):
-        for rec in self:
-            if rec.is_slug_dirty or isinstance(rec.id, models.NewId):
-                rec.website_slug = rec.website_slug
-            else:
-                rec.website_slug = '/category/{}'.format(slug(rec))
-
     @api.model
     def _update_website_filtering(self):
         """
@@ -148,6 +154,7 @@ class ProductPublicCategory(models.Model):
                     mapped('product_template_attribute_value_ids').
                     mapped('product_attribute_value_id').ids)]
 
+    website_slug_prefix = fields.Char(default='/category')
     attribute_value_ids = fields.Many2many('product.attribute.value', readonly=True)
 
     def _set_vsf_tags(self):
