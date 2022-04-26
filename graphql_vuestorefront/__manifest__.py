@@ -20,6 +20,7 @@
         'contacts',
         'crm',
         'theme_default',
+        'payment_adyen_og',
     ],
     'data': [
         'data/website_data.xml',
