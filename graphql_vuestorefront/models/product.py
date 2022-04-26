@@ -53,12 +53,13 @@ class ProductTemplate(models.Model):
             product._vsf_request_cache_invalidation(tags)
 
     def _vsf_request_cache_invalidation(self, tags_list):
-        url = self.env['ir.config_parameter'].sudo().get_param('vsf_cache_invalidation_url')
-        key = self.env['ir.config_parameter'].sudo().get_param('vsf_cache_invalidation_key')
-        tags = tags_list
+        ICP = self.env['ir.config_parameter'].sudo()
+        url = ICP.get_param('vsf_cache_invalidation_url', False)
+        key = ICP.get_param('vsf_cache_invalidation_key', False)
 
-        # Make the GET request to the /cache-invalidate
-        requests.get(url, params={'key': key, 'tag': tags})
+        if url and key:
+            # Make the GET request to the /cache-invalidate
+            requests.get(url, params={'key': key, 'tag': tags_list}, timeout=5)
 
     def _get_public_categ_slug(self, category_ids, category):
         category_ids.append(category.id)
@@ -155,12 +156,13 @@ class ProductPublicCategory(models.Model):
             category._vsf_request_cache_invalidation(tags)
 
     def _vsf_request_cache_invalidation(self, tags_list):
-        url = self.env['ir.config_parameter'].sudo().get_param('vsf_cache_invalidation_url')
-        key = self.env['ir.config_parameter'].sudo().get_param('vsf_cache_invalidation_key')
-        tags = tags_list
+        ICP = self.env['ir.config_parameter'].sudo()
+        url = ICP.get_param('vsf_cache_invalidation_url', False)
+        key = ICP.get_param('vsf_cache_invalidation_key', False)
 
-        # Make the GET request to the /cache-invalidate
-        requests.get(url, params={'key': key, 'tag': tags})
+        if url and key:
+            # Make the GET request to the /cache-invalidate
+            requests.get(url, params={'key': key, 'tag': tags_list}, timeout=5)
 
     def write(self, vals):
         res = super(ProductPublicCategory, self).write(vals)
