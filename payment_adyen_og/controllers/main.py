@@ -49,9 +49,6 @@ class AdyenControllerInherit(AdyenController):
         if acquirer_sudo.provider == 'adyen_og':
             returnUrl = urls.url_join(
                 acquirer_sudo.get_base_url(),
-                # Include the reference in the return url to be able to match it after redirection.
-                # The key 'merchantReference' is chosen on purpose to be the same as that returned
-                # by the /payments endpoint of Adyen.
                 f'/payment/adyen_og/return?merchantReference={reference}'
             )
         elif acquirer_sudo.provider == 'adyen':
@@ -62,10 +59,6 @@ class AdyenControllerInherit(AdyenController):
                 # by the /payments endpoint of Adyen.
                 f'/payment/adyen/return?merchantReference={reference}'
             )
-
-        print('\n\n\n\n')
-        print('RETURN URL')
-        print(returnUrl)
 
         tx_sudo = request.env['payment.transaction'].sudo().search([('reference', '=', reference)])
         data = {
