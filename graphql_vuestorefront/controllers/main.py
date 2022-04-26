@@ -7,7 +7,7 @@ import werkzeug
 from odoo import http
 from odoo.addons.web.controllers.main import Binary
 from odoo.addons.graphql_base import GraphQLControllerMixin
-from odoo.addons.payment.controllers.portal import PaymentProcessing
+# from odoo.addons.payment.controllers.post_processing import PaymentPostProcessing
 from odoo.addons.payment_adyen_og.controllers.main import AdyenOGController
 from odoo.http import request, Response
 from odoo.tools.safe_eval import safe_eval
@@ -105,7 +105,7 @@ class VSFAdyenController(AdyenOGController):
             request.session["__payment_monitored_tx_ids__"] = [payment_transaction.id]
 
             # Confirm sale order
-            PaymentProcessing().poll_status()
+            # PaymentProcessing().poll_status()
 
             # Clear the payment_tx_ids
             request.session['__payment_monitored_tx_ids__'] = []
