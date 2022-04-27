@@ -27,4 +27,6 @@ SUPPORTED_CURRENCIES = {
     "XPF": 0,
     "USD": 2,
     "EUR": 2,
+    "SEK": 2,
+    "DKK": 2,
 }
