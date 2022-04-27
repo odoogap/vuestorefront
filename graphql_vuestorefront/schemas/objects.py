@@ -396,7 +396,7 @@ class Product(OdooObjectType):
         if self._name == 'product.template':
             return self.product_template_image_ids or None
         else:
-            return self.product_variant_image_ids or None
+            return self.product_template_image_ids + self.product_variant_image_ids or None
 
     def resolve_qty(self, info):
         return self.qty_available
