@@ -251,6 +251,7 @@ class ProductImage(OdooObjectType):
     id = graphene.Int(required=True)
     name = graphene.String()
     image = graphene.String()
+    image_filename = graphene.String()
     video = graphene.String()
 
     def resolve_id(self, info):
@@ -258,6 +259,9 @@ class ProductImage(OdooObjectType):
 
     def resolve_image(self, info):
         return '/web/image/product.image/{}/image_1920'.format(self.id)
+
+    def resolve_image_filename(self, info):
+        return slugify(self.name)
 
     def resolve_video(self, info):
         return self.video_url or None
