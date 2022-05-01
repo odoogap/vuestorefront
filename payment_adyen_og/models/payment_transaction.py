@@ -4,6 +4,7 @@
 
 import base64
 import logging
+import pprint
 import hmac
 import hashlib
 import binascii
@@ -14,10 +15,13 @@ from collections import OrderedDict
 from werkzeug import urls
 from odoo.exceptions import ValidationError
 from odoo.tools.pycompat import to_text
-from odoo.addons.payment_adyen_og.controllers.main import AdyenOGController
+from odoo.addons.payment import utils as payment_utils
+from odoo.addons.payment_adyen.const import API_ENDPOINT_VERSIONS
 from odoo.addons.payment_adyen_og.const import SUPPORTED_CURRENCIES
+from odoo.addons.payment_adyen_og.controllers.main import AdyenOGController
 
 _logger = logging.getLogger(__name__)
+API_ENDPOINT_VERSIONS['/payments/{}/captures'] = 67
 
 
 class PaymentTransaction(models.Model):
@@ -237,10 +241,14 @@ class PaymentTransaction(models.Model):
         else:
             shasign_check = tx._adyen_generate_merchant_sig('out', data)
         if to_text(shasign_check) != to_text(data.get('merchantSig')):
-            error_msg = _('Adyen: invalid merchantSig, received %s, computed %s') % (
-            data.get('merchantSig'), shasign_check)
-            _logger.warning(error_msg)
-            raise ValidationError(error_msg)
+            # When is one capture Manually we need to update the merchantSig
+            if data.get('status') == 'received':
+                data['merchantSig'] = shasign_check
+            else:
+                error_msg = _('Adyen: invalid merchantSig, received %s, computed %s') % (
+                data.get('merchantSig'), shasign_check)
+                _logger.warning(error_msg)
+                raise ValidationError(error_msg)
 
         return tx
 
@@ -251,21 +259,67 @@ class PaymentTransaction(models.Model):
         :return: None
         :raise: ValidationError if inconsistent data were received
         """
-        super()._process_feedback_data(data)
+        res = super()._process_feedback_data(data)
         if self.provider != 'adyen_og':
-            return
+            return res
 
+        payment_state = data.get('resultCode')
         status = data.get('authResult', 'PENDING')
+
         if status == 'AUTHORISED':
             self.write({'acquirer_reference': data.get('pspReference')})
-            self._set_done()
+            # Capture Manually
+            if self.acquirer_id.capture_manually:
+                self._set_authorized()
+            else:
+                self._set_done()
             return True
         elif status == 'PENDING':
             self.write({'acquirer_reference': data.get('pspReference')})
-            self._set_pending()
+            # Capture Manually
+            if payment_state and payment_state == 'received' and data.get('paymentPspReference'):
+                self._set_done()
+            else:
+                self._set_pending()
             return True
         else:
             error = _('Adyen: feedback error')
             _logger.info(error)
             self._set_canceled(state_message=error)
             return False
+
+    def _send_capture_request(self):
+        """ Override of payment to send a capture request to Adyen."""
+        super()._send_capture_request()
+        if self.provider != 'adyen_og':
+            return
+
+        # Make the capture request to Adyen
+        converted_amount = payment_utils.to_minor_currency_units(
+            self.amount,
+            self.currency_id,
+            arbitrary_decimal_number=SUPPORTED_CURRENCIES.get(self.currency_id.name, 2)
+        )
+        data = {
+            'merchantAccount': self.acquirer_id.adyen_merchant_account,
+            'amount': {
+                'value': converted_amount,
+                'currency': self.currency_id.name,
+            },
+            'reference': self.reference,
+        }
+        response_content = self.acquirer_id._adyen_make_request(
+            url_field_name='adyen_checkout_api_url',
+            endpoint='/payments/{}/captures',
+            endpoint_param=self.acquirer_reference,
+            payload=data,
+            method='POST'
+        )
+        _logger.info("capture request response:\n%s", pprint.pformat(response_content))
+        feedback_data = response_content
+        feedback_data.update({
+            'resultCode': response_content.get('status', ''),
+            'merchantReference': response_content.get('reference', '')
+        })
+        self._handle_feedback_data('adyen_og', feedback_data)
+        return True
