@@ -259,9 +259,8 @@ class PaymentTransaction(models.Model):
         :return: None
         :raise: ValidationError if inconsistent data were received
         """
-        res = super()._process_feedback_data(data)
         if self.provider != 'adyen_og':
-            return res
+            return super()._process_feedback_data(data)
 
         payment_state = data.get('resultCode')
         status = data.get('authResult', 'PENDING')
