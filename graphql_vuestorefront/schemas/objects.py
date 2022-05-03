@@ -337,7 +337,7 @@ class Product(OdooObjectType):
             return 0
 
     def resolve_status(self, info):
-        if self.qty_available > 0:
+        if self.free_qty > 0:
             return 1
         else:
             return 0
@@ -389,7 +389,7 @@ class Product(OdooObjectType):
         return self.website_ribbon_id or None
 
     def resolve_is_in_stock(self, info):
-        return bool(self.qty_available > 0)
+        return bool(self.free_qty > 0)
 
     def resolve_is_in_wishlist(self, info):
         env = info.context["env"]
@@ -403,7 +403,7 @@ class Product(OdooObjectType):
             return self.product_template_image_ids + self.product_variant_image_ids or None
 
     def resolve_qty(self, info):
-        return self.qty_available
+        return self.free_qty
 
     def resolve_slug(self, info):
         return self.website_slug
