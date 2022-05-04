@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+
+    <template id="feed_xml">&lt;?xml version="1.0"?&gt;
+        <rss version="2.0" xmlns:g="http://base.google.com/ns/1.0">
+            <channel>
+                <title><t t-esc="website.name"/>Product Feed</title>
+                <link><t t-esc="website.domain"/></link>
+                <description><t t-esc="website.name"/></description>
+                <t t-foreach="feed_info_array" t-as="product_info">
+                    <t t-if="website and website.domain">
+                        <item>
+                            <g:title><t t-esc="product_info['title']"/></g:title>
+                            <g:link><t t-esc="product_info['link']"/></g:link>
+                            <g:description><t t-esc="product_info['description']"/></g:description>
+                            <g:image_link><t t-esc="product_info['image_link']"/></g:image_link>
+                            <g:price><t t-esc="product_info['price']"/></g:price>
+                            <g:product_type><t t-esc="product_info['product_type']"/></g:product_type>
+                            <g:condition><t t-esc="product_info['condition']"/></g:condition>
+                            <g:id><t t-esc="product_info['id']"/></g:id>
+                            <g:availability><t t-esc="product_info['availability']"/></g:availability>
+                            <g:brand><t t-esc="product_info['brand']"/></g:brand>
+                            <g:mpn><t t-esc="product_info['mpn']"/></g:mpn>
+                            <g:adult><t t-esc="product_info['adult']"/></g:adult>
+                        </item>
+                    </t>
+                </t>
+            </channel>
+        </rss>
+    </template>
+
+</odoo>
