@@ -3,12 +3,9 @@
 # License LGPL-3.0 or later (http://www.gnu.org/licenses/lgpl).
 
 import json
-import werkzeug
 from odoo import http
 from odoo.addons.web.controllers.main import Binary
 from odoo.addons.graphql_base import GraphQLControllerMixin
-# from odoo.addons.payment.controllers.post_processing import PaymentPostProcessing
-# from odoo.addons.payment_adyen_og.controllers.main import AdyenOGController
 from odoo.http import request, Response
 from odoo.tools.safe_eval import safe_eval
 
@@ -69,48 +66,6 @@ class VSFWebsite(http.Controller):
         return Response(result, headers={
             'Content-Type': 'application/json',
         })
-
-
-# class VSFAdyenController(AdyenOGController):
-
-    # @http.route(['/payment/adyen/return'], type='http', auth='public', csrf=False)
-    # def adyen_return(self, **post):
-    #     # Confirm payment transaction
-    #     super(VSFAdyenController, self).adyen_return(**post)
-    #
-    #     tx_ids_list = request.session.get("__payment_monitored_tx_ids__", [])
-    #
-    #     # If the session have tx_ids_list it means that the SO payment was done in Odoo
-    #     if tx_ids_list:
-    #         return werkzeug.utils.redirect('/payment/status')
-    #
-    #     # If the Session not have Transactions Associated it means that the SO payment was done in VSF
-    #     elif not tx_ids_list and post.get('merchantReference'):
-    #         transaction_reference = post['merchantReference']
-    #
-    #         payment_transaction = request.env['payment.transaction'].sudo().search([
-    #             ('reference', 'like', str(transaction_reference))
-    #         ])
-    #
-    #         sale_order_ids = payment_transaction.sale_order_ids.ids
-    #         sale_order = request.env['sale.order'].sudo().search([
-    #             ('id', 'in', sale_order_ids), ('website_id', '!=', False)
-    #         ], limit=1)
-    #
-    #         # Get Website
-    #         website = sale_order.website_id
-    #         # Redirect to VSF
-    #         vsf_payment_return_url = website.vsf_payment_return_url
-    #
-    #         request.session["__payment_monitored_tx_ids__"] = [payment_transaction.id]
-    #
-    #         # Confirm sale order
-    #         # PaymentProcessing().poll_status()
-    #
-    #         # Clear the payment_tx_ids
-    #         request.session['__payment_monitored_tx_ids__'] = []
-    #
-    #         return werkzeug.utils.redirect(vsf_payment_return_url)
 
 
 class GraphQLController(http.Controller, GraphQLControllerMixin):

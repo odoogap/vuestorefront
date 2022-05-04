@@ -5,11 +5,13 @@
 import json
 import logging
 import pprint
+import werkzeug
 
 from odoo import http, _
 from odoo.http import request
 from odoo.exceptions import ValidationError
 from odoo.addons.payment_adyen.controllers.main import AdyenController
+from odoo.addons.payment.controllers.post_processing import PaymentPostProcessing
 
 _logger = logging.getLogger(__name__)
 
@@ -31,9 +33,11 @@ class AdyenControllerInherit(AdyenController):
         :param dict data: Feedback data. May include custom params sent to Adyen in the request to
                           allow matching the transaction when redirected here.
         """
-        acquirer = data.get('merchantReference') and request.env['payment.transaction'].sudo().search(
+        payment_transaction = data.get('merchantReference') and request.env['payment.transaction'].sudo().search(
             [('reference', 'in', [data.get('merchantReference')])], limit=1
-        ).acquirer_id
+        )
+
+        acquirer = payment_transaction.acquirer_id
 
         if acquirer.provider == 'adyen':
             # Retrieve the transaction based on the reference included in the return url
@@ -65,8 +69,22 @@ class AdyenControllerInherit(AdyenController):
             if data.get('authResult') not in ['CANCELLED']:
                 request.env['payment.transaction'].sudo()._handle_feedback_data('adyen_og', data)
 
-        # Redirect the user to the status page
-        return request.redirect('/payment/status')
+        request.session["__payment_monitored_tx_ids__"] = [payment_transaction.id]
+
+        # Confirm sale order
+        PaymentPostProcessing().poll_status()
+
+        sale_order_ids = payment_transaction.sale_order_ids.ids
+        sale_order = request.env['sale.order'].sudo().search([
+            ('id', 'in', sale_order_ids), ('website_id', '!=', False)
+        ], limit=1)
+
+        # Get Website
+        website = sale_order.website_id
+        # Redirect to VSF
+        vsf_payment_return_url = website.vsf_payment_return_url
+
+        return werkzeug.utils.redirect(vsf_payment_return_url)
 
     @http.route('/payment/adyen/notification', type='json', auth='public')
     def adyen_notification(self):
