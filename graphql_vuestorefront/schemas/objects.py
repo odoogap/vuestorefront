@@ -3,6 +3,7 @@
 # License LGPL-3.0 or later (http://www.gnu.org/licenses/lgpl).
 
 import graphene
+from graphene.types import generic
 from graphql import GraphQLError
 from odoo import _
 
@@ -74,6 +75,12 @@ def product_is_in_wishlist(env, product):
     website = env['website'].get_current_website()
     request.website = website
     return product._is_in_wishlist()
+
+
+def get_product_pricing_info(env, product):
+    website = env['website'].get_current_website()
+    pricelist = website.get_current_pricelist()
+    return product._get_combination_info_variant(pricelist=pricelist)
 
 
 # --------------------- #
@@ -308,6 +315,7 @@ class Product(OdooObjectType):
                                      description='Specific to Product Template')
     product_variants = graphene.List(graphene.NonNull(lambda: Product), description='Specific to Product Template')
     first_variant = graphene.Int(description='Specific to use in Product Template')
+    combination_info = generic.GenericScalar(description='Specific to Product Template')
 
     def resolve_type_id(self, info):
         if self.type == 'product':
@@ -408,6 +416,12 @@ class Product(OdooObjectType):
 
     def resolve_first_variant(self, info):
         return self.product_variant_id or None
+
+    # Specific to use in Product Template
+    def resolve_combination_info(self, info):
+        env = info.context["env"]
+        pricing_info = get_product_pricing_info(env, self.product_variant_id)
+        return pricing_info or None
 
 
 class Payment(OdooObjectType):

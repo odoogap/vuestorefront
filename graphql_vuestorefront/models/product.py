@@ -60,6 +60,31 @@ class ProductProduct(models.Model):
         self.ensure_one()
         return self in self.env['product.wishlist'].current().mapped('product_id')
 
+    def _get_combination_info_variant(self, pricelist=False, add_qty=1):
+        context = dict(self.env.context, quantity=add_qty, pricelist=pricelist.id if pricelist else False)
+        product = self.with_context(context)
+        product_template = self.product_tmpl_id
+        list_price = product.price_compute('list_price')[self.id]
+        price = product.price if pricelist else list_price
+        price_without_discount = list_price if pricelist and pricelist.discount_policy == 'without_discount' else price
+        has_discounted_price = (pricelist or product_template).currency_id.compare_amounts(price_without_discount,
+                                                                                           price) == 1
+        discount = list_price - price
+        discount_perc = discount * 100 / list_price
+
+        return {
+            'product_id': product.id,
+            'product_template_id': product_template.id,
+            'display_name': product.display_name,
+            'display_image': bool(product.image),
+            'price': price,
+            'list_price': list_price,
+            'price_extra': product.price_extra,
+            'has_discounted_price': has_discounted_price,
+            'discount': round(discount, 2),
+            'discount_perc': round(discount_perc, 2),
+        }
+
 
 class ProductPublicCategory(models.Model):
     _inherit = 'product.public.category'
