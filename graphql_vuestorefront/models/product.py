@@ -7,6 +7,12 @@ from odoo import models, fields, api, tools, _
 from odoo.addons.http_routing.models.ir_http import slug, slugify
 from odoo.exceptions import ValidationError
 
+SLUG_MODELS = [
+    'product.template',
+    'product.product',
+    'product.public.category',
+]
+
 
 class WebsiteSeoMetadata(models.AbstractModel):
     _inherit = 'website.seo.metadata'
@@ -21,6 +27,10 @@ class WebsiteSeoMetadata(models.AbstractModel):
 
     def _validate_website_slug(self):
         self.ensure_one()
+
+        if not self.website_slug or self._name not in SLUG_MODELS:
+            return True
+
         if self.search([('website_slug', '=', self.website_slug), ('id', '!=', self.id)], limit=1):
             raise ValidationError(_('Slug is already in use.'))
 
