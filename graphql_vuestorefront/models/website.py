@@ -10,6 +10,7 @@ class Website(models.Model):
     _inherit = 'website'
 
     vsf_payment_return_url = fields.Char('Payment Return Url', required=True, default='Dummy')
+    vsf_mailing_list_id = fields.Many2one('mailing.list', 'Newsletter', domain=[('is_public', '=', True)])
 
     @api.model
     def enable_b2c_reset_password(self):
