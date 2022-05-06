@@ -14,7 +14,8 @@ class ResConfigSettings(models.TransientModel):
                                          readonly=False, required=True)
     vsf_cache_invalidation_key = fields.Char('Cache Invalidation Key', required=True)
     vsf_cache_invalidation_url = fields.Char('Cache Invalidation Url', required=True)
-    vsf_mailing_list_id = fields.Many2one('mailing.list', 'Newsletter', domain=[('is_public', '=', True)])
+    vsf_mailing_list_id = fields.Many2one('mailing.list', 'Newsletter', domain=[('is_public', '=', True)],
+                                          related='website_id.vsf_mailing_list_id', readonly=False, required=True)
 
     # VSF Images
     vsf_image_quality = fields.Integer('Quality', required=True)
@@ -28,7 +29,6 @@ class ResConfigSettings(models.TransientModel):
         res.update(
             vsf_cache_invalidation_key=ICP.get_param('vsf_cache_invalidation_key'),
             vsf_cache_invalidation_url=ICP.get_param('vsf_cache_invalidation_url'),
-            vsf_mailing_list_id=int(ICP.get_param('vsf_mailing_list_id', 0)),
             vsf_image_quality=int(ICP.get_param('vsf_image_quality', 100)),
             vsf_image_background_rgba=ICP.get_param('vsf_image_background_rgba', '(255, 255, 255, 255)'),
             vsf_image_resize_whitelist=ICP.get_param('vsf_image_resize_whitelist', '[]'),
@@ -47,7 +47,6 @@ class ResConfigSettings(models.TransientModel):
         ICP = self.env['ir.config_parameter'].sudo()
         ICP.set_param('vsf_cache_invalidation_key', self.vsf_cache_invalidation_key)
         ICP.set_param('vsf_cache_invalidation_url', self.vsf_cache_invalidation_url)
-        ICP.set_param('vsf_mailing_list_id', self.vsf_mailing_list_id.id)
         ICP.set_param('vsf_image_quality', self.vsf_image_quality)
         ICP.set_param('vsf_image_background_rgba', self.vsf_image_background_rgba)
         ICP.set_param('vsf_image_resize_whitelist', sorted(vsf_image_resize_whitelist))
