@@ -4,62 +4,8 @@
 
 import requests
 from odoo import models, fields, api, tools, _
-from odoo.addons.http_routing.models.ir_http import slug, slugify
+from odoo.addons.http_routing.models.ir_http import slug
 from odoo.exceptions import ValidationError
-
-SLUG_MODELS = [
-    'product.template',
-    'product.product',
-    'product.public.category',
-]
-
-
-class WebsiteSeoMetadata(models.AbstractModel):
-    _inherit = 'website.seo.metadata'
-
-    def _get_website_slug(self):
-        self.ensure_one()
-        return '{}/{}'.format(self.website_slug_prefix, slug(self))
-
-    def _get_website_slugify(self, name):
-        self.ensure_one()
-        return '{}/{}-{}'.format(self.website_slug_prefix, slugify(name), self.id)
-
-    def _validate_website_slug(self):
-        self.ensure_one()
-
-        if not self.website_slug or self._name not in SLUG_MODELS:
-            return True
-
-        if self.search([('website_slug', '=', self.website_slug), ('id', '!=', self.id)], limit=1):
-            raise ValidationError(_('Slug is already in use.'))
-
-    @api.model
-    def create(self, vals):
-        rec = super(WebsiteSeoMetadata, self).create(vals)
-
-        if vals.get('website_slug', False):
-            rec._validate_website_slug()
-        else:
-            rec.website_slug = rec._get_website_slug()
-
-        return rec
-
-    def write(self, vals):
-        if vals.get('name', False) and not vals.get('website_slug', False):
-            for rec in self:
-                if rec._get_website_slug() == rec.website_slug:
-                    rec.website_slug = rec._get_website_slugify(vals['name'])
-
-        res = super(WebsiteSeoMetadata, self).write(vals)
-
-        for rec in self:
-            rec._validate_website_slug()
-
-        return res
-
-    website_slug = fields.Char('Website Slug', translate=True)
-    website_slug_prefix = fields.Char(default='')
 
 
 class ProductTemplate(models.Model):
@@ -103,7 +49,19 @@ class ProductTemplate(models.Model):
 
             product.public_categ_slug_ids = [(6, 0, category_ids)]
 
-    website_slug_prefix = fields.Char(default='/product')
+    @api.depends('name')
+    def _compute_website_slug(self):
+        for product in self:
+            for lang in self.env['res.lang'].search([]):
+                product = product.with_context(lang=lang.code)
+
+                if not product.id:
+                    product.website_slug = None
+                else:
+                    product.website_slug = '/product/{}'.format(slug(product))
+
+    website_slug = fields.Char('Website Slug', compute='_compute_website_slug', store=True, readonly=True,
+                               translate=True)
     public_categ_slug_ids = fields.Many2many('product.public.category',
                                              'product_template_product_public_category_slug_rel',
                                              compute='_compute_public_categ_slug_ids',
@@ -164,7 +122,15 @@ class ProductPublicCategory(models.Model):
                     mapped('product_template_attribute_value_ids').
                     mapped('product_attribute_value_id').ids)]
 
-    website_slug_prefix = fields.Char(default='/category')
+    def _validate_website_slug(self):
+        for category in self.filtered(lambda c: c.website_slug):
+            if category.website_slug[0] != '/':
+                raise ValidationError(_('Slug should start with /'))
+
+            if self.search([('website_slug', '=', category.website_slug), ('id', '!=', category.id)], limit=1):
+                raise ValidationError(_('Slug is already in use: {}'.format(category.website_slug)))
+
+    website_slug = fields.Char('Website Slug', translate=True)
     attribute_value_ids = fields.Many2many('product.attribute.value', readonly=True)
 
     def _set_vsf_tags(self):
@@ -181,8 +147,21 @@ class ProductPublicCategory(models.Model):
             # Make the GET request to the /cache-invalidate
             requests.get(url, params={'key': key, 'tag': tags_list}, timeout=5)
 
+    @api.model
+    def create(self, vals):
+        rec = super(ProductPublicCategory, self).create(vals)
+
+        if rec.website_slug:
+            rec._validate_website_slug()
+        else:
+            rec.website_slug = '/category/{}'.format(rec.id)
+
+        return rec
+
     def write(self, vals):
         res = super(ProductPublicCategory, self).write(vals)
+        if vals.get('website_slug', False):
+            self._validate_website_slug()
         self._set_vsf_tags()
         return res
 
