@@ -51,8 +51,10 @@ class ProductTemplate(models.Model):
 
     @api.depends('name')
     def _compute_website_slug(self):
+        langs = self.env['res.lang'].search([])
+
         for product in self:
-            for lang in self.env['res.lang'].search([]):
+            for lang in langs:
                 product = product.with_context(lang=lang.code)
 
                 if not product.id:
