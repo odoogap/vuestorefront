@@ -33,8 +33,8 @@ class ProductTemplate(models.Model):
     def _get_public_categ_slug(self, category_ids, category):
         category_ids.append(category.id)
 
-        for child_id in category.child_id:
-            category_ids = self._get_public_categ_slug(category_ids, child_id)
+        if category.parent_id:
+            category_ids = self._get_public_categ_slug(category_ids, category.parent_id)
 
         return category_ids
 
