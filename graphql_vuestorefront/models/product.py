@@ -62,6 +62,26 @@ class ProductTemplate(models.Model):
                 else:
                     product.website_slug = '/product/{}'.format(slug(product))
 
+    @api.depends('product_variant_ids')
+    def _compute_variant_attribute_value_ids(self):
+        """
+        Used to filter attribute values on the website.
+        This method computes a list of attribute values from variants of published products.
+        This will ensure that the available attribute values on the website filtering will return results.
+        By default, Odoo only shows attributes that will return results but doesn't consider that a particular
+        attribute value may not have a variant.
+        """
+        for product in self:
+            variants = product.product_variant_ids
+            attribute_values = variants.\
+                mapped('product_template_attribute_value_ids').\
+                mapped('product_attribute_value_id')
+            product.variant_attribute_value_ids = [(6, 0, attribute_values.ids)]
+
+    variant_attribute_value_ids = fields.Many2many('product.attribute.value',
+                                                   'product_template_variant_product_attribute_value_rel',
+                                                   compute='_compute_variant_attribute_value_ids',
+                                                   store=True, readonly=True)
     website_slug = fields.Char('Website Slug', compute='_compute_website_slug', store=True, readonly=True,
                                translate=True)
     public_categ_slug_ids = fields.Many2many('product.public.category',
@@ -103,27 +123,6 @@ class ProductTemplate(models.Model):
 class ProductPublicCategory(models.Model):
     _inherit = 'product.public.category'
 
-    @api.model
-    def _update_website_filtering(self):
-        """
-        Filtering attribute values on the website should be based on the ecommerce categories.
-        For each category, this method computes a list of attribute values from variants of published products.
-        This will ensure that the available attribute values on the website filtering will return results.
-        By default, Odoo only shows attributes that will return results but doesn't consider that a particular
-        attribute value may not have a variant.
-        """
-        ProductTemplate = self.env['product.template']
-
-        for category in self.env['product.public.category'].search([]):
-            products = ProductTemplate.search([
-                ('public_categ_ids', 'child_of', category.id), ('website_published', '=', True)])
-
-            category.attribute_value_ids = [
-                (6, 0, products.
-                    mapped('product_variant_ids').
-                    mapped('product_template_attribute_value_ids').
-                    mapped('product_attribute_value_id').ids)]
-
     def _validate_website_slug(self):
         for category in self.filtered(lambda c: c.website_slug):
             if category.website_slug[0] != '/':
@@ -133,7 +132,6 @@ class ProductPublicCategory(models.Model):
                 raise ValidationError(_('Slug is already in use: {}'.format(category.website_slug)))
 
     website_slug = fields.Char('Website Slug', translate=True)
-    attribute_value_ids = fields.Many2many('product.attribute.value', readonly=True)
 
     def _set_vsf_tags(self):
         for category in self:
