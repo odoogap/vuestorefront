@@ -19,7 +19,7 @@ def get_search_order(sort):
     for field, val in sort.items():
         if sorting:
             sorting += ', '
-        sorting += '%s %s' % (field, val)
+        sorting += '%s %s' % (field, val.value)
 
     # Add id as last factor so we can consistently get the same results
     if sorting:
@@ -90,13 +90,15 @@ class OrderQuery(graphene.ObjectType):
 
         # Filter by stages or default to sales and done
         if filter.get('stages', False):
-            domain += [('state', 'in', filter['stages'])]
+            stages = [stage.value for stage in filter['stages']]
+            domain += [('state', 'in', stages)]
         else:
             domain += [('state', 'in', ['sale', 'done'])]
 
         # Filter by invoice status
         if filter.get('invoice_status', False):
-            domain += [('invoice_status', 'in', filter['invoice_status'])]
+            invoice_status = [invoice_status.value for invoice_status in filter['invoice_status']]
+            domain += [('invoice_status', 'in', invoice_status)]
 
         # First offset is 0 but first page is 1
         if current_page > 1:

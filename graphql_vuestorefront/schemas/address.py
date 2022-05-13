@@ -71,9 +71,11 @@ class AddressQuery(graphene.ObjectType):
 
         # Get all addresses of a specific addressType - delivery or/and shipping
         if filter.get('address_type'):
+            types = [address_type.value for address_type in filter.get('address_type', [])]
+
             domain = [
                 ("id", "child_of", partner_id),
-                ("type", "in", filter['address_type']),
+                ("type", "in", types),
             ]
         # Get all addresses with addressType delivery and invoice
         else:
@@ -160,7 +162,7 @@ class AddAddress(graphene.Mutation):
             order.partner_id = partner_id
             order.with_context(not_self_saleperson=True).onchange_partner_id()
 
-        values['type'] = type
+        values['type'] = type.value
         values['parent_id'] = partner_id
 
         # Create the new shipping or invoice address
@@ -276,9 +278,9 @@ class SelectAddress(graphene.Mutation):
         partner = get_partner(env, address['id'], order, website)
 
         # Update order with the new shipping or invoice address
-        if type == 'invoice':
+        if type.value == 'invoice':
             order.partner_invoice_id = partner.id
-        elif type == 'delivery':
+        elif type.value == 'delivery':
             order.partner_shipping_id = partner.id
 
         # Trigger the change of fiscal position when the shipping address is modified

@@ -19,9 +19,9 @@ def get_search_order(sort):
         if sorting:
             sorting += ', '
         if field == 'price':
-            sorting += 'list_price %s' % val
+            sorting += 'list_price %s' % val.value
         else:
-            sorting += '%s %s' % (field, val)
+            sorting += '%s %s' % (field, val.value)
 
     # Add id as last factor so we can consistently get the same results
     if sorting:
@@ -40,7 +40,7 @@ def get_search_domain(env, search, **kwargs):
     if kwargs.get('ids', False):
         domains.append([('id', 'in', kwargs['ids'])])
 
-    # Filter with Category
+    # Filter with Category ID
     if kwargs.get('category_id', False):
         domains.append([('public_categ_ids', 'child_of', kwargs['category_id'])])
 

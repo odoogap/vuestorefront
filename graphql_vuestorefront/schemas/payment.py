@@ -48,7 +48,7 @@ class PaymentQuery(graphene.ObjectType):
             ['&', ('website_published', '=', True), ('company_id', '=', order.company_id.id)],
             ['|', ('country_ids', '=', False), ('country_ids', 'in', [order.partner_id.country_id.id])]
         ])
-        return env['payment.acquirer'].search(domain)
+        return env['payment.acquirer'].sudo().search(domain)
 
     def resolve_payment_confirmation(self, info):
         env = info.context["env"]

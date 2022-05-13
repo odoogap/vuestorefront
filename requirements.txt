@@ -1,6 +1,2 @@
-cerberus
-pyquerystring
-parse-accept-language
-jsondiff
-graphql-server-core
-graphene==2.1.8
+graphene
+graphql_server

@@ -19,10 +19,7 @@ def get_search_order(sort):
     for field, val in sort.items():
         if sorting:
             sorting += ', '
-        if field == 'invoice_date':
-            sorting += 'date_invoice %s' % val
-        else:
-            sorting += '%s %s' % (field, val)
+        sorting += '%s %s' % (field, val.value)
 
     # Add id as last factor so we can consistently get the same results
     if sorting:
