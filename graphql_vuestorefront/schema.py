@@ -46,5 +46,5 @@ schema = graphene.Schema(
     query=Query,
     mutation=Mutation,
     types=[country.CountryList, category.CategoryList, product.ProductList, order.OrderList, invoice.InvoiceList,
-           wishlist.WishlistData, shop.CartData]
+           wishlist.WishlistData, shop.CartData, product.ProductVariantData]
 )

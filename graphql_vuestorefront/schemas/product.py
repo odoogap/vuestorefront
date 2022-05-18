@@ -139,6 +139,22 @@ class ProductSortInput(graphene.InputObjectType):
     price = SortEnum()
 
 
+class ProductVariant(graphene.Interface):
+    product = graphene.Field(Product)
+    product_template_id = graphene.Int()
+    display_name = graphene.String()
+    display_image = graphene.Boolean()
+    price = graphene.Float()
+    list_price = graphene.String()
+    has_discounted_price = graphene.Boolean()
+    is_combination_possible = graphene.Boolean()
+
+
+class ProductVariantData(graphene.ObjectType):
+    class Meta:
+        interfaces = (ProductVariant,)
+
+
 class ProductQuery(graphene.ObjectType):
     product = graphene.Field(
         Product,
@@ -157,6 +173,13 @@ class ProductQuery(graphene.ObjectType):
         Attribute,
         required=True,
         id=graphene.Int(),
+    )
+
+    product_variant = graphene.Field(
+        ProductVariant,
+        required=True,
+        product_template_id=graphene.Int(),
+        combination_id=graphene.List(graphene.Int)
     )
 
     @staticmethod
@@ -189,3 +212,40 @@ class ProductQuery(graphene.ObjectType):
         if not attribute:
             raise GraphQLError(_('Attribute does not exist.'))
         return attribute
+
+    @staticmethod
+    def resolve_product_variant(self, info, product_template_id, combination_id):
+        env = info.context["env"]
+
+        website = env['website'].get_current_website()
+        request.website = website
+
+        product_template = env['product.template'].browse(product_template_id)
+        combination = env['product.attribute.value'].browse(combination_id)
+
+        product = product_template._get_variant_for_combination(combination)
+
+        # Condition to verify if Product exist
+        if not product:
+            raise GraphQLError(_('Product does not exist'))
+
+        variant_info = product._get_combination_info_variant()
+
+        is_combination_possible = product_template._is_combination_possible(combination)
+
+        # Condition to Verify if Product is active or if combination exist
+        if not product.active or not is_combination_possible:
+            variant_info['is_combination_possible'] = False
+        else:
+            variant_info['is_combination_possible'] = True
+
+        return ProductVariantData(
+            product=product,
+            product_template_id=variant_info['product_template_id'],
+            display_name=variant_info['display_name'],
+            display_image=variant_info['display_image'],
+            price=variant_info['price'],
+            list_price=variant_info['list_price'],
+            has_discounted_price=variant_info['has_discounted_price'],
+            is_combination_possible=variant_info['is_combination_possible']
+        )

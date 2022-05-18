@@ -4,6 +4,7 @@
 
 import requests
 from odoo import models, fields, api, tools
+from odoo.osv import expression
 
 
 class ProductTemplate(models.Model):
@@ -50,6 +51,59 @@ class ProductTemplate(models.Model):
     def unlink(self):
         self._set_vsf_tags()
         return super(ProductTemplate, self).unlink()
+
+
+    @api.multi
+    def _get_variant_for_combination(self, combination):
+        self.ensure_one()
+
+        attribute_values = combination
+        return self.env['product.product'].browse(self._get_variant_id_for_combination(combination))
+
+    @api.multi
+    def _get_variant_id_for_combination(self, attribute_values):
+        self.ensure_one()
+        domain = [('product_tmpl_id', '=', self.id)]
+        for pav in attribute_values:
+            domain = expression.AND([[('attribute_value_ids', 'in', pav.id)], domain])
+
+        res = self.env['product.product'].with_context(active_test=False).search(domain, order='active DESC, id ASC')
+        return res.filtered(
+            lambda v: v.attribute_value_ids == attribute_values
+        )[:1].id
+
+    @api.multi
+    def _is_combination_possible(self, combination, parent_combination=None):
+        self.ensure_one()
+
+        variant = self._get_variant_for_combination(combination)
+
+        if not variant or not variant.active:
+            return False
+
+        parent_exclusions = self._get_parent_attribute_exclusions(parent_combination)
+        if parent_exclusions:
+            for exclusion in parent_exclusions:
+                if exclusion in combination.ids:
+                    return False
+
+        return True
+
+    @api.multi
+    def _get_parent_attribute_exclusions(self, parent_combination):
+        self.ensure_one()
+        if not parent_combination:
+            return []
+
+        if parent_combination:
+            exclusions = self.env['product.template.attribute.exclusion'].search([
+                ('product_tmpl_id', '=', self.id),
+                ('value_ids', '=', False),
+                ('product_template_attribute_value_id', 'in', parent_combination.ids),
+            ], limit=1)
+            if exclusions:
+                return self.mapped('attribute_line_ids.product_template_value_ids').ids
+        return []
 
 
 class ProductProduct(models.Model):
