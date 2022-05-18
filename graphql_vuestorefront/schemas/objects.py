@@ -306,6 +306,9 @@ class Product(OdooObjectType):
     accessory_products = graphene.List(graphene.NonNull(lambda: Product))
     # Specific to use in Product Variant
     combination_info_variant = generic.GenericScalar(description='Specific to Product Variant')
+    variant_price = graphene.Float(description='Specific to Product Variant')
+    variant_price_after_discount = graphene.Float(description='Specific to Product Variant')
+    variant_has_discounted_price = graphene.Boolean(description='Specific to Product Variant')
     price_extra = graphene.Float(description='Specific to Product Variant')
     variant_attribute_values = graphene.List(graphene.NonNull(lambda: AttributeValue),
                                              description='Specific to Product Variant')
@@ -400,6 +403,21 @@ class Product(OdooObjectType):
         env = info.context["env"]
         pricing_info = get_product_pricing_info(env, self)
         return pricing_info or None
+
+    def resolve_variant_price(self, info):
+        env = info.context["env"]
+        pricing_info = get_product_pricing_info(env, self)
+        return pricing_info['list_price'] or None
+
+    def resolve_variant_price_after_discount(self, info):
+        env = info.context["env"]
+        pricing_info = get_product_pricing_info(env, self)
+        return pricing_info['price'] or None
+
+    def resolve_variant_has_discounted_price(self, info):
+        env = info.context["env"]
+        pricing_info = get_product_pricing_info(env, self)
+        return pricing_info['has_discounted_price']
 
     def resolve_price_extra(self, info):
         return self.price_extra or None
