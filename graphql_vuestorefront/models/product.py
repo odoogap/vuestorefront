@@ -10,6 +10,23 @@ from odoo.osv import expression
 class ProductTemplate(models.Model):
     _inherit = 'product.template'
 
+    @api.depends('product_variant_ids')
+    def _compute_variant_attribute_value_ids(self):
+        """
+        Used to filter attribute values on the website.
+        This method computes a list of attribute values from variants of published products.
+        This will ensure that the available attribute values on the website filtering will return results.
+        By default, Odoo only shows attributes that will return results but doesn't consider that a particular
+        attribute value may not have a variant.
+        """
+        for product in self:
+            attribute_values = product.product_variant_ids.mapped('attribute_value_ids')
+            product.variant_attribute_value_ids = [(6, 0, attribute_values.ids)]
+
+    variant_attribute_value_ids = fields.Many2many('product.attribute.value',
+                                                   'product_template_variant_product_attribute_value_rel',
+                                                   compute='_compute_variant_attribute_value_ids',
+                                                   store=True, readonly=True)
     slug = fields.Char('Slug')
     public_categ_ids = fields.Many2many(
         'product.public.category', relation='product_public_category_product_template_rel',
@@ -144,29 +161,7 @@ class ProductPublicCategory(models.Model):
     _inherit = 'product.public.category'
 
     product_tmpl_ids = fields.Many2many('product.template', relation='product_public_category_product_template_rel')
-    attribute_value_ids = fields.Many2many('product.attribute.value', readonly=True)
     slug = fields.Char('Slug')
-
-    @api.model
-    def _update_website_filtering(self):
-        """
-        Filtering attribute values on the website should be based on the ecommerce categories.
-        For each category, this method computes a list of attribute values from variants of published products.
-        This will ensure that the available attribute values on the website filtering will return results.
-        By default, Odoo only shows attributes that will return results but doesn't consider that a particular
-        attribute value may not have a variant.
-        """
-        ProductTemplate = self.env['product.template']
-
-        for category in self.env['product.public.category'].search([]):
-            products = ProductTemplate.search([
-                ('public_categ_ids', 'child_of', category.id), ('website_published', '=', True)])
-
-            category.attribute_value_ids = [
-                (6, 0, products.
-                 mapped('product_variant_ids').
-                 mapped('attribute_value_ids').ids)
-            ]
 
     def _set_vsf_tags(self):
         for category in self:
