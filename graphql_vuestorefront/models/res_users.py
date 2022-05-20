@@ -47,7 +47,7 @@ class ResUsers(models.Model):
 
         for user in self:
             token = user.signup_token
-            signup_url = "%s?token=%s" % (domain, token)
+            signup_url = "%s/forgot-password/new-password?token=%s" % (domain, token)
             if not user.email:
                 raise UserError(_("Cannot send email: user %s has no email address.") % user.name)
             with self.env.cr.savepoint():
