@@ -387,7 +387,7 @@ class Product(OdooObjectType):
         return self.product_image_ids or None
 
     def resolve_qty(self, info):
-        return self.qty_available
+        return self.sudo().qty_available
 
     def resolve_slug(self, info):
         return self.slug or slug(self)
