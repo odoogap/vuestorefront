@@ -137,17 +137,18 @@ class ProductProduct(models.Model):
         product_template = self.product_tmpl_id
         list_price = product.price_compute('list_price')[self.id]
         price = product.price if pricelist else list_price
-        price_without_discount = list_price if pricelist and pricelist.discount_policy == 'without_discount' else price
-        has_discounted_price = (pricelist or product_template).currency_id.compare_amounts(price_without_discount,
-                                                                                           price) == 1
+
         discount = list_price - price
         discount_perc = discount * 100 / list_price
-
+        if discount > 0:
+            has_discounted_price = True
+        else:
+            has_discounted_price = False
         return {
             'product_id': product.id,
             'product_template_id': product_template.id,
             'display_name': product.display_name,
-            'display_image': bool(product.image),
+            'display_image': False,
             'price': price,
             'list_price': list_price,
             'price_extra': product.price_extra,
