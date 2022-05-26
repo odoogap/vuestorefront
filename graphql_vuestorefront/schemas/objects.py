@@ -334,7 +334,7 @@ class Product(OdooObjectType):
             return 0
 
     def resolve_status(self, info):
-        if self.qty_available > 0:
+        if self.sudo().qty_available > 0:
             return 1
         else:
             return 0
@@ -376,7 +376,7 @@ class Product(OdooObjectType):
         return self.custom_message or None
 
     def resolve_is_in_stock(self, info):
-        return bool(self.qty_available > 0)
+        return bool(self.sudo().qty_available > 0)
 
     def resolve_is_in_wishlist(self, info):
         env = info.context["env"]
