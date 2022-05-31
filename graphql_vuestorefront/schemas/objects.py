@@ -34,6 +34,10 @@ InvoiceStatus = graphene.Enum('InvoiceStatus', [('UpsellingOpportunity', 'upsell
 
 InvoiceState = graphene.Enum('InvoiceState', [('Draft', 'draft'), ('Posted', 'posted'), ('Cancelled', 'cancel')])
 
+PaymentTransactionState = graphene.Enum('PaymentTransaction', [('Draft', 'draft'), ('Pending', 'pending'),
+                                                               ('Authorized', 'authorized'), ('Confirmed', 'done'),
+                                                               ('Canceled', 'cancel'), ('Error', 'error')])
+
 
 class SortEnum(graphene.Enum):
     ASC = 'ASC'
@@ -479,6 +483,7 @@ class PaymentTransaction(OdooObjectType):
     acquirer_reference = graphene.String()
     company = graphene.Field(lambda: Partner)
     customer = graphene.Field(lambda: Partner)
+    state = PaymentTransactionState()
 
     def resolve_payment(self, info):
         return self.payment_id or None
@@ -543,6 +548,7 @@ class Order(OdooObjectType):
     stage = OrderStage()
     order_url = graphene.String()
     transactions = graphene.List(graphene.NonNull(lambda: PaymentTransaction))
+    last_transaction = graphene.Field(lambda: PaymentTransaction)
     client_order_ref = graphene.String()
     invoice_status = InvoiceStatus()
     invoice_count = graphene.Int()
@@ -579,6 +585,9 @@ class Order(OdooObjectType):
 
     def resolve_transactions(self, info):
         return self.transaction_ids or None
+
+    def resolve_last_transaction(self, info):
+        return self.transaction_ids.sorted(key=lambda r: r.create_date, reverse=True) or None
 
 
 class InvoiceLine(OdooObjectType):
