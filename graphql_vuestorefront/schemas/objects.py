@@ -34,6 +34,10 @@ InventoryAvailability = graphene.Enum('InventoryAvailability', [
     ('ShowProductSpecificNotifications', 'custom')
 ])
 
+PaymentTransactionState = graphene.Enum('PaymentTransaction', [('Draft', 'draft'), ('Pending', 'pending'),
+                                                               ('Authorized', 'authorized'), ('Confirmed', 'done'),
+                                                               ('Canceled', 'cancel'), ('Error', 'error')])
+
 
 class SortEnum(graphene.Enum):
     ASC = 'ASC'
@@ -445,19 +449,26 @@ class Payment(OdooObjectType):
 
 class PaymentTransaction(OdooObjectType):
     id = graphene.Int()
+    reference = graphene.String()
     payment = graphene.Field(lambda: Payment)
-    payment_token = graphene.String()
     amount = graphene.Float()
     acquirer = graphene.String()
+    acquirer_reference = graphene.String()
+    company = graphene.Field(lambda: Partner)
+    customer = graphene.Field(lambda: Partner)
+    state = PaymentTransactionState()
 
     def resolve_payment(self, info):
         return self.payment_id or None
 
-    def resolve_payment_token(self, info):
-        return self.payment_token_id.name or None
-
     def resolve_acquirer(self, info):
         return self.acquirer_id.name or None
+
+    def resolve_company(self, info):
+        return self.acquirer_id.company_id or None
+
+    def resolve_customer(self, info):
+        return self.partner_id or None
 
 
 class OrderLine(OdooObjectType):
@@ -509,6 +520,7 @@ class Order(OdooObjectType):
     stage = OrderStage()
     order_url = graphene.String()
     transactions = graphene.List(graphene.NonNull(lambda: PaymentTransaction))
+    last_transaction = graphene.Field(lambda: PaymentTransaction)
     client_order_ref = graphene.String()
     invoice_status = InvoiceStatus()
     invoice_count = graphene.Int()
@@ -542,6 +554,9 @@ class Order(OdooObjectType):
 
     def resolve_transactions(self, info):
         return self.transaction_ids or None
+
+    def resolve_last_transaction(self, info):
+        return self.transaction_ids.sorted(key=lambda r: r.create_date, reverse=True) or None
 
 
 class InvoiceLine(OdooObjectType):
