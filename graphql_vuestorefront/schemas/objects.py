@@ -34,7 +34,7 @@ InvoiceStatus = graphene.Enum('InvoiceStatus', [('UpsellingOpportunity', 'upsell
 
 InvoiceState = graphene.Enum('InvoiceState', [('Draft', 'draft'), ('Posted', 'posted'), ('Cancelled', 'cancel')])
 
-PaymentTransactionState = graphene.Enum('PaymentTransaction', [('Draft', 'draft'), ('Pending', 'pending'),
+PaymentTransactionState = graphene.Enum('PaymentTransactionState', [('Draft', 'draft'), ('Pending', 'pending'),
                                                                ('Authorized', 'authorized'), ('Confirmed', 'done'),
                                                                ('Canceled', 'cancel'), ('Error', 'error')])
 
