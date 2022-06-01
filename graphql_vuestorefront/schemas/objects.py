@@ -34,7 +34,7 @@ InventoryAvailability = graphene.Enum('InventoryAvailability', [
     ('ShowProductSpecificNotifications', 'custom')
 ])
 
-PaymentTransactionState = graphene.Enum('PaymentTransaction', [('Draft', 'draft'), ('Pending', 'pending'),
+PaymentTransactionState = graphene.Enum('PaymentTransactionState', [('Draft', 'draft'), ('Pending', 'pending'),
                                                                ('Authorized', 'authorized'), ('Confirmed', 'done'),
                                                                ('Canceled', 'cancel'), ('Error', 'error')])
 
