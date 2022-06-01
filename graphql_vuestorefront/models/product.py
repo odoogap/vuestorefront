@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # Copyright 2022 ODOOGAP/PROMPTEQUATION LDA
 # License LGPL-3.0 or later (http://www.gnu.org/licenses/lgpl).
-
+import json
 import requests
 from odoo import models, fields, api, tools, _
 from odoo.addons.http_routing.models.ir_http import slug
@@ -88,6 +88,7 @@ class ProductTemplate(models.Model):
                                              'product_template_product_public_category_slug_rel',
                                              compute='_compute_public_categ_slug_ids',
                                              store=True, readonly=True)
+    json_ld = fields.Char('JSON-LD')
 
     def write(self, vals):
         res = super(ProductTemplate, self).write(vals)
@@ -118,6 +119,45 @@ class ProductTemplate(models.Model):
         })
 
         return combination_info
+
+    def get_json_ld(self):
+        self.ensure_one()
+        if self.json_ld:
+            return self.json_ld
+
+        base_url = self.env['ir.config_parameter'].sudo().get_param('web.base.url', '')
+
+        # Get list of images
+        images = list()
+        if self.image_1920:
+            images.append('%s/web/image/product.product/%s/image' % (base_url, self.id))
+
+        json_ld = {
+            "@context": "https://schema.org/",
+            "@type": "Product",
+            "name": self.display_name,
+            "image": images,
+            "offers": {
+                "@type": "Offer",
+                "url": "%s/product/%s" % (base_url, slug(self)),
+                "priceCurrency": self.currency_id.name,
+                "price": self.list_price,
+                "itemCondition": "https://schema.org/NewCondition",
+                "availability": "https://schema.org/InStock",
+                "seller": {
+                    "@type": "Organization",
+                    "name": "Greenmind"
+                }
+            }
+        }
+
+        if self.description_sale:
+            json_ld.update({"description": self.description_sale})
+
+        if self.default_code:
+            json_ld.update({"sku": self.default_code})
+
+        return json.dumps(json_ld)
 
 
 class ProductPublicCategory(models.Model):
