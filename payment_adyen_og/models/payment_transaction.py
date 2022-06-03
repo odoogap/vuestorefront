@@ -22,6 +22,7 @@ from odoo.addons.payment_adyen_og.controllers.main import AdyenOGController
 
 _logger = logging.getLogger(__name__)
 API_ENDPOINT_VERSIONS['/payments/{}/captures'] = 67
+API_ENDPOINT_VERSIONS['/payments/{}/cancels'] = 67
 
 
 class PaymentTransaction(models.Model):
@@ -264,7 +265,6 @@ class PaymentTransaction(models.Model):
 
         payment_state = data.get('resultCode')
         status = data.get('authResult', 'PENDING')
-
         if status == 'AUTHORISED':
             self.write({'acquirer_reference': data.get('pspReference')})
             # Capture Manually
@@ -323,6 +323,33 @@ class PaymentTransaction(models.Model):
         feedback_data.update({
             'resultCode': response_content.get('status', ''),
             'merchantReference': response_content.get('reference', '')
+        })
+        self._handle_feedback_data('adyen_og', feedback_data)
+        return True
+
+    def _send_void_request(self):
+        """ Override of payment to cancel payment request to Adyen."""
+        super()._send_void_request()
+        if self.provider != 'adyen_og':
+            return
+
+        data = {
+            'merchantAccount': self.acquirer_id.adyen_merchant_account,
+            'reference': self.reference,
+        }
+        response_content = self.acquirer_id._adyen_make_request(
+            url_field_name='adyen_checkout_api_url',
+            endpoint='/payments/{}/cancels',
+            endpoint_param=self.acquirer_reference,
+            payload=data,
+            method='POST'
+        )
+        _logger.info("capture request response:\n%s", pprint.pformat(response_content))
+        feedback_data = response_content
+        feedback_data.update({
+            'resultCode': response_content.get('status', ''),
+            'merchantReference': response_content.get('reference', ''),
+            'authResult': 'CANCELED'
         })
         self._handle_feedback_data('adyen_og', feedback_data)
         return True
