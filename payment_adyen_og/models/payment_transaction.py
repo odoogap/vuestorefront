@@ -293,6 +293,10 @@ class PaymentTransaction(models.Model):
         if self.provider != 'adyen_og':
             return
 
+        amount = sum(self.sale_order_ids.mapped('amount_total'))
+        if self.amount > amount:
+            self.amount = amount
+
         # Make the capture request to Adyen
         converted_amount = payment_utils.to_minor_currency_units(
             self.amount,
