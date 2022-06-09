@@ -126,7 +126,7 @@ class ApplyCoupon(graphene.Mutation):
     class Arguments:
         promo = graphene.String()
 
-    applied = graphene.Boolean()
+    error = graphene.String()
 
     @staticmethod
     def mutate(self, info, promo):
@@ -135,10 +135,9 @@ class ApplyCoupon(graphene.Mutation):
         request.website = website
         order = website.sale_get_order(force_create=1)
 
-        coupon_status = request.env['sale.coupon.apply.code'].sudo().apply_coupon(order, promo)
+        coupon_status = env['sale.coupon.apply.code'].sudo().apply_coupon(order, promo)
 
-        applied = not bool(coupon_status.get('not_found') or coupon_status.get('error'))
-        return ApplyCoupon(applied=applied)
+        return ApplyCoupon(error=coupon_status.get('not_found') or coupon_status.get('error'))
 
 
 class OrderMutation(graphene.ObjectType):
