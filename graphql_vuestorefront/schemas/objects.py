@@ -512,12 +512,26 @@ class OrderLine(OdooObjectType):
     price_total = graphene.Float()
     price_tax = graphene.Float()
     warning_stock = graphene.String()
+    gift_card = graphene.Field(lambda: GiftCard)
 
     def resolve_product(self, info):
         return self.product_id or None
 
     def resolve_quantity(self, info):
         return self.product_uom_qty or None
+
+    def resolve_gift_card(self, info):
+        return self.gift_card_id or None
+
+
+class Coupon(OdooObjectType):
+    id = graphene.Int(required=True)
+    code = graphene.String()
+
+
+class GiftCard(OdooObjectType):
+    id = graphene.Int(required=True)
+    code = graphene.String()
 
 
 class ShippingMethod(OdooObjectType):
@@ -556,6 +570,7 @@ class Order(OdooObjectType):
     client_order_ref = graphene.String()
     invoice_status = InvoiceStatus()
     invoice_count = graphene.Int()
+    coupons = graphene.List(graphene.NonNull(lambda: Coupon))
 
     def resolve_partner(self, info):
         return self.partner_id or None
@@ -592,6 +607,9 @@ class Order(OdooObjectType):
 
     def resolve_last_transaction(self, info):
         return self.transaction_ids.sorted(key=lambda r: r.create_date, reverse=True) or None
+
+    def resolve_coupons(self, info):
+        return self.applied_coupon_ids or None
 
 
 class InvoiceLine(OdooObjectType):

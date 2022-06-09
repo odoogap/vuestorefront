@@ -126,7 +126,7 @@ class ApplyCoupon(graphene.Mutation):
     class Arguments:
         promo = graphene.String()
 
-    applied = graphene.Boolean()
+    error = graphene.String()
 
     @staticmethod
     def mutate(self, info, promo):
@@ -135,11 +135,30 @@ class ApplyCoupon(graphene.Mutation):
         request.website = website
         order = website.sale_get_order(force_create=1)
 
-        coupon_status = request.env['sale.coupon.apply.code'].sudo().apply_coupon(order, promo)
+        coupon_status = env['sale.coupon.apply.code'].sudo().apply_coupon(order, promo)
 
-        applied = not bool(coupon_status.get('not_found') or coupon_status.get('error'))
-        return ApplyCoupon(applied=applied)
+        return ApplyCoupon(error=coupon_status.get('not_found') or coupon_status.get('error'))
+
+
+class ApplyGiftCard(graphene.Mutation):
+    class Arguments:
+        promo = graphene.String()
+
+    error = graphene.String()
+
+    @staticmethod
+    def mutate(self, info, promo):
+        env = info.context["env"]
+        website = env['website'].get_current_website()
+        request.website = website
+        order = website.sale_get_order(force_create=1)
+
+        gift_card = env["gift.card"].sudo().search([('code', '=', promo)], limit=1)
+        gift_card_status = order._pay_with_gift_card(gift_card)
+
+        return ApplyGiftCard(error=gift_card_status)
 
 
 class OrderMutation(graphene.ObjectType):
     apply_coupon = ApplyCoupon.Field(description='Apply Coupon')
+    apply_gift_card = ApplyGiftCard.Field(description='Apply Gift Card')

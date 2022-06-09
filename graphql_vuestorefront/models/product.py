@@ -27,8 +27,11 @@ class ProductTemplate(models.Model):
         key = ICP.get_param('vsf_cache_invalidation_key', False)
 
         if url and key:
-            # Make the GET request to the /cache-invalidate
-            requests.get(url, params={'key': key, 'tag': tags_list}, timeout=5)
+            try:
+                # Make the GET request to the /cache-invalidate
+                requests.get(url, params={'key': key, 'tag': tags_list}, timeout=5)
+            except:
+                pass
 
     def _get_public_categ_slug(self, category_ids, category):
         category_ids.append(category.id)
@@ -227,8 +230,11 @@ class ProductPublicCategory(models.Model):
         key = ICP.get_param('vsf_cache_invalidation_key', False)
 
         if url and key:
-            # Make the GET request to the /cache-invalidate
-            requests.get(url, params={'key': key, 'tag': tags_list}, timeout=5)
+            try:
+                # Make the GET request to the /cache-invalidate
+                requests.get(url, params={'key': key, 'tag': tags_list}, timeout=5)
+            except:
+                pass
 
     @api.model
     def create(self, vals):
