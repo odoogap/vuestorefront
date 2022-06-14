@@ -124,6 +124,30 @@ class ChangePassword(graphene.Mutation):
             raise GraphQLError(str(e))
 
 
+class UpdatePassword(graphene.Mutation):
+    class Arguments:
+        current_password = graphene.String(required=True)
+        new_password = graphene.String(required=True)
+
+    Output = User
+
+    @staticmethod
+    def mutate(self, info, current_password, new_password):
+        env = info.context['env']
+        if env.uid:
+            user = env['res.users'].search([('id', '=', env.uid)])
+            try:
+                user._check_credentials(current_password)
+                user.sudo().password = new_password
+                env.cr.commit()
+                request.session.authenticate(request.session.db, user.login, new_password)
+                return user
+            except AccessDenied:
+                raise GraphQLError(_('Incorrect password.'))
+        else:
+            raise GraphQLError(_('You must be logged in.'))
+
+
 class SignMutation(graphene.ObjectType):
     login = Login.Field(description='Authenticate user with email and password and retrieves token.')
     logout = Logout.Field(description='Logout user')
@@ -131,3 +155,4 @@ class SignMutation(graphene.ObjectType):
     reset_password = ResetPassword.Field(description="Send change password url to user's email.")
     change_password = ChangePassword.Field(description="Set new user's password with the token from the change "
                                                        "password url received in the email.")
+    update_password = UpdatePassword.Field(description="Update user password.")
