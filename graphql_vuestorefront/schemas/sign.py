@@ -138,7 +138,7 @@ class UpdatePassword(graphene.Mutation):
             user = env['res.users'].search([('id', '=', env.uid)])
             try:
                 user._check_credentials(current_password)
-                user.sudo().password = new_password
+                user.change_password(current_password, new_password)
                 env.cr.commit()
                 request.session.authenticate(request.session.db, user.login, new_password)
                 return user
