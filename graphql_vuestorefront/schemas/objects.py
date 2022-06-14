@@ -7,7 +7,7 @@ from graphene.types import generic
 from graphql import GraphQLError
 from odoo import SUPERUSER_ID, _
 
-from odoo.addons.http_routing.models.ir_http import slugify
+from odoo.addons.http_routing.models.ir_http import slugify, slug
 from odoo.addons.graphql_base import OdooObjectType
 from odoo.exceptions import AccessError
 from odoo.http import request
@@ -206,7 +206,7 @@ class Category(OdooObjectType):
         return self.child_id or None
 
     def resolve_slug(self, info):
-        return self.website_slug
+        return slug(self)
 
     def resolve_products(self, info):
         return self.product_tmpl_ids or None
@@ -342,7 +342,7 @@ class Product(OdooObjectType):
             return 0
 
     def resolve_status(self, info):
-        if self.free_qty > 0:
+        if self.qty_available > 0:
             return 1
         else:
             return 0
@@ -394,7 +394,7 @@ class Product(OdooObjectType):
         return self.website_ribbon_id or None
 
     def resolve_is_in_stock(self, info):
-        return bool(self.free_qty > 0)
+        return bool(self.qty_available > 0)
 
     def resolve_is_in_wishlist(self, info):
         env = info.context["env"]
@@ -408,10 +408,10 @@ class Product(OdooObjectType):
             return self.product_template_image_ids + self.product_variant_image_ids or None
 
     def resolve_qty(self, info):
-        return self.free_qty
+        return self.qty_available
 
     def resolve_slug(self, info):
-        return self.website_slug
+        return slug(self)
 
     def resolve_alternative_products(self, info):
         return self.alternative_product_ids or None
