@@ -130,7 +130,7 @@ class UpdatePassword(graphene.Mutation):
         current_password = graphene.String(required=True)
         new_password = graphene.String(required=True)
 
-    Output = CopiaUser
+    Output = User
 
     @staticmethod
     def mutate(self, info, current_password, new_password):
@@ -143,7 +143,7 @@ class UpdatePassword(graphene.Mutation):
                 env.cr.commit()
                 request.session.authenticate(request.session.db, user.login, new_password)
                 return user
-            except AccessDenied:
+            except odoo.exceptions.AccessDenied:
                 raise GraphQLError(_('Incorrect password.'))
         else:
             raise GraphQLError(_('You must be logged in.'))
