@@ -9,7 +9,7 @@ import hmac
 import hashlib
 import binascii
 
-from odoo import models, api, tools, _
+from odoo import models, api, fields, tools, _
 from itertools import chain
 from collections import OrderedDict
 from werkzeug import urls
@@ -23,6 +23,8 @@ from odoo.addons.payment_adyen_og.controllers.main import AdyenOGController
 _logger = logging.getLogger(__name__)
 API_ENDPOINT_VERSIONS['/payments/{}/captures'] = 67
 API_ENDPOINT_VERSIONS['/payments/{}/cancels'] = 67
+API_ENDPOINT_VERSIONS['/payments/{}/refunds'] = 67
+API_ENDPOINT_VERSIONS['/payments/{}/reversals'] = 67
 
 
 class PaymentTransaction(models.Model):
@@ -353,3 +355,71 @@ class PaymentTransaction(models.Model):
         })
         self._handle_feedback_data('adyen_og', feedback_data)
         return True
+
+    def _send_refund_request(self, amount_to_refund=None, create_refund_transaction=True):
+        """ Override of payment to refund payment request to Adyen."""
+        if self.provider != 'adyen_og':
+            return super()._send_refund_request(
+                amount_to_refund=amount_to_refund,
+                create_refund_transaction=create_refund_transaction,
+            )
+
+        refund_tx = super()._send_refund_request(
+            amount_to_refund=amount_to_refund, create_refund_transaction=True
+        )
+        ctx = dict(self.env.context)
+
+        if 'refund_invoice_id' in ctx:
+            refund_tx.invoice_ids = [(6, 0, [ctx['refund_invoice_id']])]
+
+        if self.state == 'done':
+            data = {
+                'merchantAccount': refund_tx.acquirer_id.adyen_merchant_account,
+                'reference': refund_tx.reference,
+                'amount': {
+                    'value': amount_to_refund,
+                    'currency': refund_tx.currency_id.name,
+                },
+            }
+            response_content = refund_tx.acquirer_id._adyen_make_request(
+                url_field_name='adyen_checkout_api_url',
+                endpoint='/payments/{}/refunds',
+                endpoint_param=refund_tx.acquirer_reference,
+                payload=data,
+                method='POST'
+            )
+        else:
+            data = {
+                'merchantAccount': refund_tx.acquirer_id.adyen_merchant_account,
+                'reference': refund_tx.reference,
+            }
+            response_content = refund_tx.acquirer_id._adyen_make_request(
+                url_field_name='adyen_checkout_api_url',
+                endpoint='/payments/{}/reversals',
+                endpoint_param=refund_tx.acquirer_reference,
+                payload=data,
+                method='POST'
+            )
+        _logger.info("refund request response:\n%s", pprint.pformat(response_content))
+        feedback_data = response_content
+        feedback_data.update({
+            'resultCode': response_content.get('status', ''),
+            'merchantReference': response_content.get('reference', '')
+        })
+        refund_tx._handle_feedback_data('adyen_og', feedback_data)
+
+        return refund_tx
+
+    def _create_refund_transaction(self, amount_to_refund=None, **custom_create_values):
+        tx = super(PaymentTransaction, self)._create_refund_transaction(amount_to_refund=amount_to_refund, **custom_create_values)
+        tx.write({
+            'acquirer_reference': self.acquirer_reference,
+        })
+
+        return tx
+
+    def action_refund(self, amount_to_refund=None):
+        if any(tx.state not in ['done', 'authorized'] for tx in self):
+            raise ValidationError(_("Only confirmed or authorized transactions can be refunded."))
+        for tx in self:
+            tx._send_refund_request(amount_to_refund)
