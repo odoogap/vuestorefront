@@ -13,7 +13,6 @@ class ProductTemplate(models.Model):
 
     def _set_vsf_tags(self):
         for product in self:
-            tags = False
             product_tag = 'P%s' % product.id
             tags = '%s' % product_tag
             category_ids = product.public_categ_ids.ids
