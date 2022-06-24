@@ -35,7 +35,7 @@ class WebsiteRedirect(models.Model):
         tags = tags_list
 
         # Make the GET request to the /cache-invalidate
-        requests.get(url, params={'key': key, 'tag': tags})
+        requests.get(url, params={'key': key, 'tags': tags})
 
     @api.multi
     def write(self, vals):
