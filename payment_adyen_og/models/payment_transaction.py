@@ -189,15 +189,17 @@ class PaymentTransaction(models.Model):
                 'merchantReference': processing_values['reference'],
                 'paymentAmount': '%d' % paymentAmount,
                 'currencyCode': self.currency_id and self.currency_id.name or '',
-                'shipBeforeDate': tmp_date,
+                'shipBeforeDate': tmp_date.strftime('%Y-%m-%d'),
                 'skinCode': self.acquirer_id.adyen_skin_code,
                 'merchantAccount': self.acquirer_id.adyen_merchant_account,
-                'shopperLocale': processing_values.get('partner_lang'),
-                'sessionValidity': tmp_date,
+                'shopperLocale': processing_values.get('partner_lang', ''),
+                'sessionValidity': tmp_date.isoformat('T')[:19] + "Z",
                 'resURL': urls.url_join(base_url, AdyenOGController._return_url),
                 'merchantReturnData': '{"return_url": "/payment/status"}',
+                'shopperEmail': processing_values.get('partner_email') or processing_values.get(
+                    'billing_partner_email') or '',
             })
-            processing_values['merchantSig'] = self._adyen_generate_merchant_sig('in', processing_values)
+            processing_values['merchantSig'] = self._adyen_generate_merchant_sig_sha256('in', processing_values)
 
         return processing_values
 
