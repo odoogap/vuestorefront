@@ -13,12 +13,13 @@ class ProductTemplate(models.Model):
 
     def _set_vsf_tags(self):
         for product in self:
-            tags = []
+            tags = False
             product_tag = 'P%s' % product.id
-            tags.append(product_tag)
+            tags = '%s' % product_tag
             category_ids = product.public_categ_ids.ids
             for category_id in category_ids:
-                tags.append('C%s' % category_id)
+                category_tag = 'C%s' % category_id
+                tags = '%s,%s' % (tags, category_tag)
             product._vsf_request_cache_invalidation(tags)
 
     def _vsf_request_cache_invalidation(self, tags_list):
@@ -29,7 +30,7 @@ class ProductTemplate(models.Model):
         if url and key:
             try:
                 # Make the GET request to the /cache-invalidate
-                requests.get(url, params={'key': key, 'tag': tags_list}, timeout=5)
+                requests.get(url, params={'key': key, 'tags': tags_list}, timeout=5)
             except:
                 pass
 
@@ -149,7 +150,7 @@ class ProductPublicCategory(models.Model):
         if url and key:
             try:
                 # Make the GET request to the /cache-invalidate
-                requests.get(url, params={'key': key, 'tag': tags_list}, timeout=5)
+                requests.get(url, params={'key': key, 'tags': tags_list}, timeout=5)
             except:
                 pass
 
