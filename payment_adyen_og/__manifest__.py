@@ -24,7 +24,9 @@
     # Views
     'data': ['views/payment_adyen_templates.xml',
              'data/payment_acquirer_data.xml',
-             'views/payment_views.xml'],
+             'views/payment_views.xml',
+             'data/mail_channel_data.xml'
+             ],
 
     # Technical
     'installable': True,

@@ -8,6 +8,7 @@ import pprint
 import hmac
 import hashlib
 import binascii
+import requests
 
 from odoo import models, api, fields, tools, _
 from itertools import chain
@@ -296,10 +297,22 @@ class PaymentTransaction(models.Model):
         super()._send_capture_request()
         if self.provider != 'adyen_og':
             return
-
-        amount = sum(self.sale_order_ids.mapped('amount_total'))
-        if self.amount > amount:
+        if self.invoice_ids:
+            amount = sum(self.invoice_ids.mapped('amount_total'))
+        else:
+            amount = sum(self.sale_order_ids.mapped('amount_total'))
+        if self.amount < amount:
+            adyen_payment_channel = self.sudo().env.ref(
+                'payment_adyen_og.channel_adyen_payment_announcement')
+            partner = self.env.user.partner_id
+            currency = self.currency_id.symbol
+            message = "<p>we couldn't authorize <strong>%s %s</strong> amount on <strong>%s %s</strong> order %s.</p>" % \
+                      (amount, currency, self.amount, currency, ','.join(self.sale_order_ids.mapped('name')))
+            adyen_payment_channel.message_post(body=message, subtype_xmlid='mail.mt_comment', partner_ids=partner.ids)
+            return True
+        elif self.amount > amount:
             self.amount = amount
+
 
         # Make the capture request to Adyen
         converted_amount = payment_utils.to_minor_currency_units(
@@ -329,6 +342,7 @@ class PaymentTransaction(models.Model):
             'merchantReference': response_content.get('reference', '')
         })
         self._handle_feedback_data('adyen_og', feedback_data)
+
         return True
 
     def _send_void_request(self):

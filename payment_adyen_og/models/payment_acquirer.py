@@ -2,8 +2,14 @@
 # Copyright 2022 ODOOGAP/PROMPTEQUATION LDA
 # License LGPL-3.0 or later (http://www.gnu.org/licenses/lgpl).
 
+import requests
+from odoo import _
 from odoo import fields, models, api
+from odoo.addons.payment_adyen.const import API_ENDPOINT_VERSIONS
 from odoo.addons.payment_adyen_og.const import SUPPORTED_CURRENCIES
+from odoo.exceptions import ValidationError
+
+_logger = logging.getLogger(__name__)
 
 
 class AcquirerAdyen(models.Model):
@@ -50,3 +56,42 @@ class AcquirerAdyen(models.Model):
         if self.provider != 'adyen_og':
             return super()._get_default_payment_method_id()
         return self.env.ref('payment_adyen_og.payment_method_adyen_og').id
+
+    def _adyen_make_request(
+            self, url_field_name, endpoint, endpoint_param=None, payload=None, method='POST'
+    ):
+        """ Overwrite method to post payment fail error in channel"""
+
+        def _build_url(_base_url, _version, _endpoint):
+            _base = _base_url.rstrip('/')  # Remove potential trailing slash
+            _endpoint = _endpoint.lstrip('/')  # Remove potential leading slash
+            return f'{_base}/V{_version}/{_endpoint}'
+
+        self.ensure_one()
+        base_url = self[url_field_name]  # Restrict request URL to the stored API URL fields
+        version = API_ENDPOINT_VERSIONS[endpoint]
+        endpoint = endpoint if not endpoint_param else endpoint.format(endpoint_param)
+        url = _build_url(base_url, version, endpoint)
+        headers = {'X-API-Key': self.adyen_api_key}
+        adyen_payment_channel = self.sudo().env.ref(
+            'payment_adyen_og.channel_adyen_payment_announcement')
+        partner = self.env.user.partner_id
+        try:
+            response = requests.request(method, url, json=payload, headers=headers, timeout=60)
+            response.raise_for_status()
+        except requests.exceptions.ConnectionError:
+            message = "Adyen: Could not establish the connection to the API, Reference %s." % payload.get('reference',
+                                                                                                          '')
+            adyen_payment_channel.message_post(body=message, subtype_xmlid='mail.mt_comment', partner_ids=partner.ids)
+            _logger.exception("unable to reach endpoint at %s", url)
+            self.env.cr.commit()
+            raise ValidationError("Adyen: " + _("Could not establish the connection to the API."))
+        except requests.exceptions.HTTPError as error:
+            message = "Adyen: The communication with the API failed, Reference %s." % payload.get('reference', '')
+            _logger.exception(
+                "invalid API request at %s with data %s: %s", url, payload, error.response.text
+            )
+            adyen_payment_channel.message_post(body=message, subtype_xmlid='mail.mt_comment', partner_ids=partner.ids)
+            self.env.cr.commit()
+            raise ValidationError("Adyen: " + _("The communication with the API failed."))
+        return response.json()

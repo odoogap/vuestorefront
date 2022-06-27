@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <record model="mail.channel" id="channel_adyen_payment_announcement">
+            <field name="name">Payment</field>
+            <field name="description">Update regarding adyen amount exceed initial authrozation.</field>
+            <field name="group_ids" eval="[Command.link(ref('base.group_user'))]"/>
+        </record>
+    </data>
+</odoo>
