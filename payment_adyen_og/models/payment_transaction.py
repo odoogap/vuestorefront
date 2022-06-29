@@ -286,6 +286,11 @@ class PaymentTransaction(models.Model):
             else:
                 self._set_pending()
             return True
+        elif status == 'CANCELED':
+            error = _('Adyen: Manually Void Transaction')
+            _logger.info(error)
+            self._set_canceled(state_message=error)
+            return True
         else:
             error = _('Adyen: feedback error')
             _logger.info(error)
