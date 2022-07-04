@@ -114,7 +114,7 @@ class ProductTemplate(models.Model):
 
         if combination_info['has_discounted_price']:
             discount = combination_info['list_price'] - combination_info['price']
-            discount_perc = discount * 100 / combination_info['list_price']
+            discount_perc = combination_info['list_price'] and (discount * 100 / combination_info['list_price']) or 0
 
         combination_info.update({
             'discount': round(discount, 2),
