@@ -24,26 +24,32 @@ class Website(models.Model):
 class WebsiteRedirect(models.Model):
     _inherit = 'website.redirect'
 
-    def _set_vsf_tags(self):
-        for website_rewrite in self:
-            tags = 'WR%s' % website_rewrite.id
-            website_rewrite._vsf_request_cache_invalidation(tags)
+    def _get_vsf_tags(self):
+        tags = 'WR%s' % self.id
+        return tags
 
-    def _vsf_request_cache_invalidation(self, tags_list):
-        url = self.env['ir.config_parameter'].sudo().get_param('vsf_cache_invalidation_url')
-        key = self.env['ir.config_parameter'].sudo().get_param('vsf_cache_invalidation_key')
-        tags = tags_list
+    def _vsf_request_cache_invalidation(self):
+        ICP = self.env['ir.config_parameter'].sudo()
+        url = ICP.get_param('vsf_cache_invalidation_url', False)
+        key = ICP.get_param('vsf_cache_invalidation_key', False)
 
-        # Make the GET request to the /cache-invalidate
-        requests.get(url, params={'key': key, 'tags': tags})
+        if url and key:
+            try:
+                for website_rewrite in self:
+                    tags = website_rewrite._get_vsf_tags()
+
+                    # Make the GET request to the /cache-invalidate
+                    requests.get(url, params={'key': key, 'tags': tags}, timeout=5)
+            except:
+                pass
 
     @api.multi
     def write(self, vals):
         res = super(WebsiteRedirect, self).write(vals)
-        self._set_vsf_tags()
+        self._vsf_request_cache_invalidation()
         return res
 
     @api.multi
     def unlink(self):
-        self._set_vsf_tags()
+        self._vsf_request_cache_invalidation()
         return super(WebsiteRedirect, self).unlink()

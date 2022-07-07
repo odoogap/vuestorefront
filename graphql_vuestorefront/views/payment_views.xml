@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Copyright 2022 ODOOGAP/PROMPTEQUATION LDA
+    License LGPL-3.0 or later (http://www.gnu.org/licenses/lgpl).
+-->
+<odoo>
+
+    <record id="acquirer_form_vsf" model="ir.ui.view">
+        <field name="name">acquirer.form.adyen</field>
+        <field name="model">payment.acquirer</field>
+        <field name="inherit_id" ref="payment.acquirer_form"/>
+        <field name="arch" type="xml">
+            <field name="journal_id" position="before">
+                <field name="display_as"/>
+            </field>
+        </field>
+    </record>
+
+</odoo>

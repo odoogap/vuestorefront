@@ -682,6 +682,7 @@ class PaymentIcon(OdooObjectType):
 class PaymentAcquirer(OdooObjectType):
     id = graphene.Int(required=True)
     name = graphene.String()
+    display_as = graphene.String()
     provider = graphene.String()
     payment_icons = graphene.List(graphene.NonNull(lambda: PaymentIcon))
 

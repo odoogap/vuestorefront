@@ -40,33 +40,39 @@ class ProductTemplate(models.Model):
         self.ensure_one()
         return self in self.env['product.wishlist'].current().mapped('product_id.product_tmpl_id')
 
-    def _set_vsf_tags(self):
-        for product in self:
-            product_tag = 'P%s' % product.id
-            tags = '%s' % product_tag
-            category_ids = product.public_categ_ids.ids
-            for category_id in category_ids:
-                category_tag = 'C%s' % category_id
-                tags = '%s,%s' % (tags, category_tag)
-            product._vsf_request_cache_invalidation(tags)
+    def _get_vsf_tags(self):
+        product_tag = 'P%s' % self.id
+        tags = '%s' % product_tag
+        category_ids = self.public_categ_ids.ids
+        for category_id in category_ids:
+            category_tag = 'C%s' % category_id
+            tags = '%s,%s' % (tags, category_tag)
+        return tags
 
-    def _vsf_request_cache_invalidation(self, tags_list):
-        url = self.env['ir.config_parameter'].sudo().get_param('vsf_cache_invalidation_url')
-        key = self.env['ir.config_parameter'].sudo().get_param('vsf_cache_invalidation_key')
-        tags = tags_list
+    def _vsf_request_cache_invalidation(self):
+        ICP = self.env['ir.config_parameter'].sudo()
+        url = ICP.get_param('vsf_cache_invalidation_url', False)
+        key = ICP.get_param('vsf_cache_invalidation_key', False)
 
-        # Make the GET request to the /cache-invalidate
-        requests.get(url, params={'key': key, 'tag': tags})
+        if url and key:
+            try:
+                for product in self:
+                    tags = product._get_vsf_tags()
+
+                    # Make the GET request to the /cache-invalidate
+                    requests.get(url, params={'key': key, 'tags': tags}, timeout=5)
+            except:
+                pass
 
     @api.multi
     def write(self, vals):
         res = super(ProductTemplate, self).write(vals)
-        self._set_vsf_tags()
+        self._vsf_request_cache_invalidation()
         return res
 
     @api.multi
     def unlink(self):
-        self._set_vsf_tags()
+        self._vsf_request_cache_invalidation()
         return super(ProductTemplate, self).unlink()
 
 
@@ -164,28 +170,34 @@ class ProductPublicCategory(models.Model):
     product_tmpl_ids = fields.Many2many('product.template', relation='product_public_category_product_template_rel')
     slug = fields.Char('Slug')
 
-    def _set_vsf_tags(self):
-        for category in self:
-            tags = 'C%s' % category.id
-            category._vsf_request_cache_invalidation(tags)
+    def _get_vsf_tags(self):
+        tags = 'C%s' % self.id
+        return tags
 
-    def _vsf_request_cache_invalidation(self, tags_list):
-        url = self.env['ir.config_parameter'].sudo().get_param('vsf_cache_invalidation_url')
-        key = self.env['ir.config_parameter'].sudo().get_param('vsf_cache_invalidation_key')
-        tags = tags_list
+    def _vsf_request_cache_invalidation(self):
+        ICP = self.env['ir.config_parameter'].sudo()
+        url = ICP.get_param('vsf_cache_invalidation_url', False)
+        key = ICP.get_param('vsf_cache_invalidation_key', False)
 
-        # Make the GET request to the /cache-invalidate
-        requests.get(url, params={'key': key, 'tags': tags})
+        if url and key:
+            try:
+                for category in self:
+                    tags = category._get_vsf_tags()
+
+                    # Make the GET request to the /cache-invalidate
+                    requests.get(url, params={'key': key, 'tags': tags}, timeout=5)
+            except:
+                pass
 
     @api.multi
     def write(self, vals):
         res = super(ProductPublicCategory, self).write(vals)
-        self._set_vsf_tags()
+        self._vsf_request_cache_invalidation()
         return res
 
     @api.multi
     def unlink(self):
-        self._set_vsf_tags()
+        self._vsf_request_cache_invalidation()
         return super(ProductPublicCategory, self).unlink()
 
 
