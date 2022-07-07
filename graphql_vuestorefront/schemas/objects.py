@@ -513,6 +513,7 @@ class OrderLine(OdooObjectType):
     price_tax = graphene.Float()
     warning_stock = graphene.String()
     gift_card = graphene.Field(lambda: GiftCard)
+    coupon = graphene.Field(lambda: Coupon)
 
     def resolve_product(self, info):
         return self.product_id or None
@@ -522,6 +523,11 @@ class OrderLine(OdooObjectType):
 
     def resolve_gift_card(self, info):
         return self.gift_card_id or None
+
+    def resolve_coupon(self, info):
+        coupons = self.order_id.applied_coupon_ids.filtered(
+            lambda c: self.product_id and c.discount_line_product_id and c.discount_line_product_id.id == self.product_id.id)
+        return coupons and coupons[0] or None
 
 
 class Coupon(OdooObjectType):
