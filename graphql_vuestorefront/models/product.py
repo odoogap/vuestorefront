@@ -11,25 +11,27 @@ from odoo.exceptions import ValidationError
 class ProductTemplate(models.Model):
     _inherit = 'product.template'
 
-    def _set_vsf_tags(self):
-        for product in self:
-            product_tag = 'P%s' % product.id
-            tags = '%s' % product_tag
-            category_ids = product.public_categ_ids.ids
-            for category_id in category_ids:
-                category_tag = 'C%s' % category_id
-                tags = '%s,%s' % (tags, category_tag)
-            product._vsf_request_cache_invalidation(tags)
+    def _get_vsf_tags(self):
+        product_tag = 'P%s' % self.id
+        tags = '%s' % product_tag
+        category_ids = self.public_categ_ids.ids
+        for category_id in category_ids:
+            category_tag = 'C%s' % category_id
+            tags = '%s,%s' % (tags, category_tag)
+        return tags
 
-    def _vsf_request_cache_invalidation(self, tags_list):
+    def _vsf_request_cache_invalidation(self):
         ICP = self.env['ir.config_parameter'].sudo()
         url = ICP.get_param('vsf_cache_invalidation_url', False)
         key = ICP.get_param('vsf_cache_invalidation_key', False)
 
         if url and key:
             try:
-                # Make the GET request to the /cache-invalidate
-                requests.get(url, params={'key': key, 'tags': tags_list}, timeout=5)
+                for product in self:
+                    tags = product._get_vsf_tags()
+
+                    # Make the GET request to the /cache-invalidate
+                    requests.get(url, params={'key': key, 'tags': tags}, timeout=5)
             except:
                 pass
 
@@ -94,11 +96,11 @@ class ProductTemplate(models.Model):
 
     def write(self, vals):
         res = super(ProductTemplate, self).write(vals)
-        self._set_vsf_tags()
+        self._vsf_request_cache_invalidation()
         return res
 
     def unlink(self):
-        self._set_vsf_tags()
+        self._vsf_request_cache_invalidation()
         return super(ProductTemplate, self).unlink()
 
     def _get_combination_info(self, combination=False, product_id=False, add_qty=1, pricelist=False,
@@ -136,20 +138,22 @@ class ProductPublicCategory(models.Model):
 
     website_slug = fields.Char('Website Slug', translate=True)
 
-    def _set_vsf_tags(self):
-        for category in self:
-            tags = 'C%s' % category.id
-            category._vsf_request_cache_invalidation(tags)
+    def _get_vsf_tags(self):
+        tags = 'C%s' % self.id
+        return tags
 
-    def _vsf_request_cache_invalidation(self, tags_list):
+    def _vsf_request_cache_invalidation(self):
         ICP = self.env['ir.config_parameter'].sudo()
         url = ICP.get_param('vsf_cache_invalidation_url', False)
         key = ICP.get_param('vsf_cache_invalidation_key', False)
 
         if url and key:
             try:
-                # Make the GET request to the /cache-invalidate
-                requests.get(url, params={'key': key, 'tags': tags_list}, timeout=5)
+                for category in self:
+                    tags = category._get_vsf_tags()
+
+                    # Make the GET request to the /cache-invalidate
+                    requests.get(url, params={'key': key, 'tags': tags}, timeout=5)
             except:
                 pass
 
@@ -168,9 +172,9 @@ class ProductPublicCategory(models.Model):
         res = super(ProductPublicCategory, self).write(vals)
         if vals.get('website_slug', False):
             self._validate_website_slug()
-        self._set_vsf_tags()
+        self._vsf_request_cache_invalidation()
         return res
 
     def unlink(self):
-        self._set_vsf_tags()
+        self._vsf_request_cache_invalidation()
         return super(ProductPublicCategory, self).unlink()
