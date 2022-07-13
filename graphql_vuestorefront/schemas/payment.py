@@ -105,5 +105,24 @@ class MakePayment(graphene.Mutation):
         )
 
 
+class MakeGiftCardPayment(graphene.Mutation):
+    done = graphene.Boolean()
+
+    @staticmethod
+    def mutate(self, info):
+        env = info.context["env"]
+        website = env['website'].get_current_website()
+        request.website = website
+        order = website.sale_get_order()
+        tx = order.get_portal_last_transaction()
+
+        if order and not order.amount_total and not tx:
+            order.with_context(send_email=True).action_confirm()
+            return MakeGiftCardPayment(done=True)
+
+        return MakeGiftCardPayment(done=False)
+
+
 class PaymentMutation(graphene.ObjectType):
     make_payment = MakePayment.Field(description='Creates a new payment request.')
+    make_gift_card_payment = MakeGiftCardPayment.Field(description='Pay the order only with gift card.')
