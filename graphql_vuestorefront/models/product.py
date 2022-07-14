@@ -145,11 +145,12 @@ class ProductProduct(models.Model):
         price = product.price if pricelist else list_price
 
         discount = list_price - price
-        discount_perc = discount * 100 / list_price
+        discount_perc = list_price and (discount * 100 / list_price) or 0
         if discount > 0:
             has_discounted_price = True
         else:
             has_discounted_price = False
+
         return {
             'product_id': product.id,
             'product_template_id': product_template.id,
@@ -160,7 +161,7 @@ class ProductProduct(models.Model):
             'price_extra': product.price_extra,
             'has_discounted_price': has_discounted_price,
             'discount': round(discount, 2),
-            'discount_perc': round(discount_perc, 2),
+            'discount_perc': int(discount_perc),
         }
 
 
