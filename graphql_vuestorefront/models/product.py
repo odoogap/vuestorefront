@@ -120,7 +120,7 @@ class ProductTemplate(models.Model):
 
         combination_info.update({
             'discount': round(discount, 2),
-            'discount_perc': round(discount_perc, 2),
+            'discount_perc': int(discount_perc),
         })
 
         return combination_info
