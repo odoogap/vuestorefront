@@ -140,6 +140,7 @@ class Partner(OdooObjectType):
     zip = graphene.String()
     email = graphene.String()
     phone = graphene.String()
+    mobile = graphene.String()
     address_type = AddressType()
     billing_address = graphene.Field(lambda: Partner)
     is_company = graphene.Boolean(required=True)
