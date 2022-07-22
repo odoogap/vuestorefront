@@ -569,6 +569,9 @@ class Order(OdooObjectType):
     amount_tax = graphene.Float()
     amount_total = graphene.Float()
     amount_delivery = graphene.Float()
+    amount_subtotal = graphene.Float()
+    amount_discounts = graphene.Float()
+    amount_gift_cards = graphene.Float()
     currency_rate = graphene.String()
     shipping_method = graphene.Field(lambda: ShippingMethod)
     currency = graphene.Field(lambda: Currency)
@@ -621,6 +624,16 @@ class Order(OdooObjectType):
 
     def resolve_coupons(self, info):
         return self.applied_coupon_ids or None
+
+    def resolve_amount_subtotal(self, info):
+        subtotal_lines = self.order_line.filtered(lambda l: not l.gift_card_id and not l.is_reward_line)
+        return sum(subtotal_lines.mapped('price_total')) - self.amount_delivery
+
+    def resolve_amount_discounts(self, info):
+        return sum(self._get_reward_lines().mapped('price_total'))
+
+    def resolve_amount_gift_cards(self, info):
+        return sum(self.order_line.filtered(lambda l: l.gift_card_id).mapped('price_total'))
 
 
 class InvoiceLine(OdooObjectType):
