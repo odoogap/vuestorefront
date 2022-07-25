@@ -27,7 +27,6 @@ class ProductTemplate(models.Model):
                                                    'product_template_variant_product_attribute_value_rel',
                                                    compute='_compute_variant_attribute_value_ids',
                                                    store=True, readonly=True)
-    slug = fields.Char('Slug')
     public_categ_ids = fields.Many2many(
         'product.public.category', relation='product_public_category_product_template_rel',
         string='Website Product Category',
@@ -169,7 +168,6 @@ class ProductPublicCategory(models.Model):
     _inherit = 'product.public.category'
 
     product_tmpl_ids = fields.Many2many('product.template', relation='product_public_category_product_template_rel')
-    slug = fields.Char('Slug')
 
     def _get_vsf_tags(self):
         tags = 'C%s' % self.id

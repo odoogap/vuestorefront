@@ -10,7 +10,6 @@ from odoo import _
 from werkzeug import urls
 
 from odoo.addons.graphql_base import OdooObjectType
-from odoo.addons.http_routing.models.ir_http import slug
 from odoo.exceptions import AccessError
 from odoo.http import request
 
@@ -200,7 +199,6 @@ class Category(OdooObjectType):
     name = graphene.String()
     parent = graphene.Field(lambda: Category)
     childs = graphene.List(graphene.NonNull(lambda: Category))
-    slug = graphene.String()
     image = graphene.String()
     medium_image = graphene.String()
     small_image = graphene.String()
@@ -211,9 +209,6 @@ class Category(OdooObjectType):
 
     def resolve_childs(self, info):
         return self.child_id or None
-
-    def resolve_slug(self, info):
-        return self.slug or slug(self)
 
     def resolve_image(self, info):
         return '/web/image/product.public.category/{}/image'.format(self.id)
@@ -299,7 +294,6 @@ class Product(OdooObjectType):
     is_in_wishlist = graphene.Boolean()
     media_gallery = graphene.List(graphene.NonNull(lambda: ProductImage))
     qty = graphene.Float()
-    slug = graphene.String()
     website_price = graphene.Float()
     website_public_price = graphene.Float()
     website_price_difference = graphene.Float()
@@ -389,9 +383,6 @@ class Product(OdooObjectType):
 
     def resolve_qty(self, info):
         return self.sudo().qty_available
-
-    def resolve_slug(self, info):
-        return self.slug or slug(self)
 
     def resolve_alternative_products(self, info):
         return self.alternative_product_ids or None
