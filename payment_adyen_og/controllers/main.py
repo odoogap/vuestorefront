@@ -127,25 +127,6 @@ class AdyenControllerInherit(AdyenController):
                     event_code = notification_data['eventCode']
                     if event_code == 'AUTHORISATION' and success:
                         notification_data['resultCode'] = 'Authorised'
-
-                        # Case the transaction was created on vsf
-                        if payment_transaction.created_on_vsf:
-                            request.session["__payment_monitored_tx_ids__"] = [payment_transaction.id]
-
-                            # Confirm sale order
-                            PaymentPostProcessing().poll_status()
-
-                            # sale_order_ids = payment_transaction.sale_order_ids.ids
-                            # sale_order = request.env['sale.order'].sudo().search([
-                            #     ('id', 'in', sale_order_ids), ('website_id', '!=', False)
-                            # ], limit=1)
-
-                            # Get Website
-                            # website = sale_order.website_id
-                            # Redirect to VSF
-                            # vsf_payment_return_url = website.vsf_payment_return_url
-
-                            # return werkzeug.utils.redirect(vsf_payment_return_url)
                     elif event_code == 'CANCELLATION' and success:
                         notification_data['resultCode'] = 'Cancelled'
                     elif event_code == 'REFUND':
