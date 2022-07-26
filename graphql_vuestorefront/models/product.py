@@ -46,13 +46,24 @@ class ProductTemplate(models.Model):
     @api.depends('public_categ_ids')
     def _compute_public_categ_slug_ids(self):
         """ To allow search of website_slug on parent categories """
+        cr = self.env.cr
+
         for product in self:
             category_ids = []
 
             for category in product.public_categ_ids:
                 category_ids = product._get_public_categ_slug(category_ids, category)
 
-            product.public_categ_slug_ids = [(6, 0, category_ids)]
+            cr.execute("""
+                DELETE FROM product_template_product_public_category_slug_rel
+                WHERE product_template_id=%s;
+            """, (product.id,))
+
+            for category_id in category_ids:
+                cr.execute("""
+                    INSERT INTO product_template_product_public_category_slug_rel(product_template_id, product_public_category_id)
+                    VALUES(%s, %s);
+                """, (product.id, category_id,))
 
     @api.depends('name')
     def _compute_website_slug(self):
