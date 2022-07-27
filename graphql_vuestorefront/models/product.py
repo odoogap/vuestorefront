@@ -59,7 +59,7 @@ class ProductTemplate(models.Model):
                 WHERE product_template_id=%s;
             """, (product.id,))
 
-            for category_id in category_ids:
+            for category_id in list(dict.fromkeys(category_ids)):
                 cr.execute("""
                     INSERT INTO product_template_product_public_category_slug_rel(product_template_id, product_public_category_id)
                     VALUES(%s, %s);
