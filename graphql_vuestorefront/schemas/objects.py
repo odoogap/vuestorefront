@@ -620,7 +620,9 @@ class Order(OdooObjectType):
         return self.transaction_ids or None
 
     def resolve_last_transaction(self, info):
-        return self.transaction_ids.sorted(key=lambda r: r.create_date, reverse=True)[0] or None
+        if self.transaction_ids:
+            return self.transaction_ids.sorted(key=lambda r: r.create_date, reverse=True)[0]
+        return None
 
     def resolve_coupons(self, info):
         return self.applied_coupon_ids or None
