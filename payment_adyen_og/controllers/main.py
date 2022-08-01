@@ -7,9 +7,12 @@ import logging
 import pprint
 import werkzeug
 
+from werkzeug import urls
+
 from odoo import http, _
 from odoo.http import request
 from odoo.exceptions import ValidationError
+from odoo.addons.payment import utils as payment_utils
 from odoo.addons.payment_adyen.controllers.main import AdyenController
 from odoo.addons.payment.controllers.post_processing import PaymentPostProcessing
 
@@ -17,6 +20,77 @@ _logger = logging.getLogger(__name__)
 
 
 class AdyenControllerInherit(AdyenController):
+
+    @http.route('/payment/adyen/payments', type='json', auth='public')
+    def adyen_payments(
+            self, acquirer_id, reference, converted_amount, currency_id, partner_id, payment_method,
+            access_token, browser_info=None
+    ):
+        """ Make a payment request and process the feedback data.
+
+        :param int acquirer_id: The acquirer handling the transaction, as a `payment.acquirer` id
+        :param str reference: The reference of the transaction
+        :param int converted_amount: The amount of the transaction in minor units of the currency
+        :param int currency_id: The currency of the transaction, as a `res.currency` id
+        :param int partner_id: The partner making the transaction, as a `res.partner` id
+        :param dict payment_method: The details of the payment method used for the transaction
+        :param str access_token: The access token used to verify the provided values
+        :param dict browser_info: The browser info to pass to Adyen
+        :return: The JSON-formatted content of the response
+        :rtype: dict
+        """
+        # Check that the transaction details have not been altered. This allows preventing users
+        # from validating transactions by paying less than agreed upon.
+        if not payment_utils.check_access_token(
+                access_token, reference, converted_amount, partner_id
+        ):
+            raise ValidationError("Adyen: " + _("Received tampered payment request data."))
+
+        # Make the payment request to Adyen
+        acquirer_sudo = request.env['payment.acquirer'].sudo().browse(acquirer_id).exists()
+        tx_sudo = request.env['payment.transaction'].sudo().search([('reference', '=', reference)])
+        data = {
+            'merchantAccount': acquirer_sudo.adyen_merchant_account,
+            'amount': {
+                'value': converted_amount,
+                'currency': request.env['res.currency'].browse(currency_id).name,  # ISO 4217
+            },
+            'reference': reference,
+            'paymentMethod': payment_method,
+            'shopperReference': acquirer_sudo._adyen_compute_shopper_reference(partner_id),
+            'recurringProcessingModel': 'CardOnFile',  # Most susceptible to trigger a 3DS check
+            'shopperIP': payment_utils.get_customer_ip_address(),
+            'shopperInteraction': 'Ecommerce',
+            'storePaymentMethod': tx_sudo.tokenize,  # True by default on Adyen side
+            "authenticationData": {
+                "threeDSRequestData": {
+                    "nativeThreeDS": "preferred"
+                }
+            },
+            'channel': 'web',  # Required to support 3DS
+            'origin': acquirer_sudo.get_base_url(),  # Required to support 3DS
+            'browserInfo': browser_info,  # Required to support 3DS
+            'returnUrl': urls.url_join(
+                acquirer_sudo.get_base_url(),
+                # Include the reference in the return url to be able to match it after redirection.
+                # The key 'merchantReference' is chosen on purpose to be the same as that returned
+                # by the /payments endpoint of Adyen.
+                f'/payment/adyen/return?merchantReference={reference}'
+            ),
+        }
+        response_content = acquirer_sudo._adyen_make_request(
+            url_field_name='adyen_checkout_api_url',
+            endpoint='/payments',
+            payload=data,
+            method='POST'
+        )
+
+        # Handle the payment request response
+        _logger.info("payment request response:\n%s", pprint.pformat(response_content))
+        request.env['payment.transaction'].sudo()._handle_feedback_data(
+            'adyen', dict(response_content, merchantReference=reference),  # Match the transaction
+        )
+        return response_content
 
     @http.route('/payment/adyen/return', type='http', auth='public', csrf=False, save_session=False)
     def adyen_return_from_redirect(self, **data):
@@ -53,7 +127,7 @@ class AdyenControllerInherit(AdyenController):
 
             # Query and process the result of the additional actions that have been performed
             _logger.info("handling redirection from Adyen with data:\n%s", pprint.pformat(data))
-            self.adyen_payment_details(
+            result = self.adyen_payment_details(
                 tx_sudo.acquirer_id.id,
                 data['merchantReference'],
                 {
@@ -63,31 +137,54 @@ class AdyenControllerInherit(AdyenController):
                 },
             )
 
+            # Just for payments with 3DS2
+            if result and result.get('resultCode') and result['resultCode'] == 'Authorised':
+
+                sale_order_ids = payment_transaction.sale_order_ids.ids
+                sale_order = request.env['sale.order'].sudo().search([
+                    ('id', 'in', sale_order_ids), ('website_id', '!=', False)
+                ], limit=1)
+
+                # Get Website
+                website = sale_order.website_id
+                # Redirect to VSF
+                vsf_payment_return_url = website.vsf_payment_return_url
+
+                request.session["__payment_monitored_tx_ids__"] = [payment_transaction.id]
+
+                # Confirm sale order
+                PaymentPostProcessing().poll_status()
+
+                # Clear the payment_monitored_tx_ids
+                request.session['__payment_monitored_tx_ids__'] = []
+
+                return werkzeug.utils.redirect(vsf_payment_return_url)
+
         elif acquirer.provider == 'adyen_og':
             # Get the route payment/adyen/return of the v14
             _logger.info('Beginning Adyen form_feedback with post data %s', pprint.pformat(data))  # debug
             if data.get('authResult') not in ['CANCELLED']:
                 request.env['payment.transaction'].sudo()._handle_feedback_data('adyen_og', data)
 
-        sale_order_ids = payment_transaction.sale_order_ids.ids
-        sale_order = request.env['sale.order'].sudo().search([
-            ('id', 'in', sale_order_ids), ('website_id', '!=', False)
-        ], limit=1)
+                sale_order_ids = payment_transaction.sale_order_ids.ids
+                sale_order = request.env['sale.order'].sudo().search([
+                    ('id', 'in', sale_order_ids), ('website_id', '!=', False)
+                ], limit=1)
 
-        # Get Website
-        website = sale_order.website_id
-        # Redirect to VSF
-        vsf_payment_return_url = website.vsf_payment_return_url
+                # Get Website
+                website = sale_order.website_id
+                # Redirect to VSF
+                vsf_payment_return_url = website.vsf_payment_return_url
 
-        request.session["__payment_monitored_tx_ids__"] = [payment_transaction.id]
+                request.session["__payment_monitored_tx_ids__"] = [payment_transaction.id]
 
-        # Confirm sale order
-        PaymentPostProcessing().poll_status()
+                # Confirm sale order
+                PaymentPostProcessing().poll_status()
 
-        # Clear the payment_monitored_tx_ids
-        request.session['__payment_monitored_tx_ids__'] = []
+                # Clear the payment_monitored_tx_ids
+                request.session['__payment_monitored_tx_ids__'] = []
 
-        return werkzeug.utils.redirect(vsf_payment_return_url)
+                return werkzeug.utils.redirect(vsf_payment_return_url)
 
     @http.route('/payment/adyen/notification', type='json', auth='public')
     def adyen_notification(self):
@@ -131,7 +228,7 @@ class AdyenControllerInherit(AdyenController):
                     if event_code == 'AUTHORISATION' and success:
                         notification_data['resultCode'] = 'Authorised'
 
-                        # # Case the transaction was created on vsf
+                        # Case the transaction was created on vsf
                         if payment_transaction.created_on_vsf:
                             sale_order_ids = payment_transaction.sale_order_ids.ids
                             sale_order = request.env['sale.order'].sudo().search([
