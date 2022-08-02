@@ -62,11 +62,6 @@ class AdyenControllerInherit(AdyenController):
             'shopperIP': payment_utils.get_customer_ip_address(),
             'shopperInteraction': 'Ecommerce',
             'storePaymentMethod': tx_sudo.tokenize,  # True by default on Adyen side
-            "authenticationData": {
-                "threeDSRequestData": {
-                    "nativeThreeDS": "preferred"
-                }
-            },
             'channel': 'web',  # Required to support 3DS
             'origin': acquirer_sudo.get_base_url(),  # Required to support 3DS
             'browserInfo': browser_info,  # Required to support 3DS
