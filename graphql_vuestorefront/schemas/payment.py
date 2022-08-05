@@ -15,6 +15,7 @@ from odoo.addons.graphql_vuestorefront.schemas.objects import PaymentAcquirer, P
 from odoo.addons.graphql_vuestorefront.schemas.shop import Cart, CartData
 from odoo.addons.website_sale.controllers.main import PaymentPortal
 from odoo.addons.payment_adyen.controllers.main import AdyenController
+from odoo.addons.payment_adyen_og.controllers.main import AdyenControllerInherit
 
 
 class PaymentQuery(graphene.ObjectType):
@@ -315,7 +316,7 @@ class AdyenPayments(graphene.Mutation):
         )
 
         # Create Payment
-        adyen_payment = AdyenController().adyen_payments(
+        adyen_payment = AdyenControllerInherit().adyen_payments(
             acquirer_id=payment_acquirer_id.id,
             reference=transaction.reference,
             converted_amount=converted_amount,
