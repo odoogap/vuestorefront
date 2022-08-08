@@ -13,7 +13,8 @@
             <xpath expr="//div[@name='other']" position="after">
                 <div name="vsf_info">
                     <group name="vsf_info">
-                        <field name="vsf_payment_return_url"/>
+                        <field name="vsf_payment_success_return_url"/>
+                        <field name="vsf_payment_error_return_url"/>
                     </group>
                 </div>
             </xpath>

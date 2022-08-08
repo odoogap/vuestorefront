@@ -10,8 +10,14 @@ from odoo.tools.safe_eval import safe_eval
 class ResConfigSettings(models.TransientModel):
     _inherit = 'res.config.settings'
 
-    vsf_payment_return_url = fields.Char('Payment Return Url', related='website_id.vsf_payment_return_url',
-                                         readonly=False, required=True)
+    vsf_payment_success_return_url = fields.Char(
+        'Payment Success Return Url', related='website_id.vsf_payment_success_return_url', readonly=False,
+        required=True
+    )
+    vsf_payment_error_return_url = fields.Char(
+        'Payment Error Return Url', related='website_id.vsf_payment_error_return_url', readonly=False,
+        required=True
+    )
     vsf_cache_invalidation_key = fields.Char('Cache Invalidation Key', required=True)
     vsf_cache_invalidation_url = fields.Char('Cache Invalidation Url', required=True)
     vsf_mailing_list_id = fields.Many2one('mailing.list', 'Newsletter', domain=[('is_public', '=', True)],
