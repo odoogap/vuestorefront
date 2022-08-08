@@ -165,15 +165,20 @@ class AdyenControllerInherit(AdyenController):
             # For Redirect 3DS2 and MobilePay (Cancel/Error flow)
             elif result and result.get('resultCode') and result['resultCode'] in ['Refused', 'Cancelled']:
 
-                # Clear the payment_monitored_tx_ids
-                request.session['__payment_monitored_tx_ids__'] = []
-
                 return werkzeug.utils.redirect(vsf_payment_error_return_url)
 
         elif acquirer.provider == 'adyen_og':
             # Get the route payment/adyen/return of the v14
             _logger.info('Beginning Adyen form_feedback with post data %s', pprint.pformat(data))  # debug
-            if data.get('authResult') not in ['CANCELLED']:
+
+            # For Adyen Hosted (Error flow)
+            if data.get('authResult') and data['authResult'] == 'REFUSED':
+                request.env['payment.transaction'].sudo()._handle_feedback_data('adyen_og', data)
+
+                return werkzeug.utils.redirect(vsf_payment_error_return_url)
+
+            # For Adyen Hosted (Success flow)
+            elif data.get('authResult') not in ['CANCELLED']:
                 request.env['payment.transaction'].sudo()._handle_feedback_data('adyen_og', data)
 
                 # Confirm sale order
@@ -209,19 +214,6 @@ class AdyenControllerInherit(AdyenController):
 
                 acquirer = payment_transaction.acquirer_id
 
-                # Check the Order and respective website related with the transaction
-                # Check the payment_return url for the success and error pages
-                sale_order_ids = payment_transaction.sale_order_ids.ids
-                sale_order = request.env['sale.order'].sudo().search([
-                    ('id', 'in', sale_order_ids), ('website_id', '!=', False)
-                ], limit=1)
-
-                # Get Website
-                website = sale_order.website_id
-                # Redirect to VSF
-                vsf_payment_success_return_url = website.vsf_payment_success_return_url
-                vsf_payment_error_return_url = website.vsf_payment_error_return_url
-
                 if acquirer.provider == 'adyen':
                     acquirer_sudo = PaymentTransaction.sudo()._get_tx_from_feedback_data(
                         'adyen', notification_data
@@ -241,6 +233,19 @@ class AdyenControllerInherit(AdyenController):
 
                         # Case the transaction was created on vsf (Success flow)
                         if payment_transaction.created_on_vsf:
+
+                            # Check the Order and respective website related with the transaction
+                            # Check the payment_return url for the success and error pages
+                            sale_order_ids = payment_transaction.sale_order_ids.ids
+                            sale_order = request.env['sale.order'].sudo().search([
+                                ('id', 'in', sale_order_ids), ('website_id', '!=', False)
+                            ], limit=1)
+
+                            # Get Website
+                            website = sale_order.website_id
+                            # Redirect to VSF
+                            vsf_payment_success_return_url = website.vsf_payment_success_return_url
+
                             request.session["__payment_monitored_tx_ids__"] = [payment_transaction.id]
 
                             # Confirm sale order
@@ -256,16 +261,6 @@ class AdyenControllerInherit(AdyenController):
                     elif event_code == 'REFUND':
                         notification_data['resultCode'] = 'Authorised' if success else 'Error'
                     else:
-
-                        # Case the transaction was created on vsf (Error flow)
-                        if payment_transaction.created_on_vsf:
-                            request.session["__payment_monitored_tx_ids__"] = [payment_transaction.id]
-
-                            # Clear the payment_monitored_tx_ids
-                            request.session['__payment_monitored_tx_ids__'] = []
-
-                            return werkzeug.utils.redirect(vsf_payment_error_return_url)
-
                         continue  # Don't handle unsupported event codes and failed events
 
                     # Handle the notification data as a regular feedback
