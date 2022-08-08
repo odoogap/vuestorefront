@@ -158,7 +158,7 @@ class AdyenControllerInherit(AdyenController):
                 PaymentPostProcessing().poll_status()
 
                 # Clear the payment_monitored_tx_ids
-                request.session['__payment_monitored_tx_ids__'] = []
+                # request.session['__payment_monitored_tx_ids__'] = []
 
                 return werkzeug.utils.redirect(vsf_payment_success_return_url)
 
@@ -185,7 +185,7 @@ class AdyenControllerInherit(AdyenController):
                 PaymentPostProcessing().poll_status()
 
                 # Clear the payment_monitored_tx_ids
-                request.session['__payment_monitored_tx_ids__'] = []
+                # request.session['__payment_monitored_tx_ids__'] = []
 
                 return werkzeug.utils.redirect(vsf_payment_success_return_url)
 
@@ -252,7 +252,7 @@ class AdyenControllerInherit(AdyenController):
                             PaymentPostProcessing().poll_status()
 
                             # Clear the payment_monitored_tx_ids
-                            request.session['__payment_monitored_tx_ids__'] = []
+                            # request.session['__payment_monitored_tx_ids__'] = []
 
                             return werkzeug.utils.redirect(vsf_payment_success_return_url)
 
