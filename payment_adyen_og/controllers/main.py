@@ -135,7 +135,7 @@ class AdyenControllerInherit(AdyenController):
                 },
             )
 
-            # Just for payments with 3DS2
+            # For Redirect 3DS2 and MobilePay (success flow)
             if result and result.get('resultCode') and result['resultCode'] == 'Authorised':
 
                 sale_order_ids = payment_transaction.sale_order_ids.ids
@@ -152,6 +152,26 @@ class AdyenControllerInherit(AdyenController):
 
                 # Confirm sale order
                 PaymentPostProcessing().poll_status()
+
+                # Clear the payment_monitored_tx_ids
+                request.session['__payment_monitored_tx_ids__'] = []
+
+                return werkzeug.utils.redirect(vsf_payment_return_url)
+
+            # For Redirect 3DS2 and MobilePay (Cancel/Error flow)
+            elif result and result.get('resultCode') and result['resultCode'] in ['Refused', 'Cancelled']:
+
+                sale_order_ids = payment_transaction.sale_order_ids.ids
+                sale_order = request.env['sale.order'].sudo().search([
+                    ('id', 'in', sale_order_ids), ('website_id', '!=', False)
+                ], limit=1)
+
+                # Get Website
+                website = sale_order.website_id
+                # Redirect to VSF
+                vsf_payment_return_url = website.vsf_payment_return_url
+
+                request.session["__payment_monitored_tx_ids__"] = [payment_transaction.id]
 
                 # Clear the payment_monitored_tx_ids
                 request.session['__payment_monitored_tx_ids__'] = []
