@@ -157,9 +157,6 @@ class AdyenControllerInherit(AdyenController):
                 # Confirm sale order
                 PaymentPostProcessing().poll_status()
 
-                # Clear the payment_monitored_tx_ids
-                # request.session['__payment_monitored_tx_ids__'] = []
-
                 return werkzeug.utils.redirect(vsf_payment_success_return_url)
 
             # For Redirect 3DS2 and MobilePay (Cancel/Error flow)
@@ -183,9 +180,6 @@ class AdyenControllerInherit(AdyenController):
 
                 # Confirm sale order
                 PaymentPostProcessing().poll_status()
-
-                # Clear the payment_monitored_tx_ids
-                # request.session['__payment_monitored_tx_ids__'] = []
 
                 return werkzeug.utils.redirect(vsf_payment_success_return_url)
 
@@ -250,9 +244,6 @@ class AdyenControllerInherit(AdyenController):
 
                             # Confirm sale order
                             PaymentPostProcessing().poll_status()
-
-                            # Clear the payment_monitored_tx_ids
-                            # request.session['__payment_monitored_tx_ids__'] = []
 
                             return werkzeug.utils.redirect(vsf_payment_success_return_url)
 
