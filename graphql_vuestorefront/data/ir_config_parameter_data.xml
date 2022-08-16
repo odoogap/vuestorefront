@@ -5,14 +5,11 @@
 -->
 <odoo noupdate="1">
 
-    <record id="vsf_cache_invalidation_key" model="ir.config_parameter">
-        <field name="key">vsf_cache_invalidation_key</field>
-        <field name="value"></field>
-    </record>
+    <function model="res.config.settings" name="create_vsf_cache_invalidation_key"/>
 
     <record id="vsf_cache_invalidation_url" model="ir.config_parameter">
         <field name="key">vsf_cache_invalidation_url</field>
-        <field name="value">https://vsf.labs.odoogap.com/cache-invalidate</field>
+        <field name="value">http://localhost:3000/cache-invalidate</field>
     </record>
 
 </odoo>

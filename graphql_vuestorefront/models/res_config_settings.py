@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-from odoo import fields, models
+import uuid
+from odoo import api, fields, models, _
 
 
 class ResConfigSettings(models.TransientModel):
@@ -26,3 +27,8 @@ class ResConfigSettings(models.TransientModel):
         ICP = self.env['ir.config_parameter'].sudo()
         ICP.set_param('vsf_cache_invalidation_key', self.vsf_cache_invalidation_key)
         ICP.set_param('vsf_cache_invalidation_url', self.vsf_cache_invalidation_url)
+
+    @api.model
+    def create_vsf_cache_invalidation_key(self):
+        ICP = self.env['ir.config_parameter'].sudo()
+        ICP.set_param('vsf_cache_invalidation_key', str(uuid.uuid4()))
