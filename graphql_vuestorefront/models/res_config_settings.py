@@ -2,7 +2,8 @@
 # Copyright 2022 ODOOGAP/PROMPTEQUATION LDA
 # License LGPL-3.0 or later (http://www.gnu.org/licenses/lgpl).
 
-from odoo import fields, models, _
+import uuid
+from odoo import api, fields, models, _
 from odoo.exceptions import ValidationError
 from odoo.tools.safe_eval import safe_eval
 
@@ -56,3 +57,8 @@ class ResConfigSettings(models.TransientModel):
         ICP.set_param('vsf_image_quality', self.vsf_image_quality)
         ICP.set_param('vsf_image_background_rgba', self.vsf_image_background_rgba)
         ICP.set_param('vsf_image_resize_whitelist', sorted(vsf_image_resize_whitelist))
+
+    @api.model
+    def create_vsf_cache_invalidation_key(self):
+        ICP = self.env['ir.config_parameter'].sudo()
+        ICP.set_param('vsf_cache_invalidation_key', str(uuid.uuid4()))

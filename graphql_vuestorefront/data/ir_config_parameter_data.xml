@@ -5,14 +5,26 @@
 -->
 <odoo noupdate="1">
 
-    <record id="vsf_cache_invalidation_key" model="ir.config_parameter">
-        <field name="key">vsf_cache_invalidation_key</field>
-        <field name="value"></field>
-    </record>
+    <function model="res.config.settings" name="create_vsf_cache_invalidation_key"/>
 
     <record id="vsf_cache_invalidation_url" model="ir.config_parameter">
         <field name="key">vsf_cache_invalidation_url</field>
-        <field name="value">https://vsf.labs.odoogap.com/cache-invalidate</field>
+        <field name="value">http://localhost:3000/cache-invalidate</field>
+    </record>
+
+    <record id="vsf_image_quality" model="ir.config_parameter">
+        <field name="key">vsf_image_quality</field>
+        <field name="value">100</field>
+    </record>
+
+    <record id="vsf_image_background_rgba" model="ir.config_parameter">
+        <field name="key">vsf_image_background_rgba</field>
+        <field name="value">(255, 255, 255, 255)</field>
+    </record>
+
+    <record id="vsf_image_resize_whitelist" model="ir.config_parameter">
+        <field name="key">vsf_image_resize_whitelist</field>
+        <field name="value">[128,140,176,180,200,216,256,288,236,422,644]</field>
     </record>
 
 </odoo>
