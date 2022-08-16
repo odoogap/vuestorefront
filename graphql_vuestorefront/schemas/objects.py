@@ -663,3 +663,34 @@ class PaymentAcquirer(OdooObjectType):
 
     def resolve_payment_icons(self, info):
         return self.payment_icon_ids or None
+
+
+class MailingList(OdooObjectType):
+    id = graphene.Int(required=True)
+    name = graphene.String()
+
+
+class MailingContactSubscription(OdooObjectType):
+    id = graphene.Int(required=True)
+    mailing_list = graphene.Field(lambda: MailingList)
+    opt_out = graphene.Boolean()
+
+    def resolve_mailing_list(self, info):
+        return self.list_id or None
+
+
+class MailingContact(OdooObjectType):
+    id = graphene.Int()
+    name = graphene.String()
+    email = graphene.String()
+    company_name = graphene.String()
+    subscription_list = graphene.List(graphene.NonNull(lambda: MailingContactSubscription))
+
+    def resolve_country(self, info):
+        return self.country_id or None
+
+    def resolve_industry(self, info):
+        return self.industry_id or None
+
+    def resolve_subscription_list(self, info):
+        return self.subscription_list_ids or None

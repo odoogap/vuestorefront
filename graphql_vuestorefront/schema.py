@@ -24,6 +24,8 @@ class Query(
     wishlist.WishlistQuery,
     shop.ShoppingCartQuery,
     payment.PaymentQuery,
+    mailing_list.MailingContactQuery,
+    mailing_list.MailingListQuery,
 ):
     pass
 
@@ -47,5 +49,6 @@ schema = graphene.Schema(
     query=Query,
     mutation=Mutation,
     types=[country.CountryList, product.ProductList, product.ProductVariantData, category.CategoryList, order.OrderList,
-           invoice.InvoiceList, wishlist.WishlistData, shop.CartData]
+           invoice.InvoiceList, wishlist.WishlistData, shop.CartData, mailing_list.MailingContactList,
+           mailing_list.MailingListList]
 )
