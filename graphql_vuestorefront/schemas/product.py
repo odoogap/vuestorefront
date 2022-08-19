@@ -48,6 +48,25 @@ def get_search_domain(env, search, **kwargs):
     if kwargs.get('category_slug', False):
         domains.append([('public_categ_slug_ids.website_slug', '=', kwargs['category_slug'])])
 
+    # Filter With Name
+    if kwargs.get('name', False):
+        name = kwargs['name']
+        for n in name.split(" "):
+            domains.append([('name', 'ilike', n)])
+
+    if search:
+        for srch in search.split(" "):
+            domains.append([
+                '|', '|', ('name', 'ilike', srch), ('description_sale', 'like', srch), ('default_code', 'like', srch)])
+
+    partial_domain = domains.copy()
+
+    # Product Price Filter
+    if kwargs.get('min_price', False):
+        domains.append([('list_price', '>=', float(kwargs['min_price']))])
+    if kwargs.get('max_price', False):
+        domains.append([('list_price', '<=', float(kwargs['max_price']))])
+
     # Deprecated: filter with Attribute Value
     if kwargs.get('attribute_value_id', False):
         domains.append([('attribute_line_ids.value_ids', 'in', kwargs['attribute_value_id'])])
@@ -79,29 +98,13 @@ def get_search_domain(env, search, **kwargs):
         if attrib:
             domains.append([('attribute_line_ids.value_ids', 'in', ids)])
 
-    # Filter With Name
-    if kwargs.get('name', False):
-        name = kwargs['name']
-        for n in name.split(" "):
-            domains.append([('name', 'ilike', n)])
-
-    if search:
-        for srch in search.split(" "):
-            domains.append([
-                '|', '|', ('name', 'ilike', srch), ('description_sale', 'like', srch), ('default_code', 'like', srch)])
-
-    # Product Price Filter
-    if kwargs.get('min_price', False):
-        domains.append([('list_price', '>=', float(kwargs['min_price']))])
-    if kwargs.get('max_price', False):
-        domains.append([('list_price', '<=', float(kwargs['max_price']))])
-
-    return expression.AND(domains)
+    return expression.AND(domains), expression.AND(partial_domain)
 
 
 def get_product_list(env, current_page, page_size, search, sort, **kwargs):
     Product = env['product.template'].sudo()
-    domain = get_search_domain(env, search, **kwargs)
+    domain, partial_domain = get_search_domain(env, search, **kwargs)
+
     # First offset is 0 but first page is 1
     if current_page > 1:
         offset = (current_page - 1) * page_size
@@ -109,16 +112,29 @@ def get_product_list(env, current_page, page_size, search, sort, **kwargs):
         offset = 0
     order = get_search_order(sort)
     products = Product.search(domain, order=order)
-    attribute_values = products.mapped('variant_attribute_value_ids')
+
+    # If attribute values are selected, we need to get the full list of attribute values and prices
+    if domain == partial_domain:
+        attribute_values = products.mapped('variant_attribute_value_ids')
+        prices = products.mapped('list_price')
+    else:
+        without_attributes_products = Product.search(partial_domain)
+        attribute_values = without_attributes_products.mapped('variant_attribute_value_ids')
+        prices = without_attributes_products.mapped('list_price')
+
     total_count = len(products)
     products = products[offset:offset + page_size]
-    return products, total_count, attribute_values
+    if prices:
+        return products, total_count, attribute_values, min(prices), max(prices)
+    return products, total_count, attribute_values, 0.0, 0.0
 
 
 class Products(graphene.Interface):
     products = graphene.List(Product)
     total_count = graphene.Int(required=True)
     attribute_values = graphene.List(AttributeValue)
+    min_price = graphene.Float()
+    max_price = graphene.Float()
 
 
 class ProductList(graphene.ObjectType):
@@ -210,8 +226,10 @@ class ProductQuery(graphene.ObjectType):
     @staticmethod
     def resolve_products(self, info, filter, current_page, page_size, search, sort):
         env = info.context["env"]
-        products, total_count, attribute_values = get_product_list(env, current_page, page_size, search, sort, **filter)
-        return ProductList(products=products, total_count=total_count, attribute_values=attribute_values)
+        products, total_count, attribute_values,min_price, max_price = get_product_list(
+            env, current_page, page_size, search, sort, **filter)
+        return ProductList(products=products, total_count=total_count, attribute_values=attribute_values,
+                           min_price=min_price, max_price=max_price)
 
     @staticmethod
     def resolve_attribute(self, info, id):
