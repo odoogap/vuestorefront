@@ -259,6 +259,7 @@ class AdyenControllerInherit(AdyenController):
 
                 # Get the route payment/adyen/notification of the v14
                 elif acquirer.provider == 'adyen_og':
+                    _logger.info("notification received:\n%s", pprint.pformat(data))
                     tx = notification_data.get('merchantReference') and PaymentTransaction.sudo().search(
                         [('reference', 'in', [notification_data.get('merchantReference')])], limit=1)
                     if notification_data.get('eventCode') in ['AUTHORISATION'] and tx:
