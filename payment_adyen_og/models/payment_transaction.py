@@ -17,7 +17,7 @@ from werkzeug import urls
 from odoo.exceptions import ValidationError
 from odoo.tools.pycompat import to_text
 from odoo.addons.payment import utils as payment_utils
-from odoo.addons.payment_adyen.const import API_ENDPOINT_VERSIONS
+from odoo.addons.payment_adyen.const import API_ENDPOINT_VERSIONS, CURRENCY_DECIMALS
 from odoo.addons.payment_adyen_og.const import SUPPORTED_CURRENCIES
 from odoo.addons.payment_adyen_og.controllers.main import AdyenOGController
 
@@ -271,7 +271,8 @@ class PaymentTransaction(models.Model):
         payment_state = data.get('resultCode')
         status = data.get('authResult', 'PENDING')
         if status == 'AUTHORISED':
-            self.write({'acquirer_reference': data.get('pspReference')})
+            if not self.acquirer_reference or self.source_transaction_id:
+                self.write({'acquirer_reference': data.get('pspReference')})
             # Capture Manually
             if self.acquirer_id.capture_manually:
                 self._set_authorized()
@@ -279,7 +280,8 @@ class PaymentTransaction(models.Model):
                 self._set_done()
             return True
         elif status == 'PENDING':
-            self.write({'acquirer_reference': data.get('pspReference')})
+            if not self.acquirer_reference or self.source_transaction_id:
+                self.write({'acquirer_reference': data.get('pspReference')})
             # Capture Manually
             if payment_state and payment_state == 'received' and data.get('paymentPspReference'):
                 self._set_done()
@@ -393,19 +395,25 @@ class PaymentTransaction(models.Model):
         if 'refund_invoice_id' in ctx:
             refund_tx.invoice_ids = [(6, 0, [ctx['refund_invoice_id']])]
 
+        converted_amount = payment_utils.to_minor_currency_units(
+            -refund_tx.amount,  # The amount is negative for refund transactions
+            refund_tx.currency_id,
+            arbitrary_decimal_number=CURRENCY_DECIMALS.get(refund_tx.currency_id.name)
+        )
+
         if self.state == 'done':
             data = {
                 'merchantAccount': refund_tx.acquirer_id.adyen_merchant_account,
                 'reference': refund_tx.reference,
                 'amount': {
-                    'value': amount_to_refund,
+                    'value': converted_amount,
                     'currency': refund_tx.currency_id.name,
                 },
             }
             response_content = refund_tx.acquirer_id._adyen_make_request(
                 url_field_name='adyen_checkout_api_url',
                 endpoint='/payments/{}/refunds',
-                endpoint_param=refund_tx.acquirer_reference,
+                endpoint_param=self.acquirer_reference,
                 payload=data,
                 method='POST'
             )
@@ -417,7 +425,7 @@ class PaymentTransaction(models.Model):
             response_content = refund_tx.acquirer_id._adyen_make_request(
                 url_field_name='adyen_checkout_api_url',
                 endpoint='/payments/{}/reversals',
-                endpoint_param=refund_tx.acquirer_reference,
+                endpoint_param=self.acquirer_reference,
                 payload=data,
                 method='POST'
             )
