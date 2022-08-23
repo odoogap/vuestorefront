@@ -20,8 +20,7 @@ class Http(models.AbstractModel):
     def _content_image_get_response(self, status, headers, image_base64, model='ir.attachment',
                                     field='datas', download=None, width=0, height=0, crop=False, quality=0):
         """ Center image in background with color, resize, compress and convert image to webp """
-        if model in ['product.template', 'product.product', 'product.public.category'] and status == 200 and \
-                image_base64 and width and height:
+        if status == 200 and image_base64 and width and height:
             try:
                 width = int(width)
                 height = int(height)
