@@ -17,11 +17,29 @@ class Http(models.AbstractModel):
     _inherit = 'ir.http'
 
     @api.model
+    def _content_image(self, xmlid=None, model='ir.attachment', res_id=None, field='datas',
+            filename_field='name', unique=None, filename=None, mimetype=None, download=None,
+            width=0, height=0, crop=False, quality=0, access_token=None, **kwargs):
+        if filename and filename.endswith(('jpeg', 'jpg')):
+            request.image_format = 'jpeg'
+
+        return super(Http, self)._content_image(xmlid=xmlid, model=model, res_id=res_id, field=field,
+                                                filename_field=filename_field, unique=unique, filename=filename,
+                                                mimetype=mimetype, download=download, width=width, height=height,
+                                                crop=crop, quality=quality, access_token=access_token, **kwargs)
+
+    @api.model
     def _content_image_get_response(self, status, headers, image_base64, model='ir.attachment',
                                     field='datas', download=None, width=0, height=0, crop=False, quality=0):
-        """ Center image in background with color, resize, compress and convert image to webp """
+        """ Center image in background with color, resize, compress and convert image to webp or jpeg """
         if status == 200 and image_base64 and width and height:
             try:
+                # Accepts jpeg and webp, defaults to webp if none found
+                if hasattr(request, 'image_format'):
+                    image_format = request.image_format
+                else:
+                    image_format = 'webp'
+
                 width = int(width)
                 height = int(height)
                 ICP = request.env['ir.config_parameter'].sudo()
@@ -39,7 +57,10 @@ class Http(models.AbstractModel):
 
                 # Create a new background, merge the background with the image centered
                 img_w, img_h = img.size
-                background = Image.new('RGBA', (width, height), background_rgba)
+                if image_format == 'jpeg':
+                    background = Image.new('RGB', (width, height), background_rgba[:3])
+                else:
+                    background = Image.new('RGBA', (width, height), background_rgba)
                 bg_w, bg_h = background.size
                 offset = ((bg_w - img_w) // 2, (bg_h - img_h) // 2)
                 background.paste(img, offset)
@@ -48,7 +69,10 @@ class Http(models.AbstractModel):
                 quality = ICP.get_param('vsf_image_quality', 100)
 
                 stream = io.BytesIO()
-                background.save(stream, format='WEBP', quality=quality, subsampling=0)
+                if image_format == 'jpeg':
+                    background.save(stream, format=image_format.upper(), subsampling=0)
+                else:
+                    background.save(stream, format=image_format.upper(), quality=quality, subsampling=0)
                 image_base64 = base64.b64encode(stream.getvalue())
 
             except Exception:
@@ -58,7 +82,7 @@ class Http(models.AbstractModel):
             new_headers = []
             for index, header in enumerate(headers):
                 if header[0] == 'Content-Type':
-                    new_headers.append(('Content-Type', 'image/webp'))
+                    new_headers.append(('Content-Type', f'image/{image_format}'))
                 else:
                     new_headers.append(header)
 
