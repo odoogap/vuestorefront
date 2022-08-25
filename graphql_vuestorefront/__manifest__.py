@@ -24,9 +24,11 @@
         'payment_adyen_og',
     ],
     'data': [
+        'security/ir.model.access.csv',
         'data/website_data.xml',
         'data/mail_template.xml',
         'data/ir_config_parameter_data.xml',
+        'data/ir_cron_data.xml',
         'views/product_views.xml',
         'views/res_config_settings_views.xml',
         'views/website_views.xml',
