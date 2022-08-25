@@ -1,0 +1,2 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+graphql_vuestorefront.access_invalidate_cache,access_invalidate_cache,graphql_vuestorefront.model_invalidate_cache,base.group_user,1,1,1,1
