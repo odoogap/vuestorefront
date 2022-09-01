@@ -16,6 +16,7 @@
         'website_sale_wishlist',
         'website_sale_delivery',
         'website_mass_mailing',
+        'website_sale_coupon',
         'website_sale_gift_card',
         'auth_signup',
         'contacts',
