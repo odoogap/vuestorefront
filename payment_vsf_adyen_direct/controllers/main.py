@@ -213,6 +213,7 @@ class AdyenDirectController(http.Controller):
         # Get Website
         website = sale_order.website_id
         # Redirect to VSF
+        # vsf_payment_return_url = website.vsf_payment_return_url
         # vsf_payment_success_return_url = website.vsf_payment_success_return_url
         # vsf_payment_error_return_url = website.vsf_payment_error_return_url
 

@@ -17,6 +17,7 @@ from ..schema import schema
 
 class VSFAdyenController(AdyenController):
 
+    # Deprecated
     @http.route(['/payment/adyen/return'], type='http', auth='public', csrf=False)
     def adyen_return(self, **post):
         # Confirm payment transaction

@@ -115,6 +115,7 @@ class MakePaymentResult(graphene.ObjectType):
     form = generic.GenericScalar()
 
 
+# Deprecated
 class MakePayment(graphene.Mutation):
     class Arguments:
         payment_acquire_id = graphene.Int(required=True)
@@ -133,6 +134,7 @@ class MakePayment(graphene.Mutation):
 
 
 class PaymentMutation(graphene.ObjectType):
+    # Deprecated
     make_payment = MakePayment.Field(description='Creates a new payment request.')
 
 
@@ -281,10 +283,6 @@ class AdyenTransaction(graphene.Mutation):
             'converted_amount': converted_amount,
             'access_token': access_token
         }
-
-        # NOT NECESSARY, THIS METHOD WILL BE JUST USED ON VSF SIDE
-        # Update the field created_on_vsf
-        # transaction_id.created_on_vsf = True
 
         return AdyenTransactionResult(transaction=transaction)
 
