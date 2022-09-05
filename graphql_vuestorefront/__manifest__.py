@@ -21,6 +21,7 @@
         'contacts',
         'crm',
         'theme_default',
+        'payment_vsf_adyen_direct'
     ],
     'data': [
         'security/ir.model.access.csv',
