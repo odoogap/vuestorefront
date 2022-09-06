@@ -73,29 +73,21 @@ def get_search_domain(env, search, **kwargs):
 
     # Filter with Attribute Value
     if kwargs.get('attrib_values', False):
-        attrib = None
         ids = []
+
         for value in kwargs['attrib_values']:
             try:
                 value = value.split('-')
                 if len(value) != 2:
                     continue
 
-                attribute_id = int(value[0])
                 attribute_value_id = int(value[1])
             except ValueError:
                 continue
 
-            if not attrib:
-                attrib = attribute_id
-                ids.append(attribute_value_id)
-            elif attribute_id == attrib:
-                ids.append(attribute_value_id)
-            else:
-                domains.append([('attribute_line_ids.value_ids', 'in', ids)])
-                attrib = attribute_id
-                ids = [attribute_value_id]
-        if attrib:
+            ids.append(attribute_value_id)
+
+        if ids:
             domains.append([('attribute_line_ids.value_ids', 'in', ids)])
 
     return expression.AND(domains), expression.AND(partial_domain)
