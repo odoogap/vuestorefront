@@ -197,7 +197,7 @@ class AdyenPaymentMethods(graphene.Mutation):
     class Arguments:
         acquirer_id = graphene.Int(required=True)
 
-    Output = PaymentTransaction
+    Output = AdyenPaymentMethodsResult
 
     @staticmethod
     def mutate(self, info, acquirer_id):
