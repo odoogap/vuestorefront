@@ -61,24 +61,11 @@ class AcquirerAdyen(models.Model):
             self, url_field_name, endpoint, endpoint_param=None, payload=None, method='POST'
     ):
         """ Overwrite method to post payment fail error in channel"""
-
-        def _build_url(_base_url, _version, _endpoint):
-            _base = _base_url.rstrip('/')  # Remove potential trailing slash
-            _endpoint = _endpoint.lstrip('/')  # Remove potential leading slash
-            return f'{_base}/V{_version}/{_endpoint}'
-
-        self.ensure_one()
-        base_url = self[url_field_name]  # Restrict request URL to the stored API URL fields
-        version = API_ENDPOINT_VERSIONS[endpoint]
-        endpoint = endpoint if not endpoint_param else endpoint.format(endpoint_param)
-        url = _build_url(base_url, version, endpoint)
-        headers = {'X-API-Key': self.adyen_api_key}
-        adyen_payment_channel = self.sudo().env.ref(
-            'payment_adyen_og.channel_adyen_payment_announcement')
-        partner = self.env.user.partner_id
         try:
-            response = requests.request(method, url, json=payload, headers=headers, timeout=60)
-            response.raise_for_status()
+            response = super(AcquirerAdyen, self)._adyen_make_request(
+                url_field_name=url_field_name, endpoint=endpoint, endpoint_param=endpoint_param,
+                payload=payload, method=method
+            )
         except requests.exceptions.ConnectionError:
             message = "Adyen: Could not establish the connection to the API, Reference %s." % payload.get('reference',
                                                                                                           '')
@@ -94,4 +81,4 @@ class AcquirerAdyen(models.Model):
             adyen_payment_channel.message_post(body=message, subtype_xmlid='mail.mt_comment', partner_ids=partner.ids)
             self.env.cr.commit()
             raise ValidationError("Adyen: " + _("The communication with the API failed."))
-        return response.json()
+        return response
