@@ -7,7 +7,7 @@
     'version': '1.0',
     'category': 'Hidden',
     'summary': 'Base Module To VSF Payment Acquirers',
-    'description': """Payment Acquirer Base Module""",
+    'description': """VSF Payment Acquirer Base Module""",
     'depends': ['payment'],
     'auto_install': True,
     'license': 'LGPL-3',

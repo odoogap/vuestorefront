@@ -19,31 +19,6 @@ class PaymentTransaction(models.Model):
 
     #=== BUSINESS METHODS ===#
 
-    # def _get_specific_processing_values(self, processing_values):
-    #     """ Override of payment to return Adyen-specific processing values.
-    #
-    #     Note: self.ensure_one() from `_get_processing_values`
-    #
-    #     :param dict processing_values: The generic processing values of the transaction
-    #     :return: The dict of acquirer-specific processing values
-    #     :rtype: dict
-    #     """
-    #     res = super()._get_specific_processing_values(processing_values)
-    #     if self.provider != 'adyen_direct':
-    #         return res
-    #
-    #     converted_amount = payment_utils.to_minor_currency_units(
-    #         self.amount, self.currency_id, CURRENCY_DECIMALS.get(self.currency_id.name)
-    #     )
-    #     return {
-    #         'converted_amount': converted_amount,
-    #         'access_token': payment_utils.generate_access_token(
-    #             processing_values['reference'],
-    #             converted_amount,
-    #             processing_values['partner_id']
-    #         )
-    #     }
-
     def _send_payment_request(self):
         """ Override of payment to send a payment request to Adyen.
 

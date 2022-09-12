@@ -12,11 +12,6 @@ _logger = logging.getLogger(__name__)
 class PaymentToken(models.Model):
     _inherit = 'payment.token'
 
-    provider = fields.Selection(related='acquirer_id.provider')
-
-    # transaction_ids = fields.One2many(string="Payment Transactions", comodel_name='payment.transaction', inverse_name='token_id')
-    payment_ids = fields.One2many('payment.transaction', 'payment_token_id', 'Payment Transactions')
-
     #=== CRUD METHODS ===#
 
     def write(self, values):

@@ -138,9 +138,9 @@ class PaymentMutation(graphene.ObjectType):
     make_payment = MakePayment.Field(description='Creates a new payment request.')
 
 
-# -------------------------------- #
-#           Adyen Payment          #
-# -------------------------------- #
+# --------------------------------------- #
+#           Adyen Direct Payment          #
+# --------------------------------------- #
 
 class AdyenAcquirerInfoResult(graphene.ObjectType):
     adyen_acquirer_info = generic.GenericScalar()

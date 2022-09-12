@@ -202,9 +202,7 @@ class AdyenDirectController(http.Controller):
             [('reference', 'in', [data.get('merchantReference')])], limit=1
         )
 
-        # Check the Order and respective website related with the transaction
-        # Check the payment_return url for the success and error pages
-        # Pass the transaction_id on the session
+        # Check the Order related with the transaction
         sale_order_ids = payment_transaction.sale_order_ids.ids
         sale_order = request.env['sale.order'].sudo().search([
             ('id', 'in', sale_order_ids), ('website_id', '!=', False)
@@ -213,9 +211,16 @@ class AdyenDirectController(http.Controller):
         # Get Website
         website = sale_order.website_id
         # Redirect to VSF
-        # vsf_payment_return_url = website.vsf_payment_return_url
-        # vsf_payment_success_return_url = website.vsf_payment_success_return_url
-        # vsf_payment_error_return_url = website.vsf_payment_error_return_url
+        vsf_payment_success_return_url = website.vsf_payment_success_return_url
+        vsf_payment_error_return_url = website.vsf_payment_error_return_url
+
+        # Update Context Info
+        context = dict(request.context)
+        context.update({
+            'website_id': website.id,
+            'lang': website.default_lang_id.code,
+        })
+        request.context = context
 
         request.session["__payment_tx_ids__"] = [payment_transaction.id]
 
@@ -248,15 +253,18 @@ class AdyenDirectController(http.Controller):
             # Confirm sale order
             PaymentProcessing().payment_status_poll()
 
-        #     return werkzeug.utils.redirect(vsf_payment_success_return_url)
-        #
-        # # For Redirect 3DS2 and MobilePay (Cancel/Error flow)
-        # elif result and result.get('resultCode') and result['resultCode'] in ['Refused', 'Cancelled']:
-        #
-        #     return werkzeug.utils.redirect(vsf_payment_error_return_url)
+            # Clear the payment_tx_ids
+            request.session['__payment_tx_ids__'] = []
 
-        # Redirect the user to the status page
-        return request.redirect('/payment/process')
+            return werkzeug.utils.redirect(vsf_payment_success_return_url)
+
+        # For Redirect 3DS2 and MobilePay (Cancel/Error flow)
+        elif result and result.get('resultCode') and result['resultCode'] in ['Refused', 'Cancelled']:
+
+            # Clear the payment_tx_ids
+            request.session['__payment_tx_ids__'] = []
+
+            return werkzeug.utils.redirect(vsf_payment_error_return_url)
 
     @http.route('/payment/adyen_direct/notification', type='json', auth='public')
     def adyen_direct_notification(self):
@@ -297,8 +305,7 @@ class AdyenDirectController(http.Controller):
                 if event_code == 'AUTHORISATION' and success:
                     notification_data['resultCode'] = 'Authorised'
 
-                    # Check the Order and respective website related with the transaction
-                    # Check the payment_return url for the success and error pages
+                    # Check the Order related with the transaction
                     sale_order_ids = payment_transaction.sale_order_ids.ids
                     sale_order = request.env['sale.order'].sudo().search([
                         ('id', 'in', sale_order_ids), ('website_id', '!=', False)
@@ -307,14 +314,14 @@ class AdyenDirectController(http.Controller):
                     # Get Website
                     website = sale_order.website_id
                     # Redirect to VSF
-                    # vsf_payment_success_return_url = website.vsf_payment_success_return_url
+                    vsf_payment_success_return_url = website.vsf_payment_success_return_url
 
                     request.session["__payment_tx_ids__"] = [payment_transaction.id]
 
                     # Confirm sale order
                     PaymentProcessing().payment_status_poll()
 
-                    # return werkzeug.utils.redirect(vsf_payment_success_return_url)
+                    return werkzeug.utils.redirect(vsf_payment_success_return_url)
 
                 elif event_code == 'CANCELLATION' and success:
                     notification_data['resultCode'] = 'Cancelled'

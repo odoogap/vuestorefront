@@ -37,6 +37,7 @@ class VSFAdyenController(AdyenController):
                 ('reference', 'like', str(transaction_reference))
             ])
 
+            # Check the Order related with the transaction
             sale_order_ids = payment_transaction.sale_order_ids.ids
             sale_order = request.env['sale.order'].sudo().search([
                 ('id', 'in', sale_order_ids), ('website_id', '!=', False)
@@ -45,17 +46,39 @@ class VSFAdyenController(AdyenController):
             # Get Website
             website = sale_order.website_id
             # Redirect to VSF
-            vsf_payment_return_url = website.vsf_payment_return_url
+            vsf_payment_success_return_url = website.vsf_payment_success_return_url
+            vsf_payment_error_return_url = website.vsf_payment_error_return_url
+
+            # Update Context Info
+            context = dict(request.context)
+            context.update({
+                'website_id': website.id,
+                'lang': website.default_lang_id.code,
+            })
+            request.context = context
 
             request.session["__payment_tx_ids__"] = [payment_transaction.id]
 
-            # Confirm sale order
-            PaymentProcessing().payment_status_poll()
+            # Adyen Error Flow
+            if post.get('authResult') and post['authResult'] == 'REFUSED':
+                request.env['payment.transaction'].sudo()._handle_feedback_data('adyen', post)
 
-            # Clear the payment_tx_ids
-            request.session['__payment_tx_ids__'] = []
+                # Clear the payment_tx_ids
+                request.session['__payment_tx_ids__'] = []
 
-            return werkzeug.utils.redirect(vsf_payment_return_url)
+                return werkzeug.utils.redirect(vsf_payment_error_return_url)
+
+            # Adyen Success Flow
+            if post.get('authResult') not in ['CANCELLED']:
+                request.env['payment.transaction'].sudo()._handle_feedback_data('adyen', post)
+
+                # Confirm sale order
+                PaymentProcessing().payment_status_poll()
+
+                # Clear the payment_tx_ids
+                request.session['__payment_tx_ids__'] = []
+
+                return werkzeug.utils.redirect(vsf_payment_success_return_url)
 
 
 class GraphQLController(http.Controller, GraphQLControllerMixin):

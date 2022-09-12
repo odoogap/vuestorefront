@@ -3,13 +3,8 @@
 # License LGPL-3.0 or later (http://www.gnu.org/licenses/lgpl).
 
 import logging
-import pprint
 import re
 import unicodedata
-from datetime import datetime
-
-import psycopg2
-from dateutil import relativedelta
 
 from odoo import _, api, fields, models
 from odoo.exceptions import ValidationError
@@ -26,11 +21,8 @@ class PaymentTransaction(models.Model):
 
     company_id = fields.Many2one(  # Indexed to speed-up ORM searches (from ir_rule or others)
         related='acquirer_id.company_id', store=True, index=True)
-
-    # token_id = fields.Many2one(string="Payment Token", comodel_name='payment.token', readonly=True, domain='[("acquirer_id", "=", "acquirer_id")]', ondelete='restrict')
     payment_token_id = fields.Many2one('payment.token', 'Payment Token', readonly=True,
                                        domain="[('acquirer_id', '=', acquirer_id)]")
-
     last_state_change = fields.Datetime(
         string="Last State Change Date", readonly=True, default=fields.Datetime.now)
 
@@ -48,7 +40,6 @@ class PaymentTransaction(models.Model):
         readonly=True,
         index=True,
     )
-
     source_transaction_id = fields.Many2one(
         string="Source Transaction",
         comodel_name='payment.transaction',
@@ -59,10 +50,6 @@ class PaymentTransaction(models.Model):
     invoices_count = fields.Integer(string="Invoices Count", compute='_compute_invoices_count')
 
     # Fields used for user redirection & payment post-processing
-
-    # is_post_processed = fields.Boolean(string="Is Post-processed", help="Has the payment been post-processed")
-    is_processed = fields.Boolean('Has the payment been post processed', default=False)
-
     tokenize = fields.Boolean(
         string="Create Token",
         help="Whether a payment token should be created when post-processing the transaction")
@@ -294,85 +281,6 @@ class PaymentTransaction(models.Model):
             callback_hash = hmac_tool(self.env(su=True), 'generate_callback_hash', token)
             return callback_hash
         return None
-
-    # def _get_processing_values(self):
-    #     """ Return a dict of values used to process the transaction.
-    #
-    #     The returned dict contains the following entries:
-    #         - tx_id: The transaction, as a `payment.transaction` id
-    #         - acquirer_id: The acquirer handling the transaction, as a `payment.acquirer` id
-    #         - provider: The provider of the acquirer
-    #         - reference: The reference of the transaction
-    #         - amount: The rounded amount of the transaction
-    #         - currency_id: The currency of the transaction, as a res.currency id
-    #         - partner_id: The partner making the transaction, as a res.partner id
-    #         - Additional acquirer-specific entries
-    #
-    #     Note: self.ensure_one()
-    #
-    #     :return: The dict of processing values
-    #     :rtype: dict
-    #     """
-    #     self.ensure_one()
-    #
-    #     processing_values = {
-    #         'acquirer_id': self.acquirer_id.id,
-    #         'provider': self.provider,
-    #         'reference': self.reference,
-    #         'amount': self.amount,
-    #         'currency_id': self.currency_id.id,
-    #         'partner_id': self.partner_id.id,
-    #     }
-    #
-    #     # Complete generic processing values with acquirer-specific values
-    #     processing_values.update(self._get_specific_processing_values(processing_values))
-    #     _logger.info(
-    #         "generic and acquirer-specific processing values for transaction with id %s:\n%s",
-    #         self.id, pprint.pformat(processing_values)
-    #     )
-    #
-    #     # Render the html form for the redirect flow if available
-    #     if self.operation in ('online_redirect', 'validation'):
-    #         redirect_form_view = self.acquirer_id._get_redirect_form_view(
-    #             is_validation=self.operation == 'validation'
-    #         )
-    #         if redirect_form_view:  # Some acquirer don't need a redirect form
-    #             rendering_values = self._get_specific_rendering_values(processing_values)
-    #             _logger.info(
-    #                 "acquirer-specific rendering values for transaction with id %s:\n%s",
-    #                 self.id, pprint.pformat(rendering_values)
-    #             )
-    #             redirect_form_html = redirect_form_view._render(rendering_values, engine='ir.qweb')
-    #             processing_values.update(redirect_form_html=redirect_form_html)
-    #
-    #     return processing_values
-    #
-    # def _get_specific_processing_values(self, processing_values):
-    #     """ Return a dict of acquirer-specific values used to process the transaction.
-    #
-    #     For an acquirer to add its own processing values, it must overwrite this method and return a
-    #     dict of acquirer-specific values based on the generic values returned by this method.
-    #     Acquirer-specific values take precedence over those of the dict of generic processing
-    #     values.
-    #
-    #     :param dict processing_values: The generic processing values of the transaction
-    #     :return: The dict of acquirer-specific processing values
-    #     :rtype: dict
-    #     """
-    #     return dict()
-    #
-    # def _get_specific_rendering_values(self, processing_values):
-    #     """ Return a dict of acquirer-specific values used to render the redirect form.
-    #
-    #     For an acquirer to add its own rendering values, it must overwrite this method and return a
-    #     dict of acquirer-specific values based on the processing values (acquirer-specific
-    #     processing values included).
-    #
-    #     :param dict processing_values: The processing values of the transaction
-    #     :return: The dict of acquirer-specific rendering values
-    #     :rtype: dict
-    #     """
-    #     return dict()
 
     def _send_payment_request(self):
         """ Request the provider of the acquirer handling the transaction to execute the payment.
@@ -652,49 +560,6 @@ class PaymentTransaction(models.Model):
 
             success = getattr(record, method)(tx)  # Execute the callback
             tx_sudo.callback_is_done = success or success is None  # Missing returns are successful
-
-    #=== BUSINESS METHODS - POST-PROCESSING ===#
-
-    # def _get_post_processing_values(self):
-    #     """ Return a dict of values used to display the status of the transaction.
-    #
-    #     For an acquirer to handle transaction status display, it must override this method and
-    #     return a dict of values. Acquirer-specific values take precedence over those of the dict of
-    #     generic post-processing values.
-    #
-    #     The returned dict contains the following entries:
-    #         - provider: The provider of the acquirer
-    #         - reference: The reference of the transaction
-    #         - amount: The rounded amount of the transaction
-    #         - currency_id: The currency of the transaction, as a res.currency id
-    #         - state: The transaction state: draft, pending, authorized, done, cancel or error
-    #         - state_message: The information message about the state
-    #         - is_processed: Whether the transaction has already been post-processed
-    #         - landing_route: The route the user is redirected to after the transaction
-    #         - Additional acquirer-specific entries
-    #
-    #     Note: self.ensure_one()
-    #
-    #     :return: The dict of processing values
-    #     :rtype: dict
-    #     """
-    #     self.ensure_one()
-    #
-    #     post_processing_values = {
-    #         'provider': self.provider,
-    #         'reference': self.reference,
-    #         'amount': self.amount,
-    #         'currency_code': self.currency_id.name,
-    #         'state': self.state,
-    #         'state_message': self.state_message,
-    #         'is_processed': self.is_processed,
-    #         'landing_route': self.landing_route,
-    #     }
-    #     _logger.debug(
-    #         "post-processing values for acquirer with id %s:\n%s",
-    #         self.acquirer_id.id, pprint.pformat(post_processing_values)
-    #     )  # DEBUG level because this can get spammy with transactions in non-final states
-    #     return post_processing_values
 
     #=== BUSINESS METHODS - LOGGING ===#
 
