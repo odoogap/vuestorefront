@@ -214,14 +214,6 @@ class AdyenDirectController(http.Controller):
         vsf_payment_success_return_url = website.vsf_payment_success_return_url
         vsf_payment_error_return_url = website.vsf_payment_error_return_url
 
-        # Update Context Info
-        context = dict(request.context)
-        context.update({
-            'website_id': website.id,
-            'lang': website.default_lang_id.code,
-        })
-        request.context = context
-
         request.session["__payment_tx_ids__"] = [payment_transaction.id]
 
         # Retrieve the transaction based on the reference included in the return url

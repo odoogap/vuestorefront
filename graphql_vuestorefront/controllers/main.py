@@ -49,19 +49,11 @@ class VSFAdyenController(AdyenController):
             vsf_payment_success_return_url = website.vsf_payment_success_return_url
             vsf_payment_error_return_url = website.vsf_payment_error_return_url
 
-            # Update Context Info
-            context = dict(request.context)
-            context.update({
-                'website_id': website.id,
-                'lang': website.default_lang_id.code,
-            })
-            request.context = context
-
             request.session["__payment_tx_ids__"] = [payment_transaction.id]
 
             # Adyen Error Flow
             if post.get('authResult') and post['authResult'] == 'REFUSED':
-                request.env['payment.transaction'].sudo()._handle_feedback_data('adyen', post)
+                request.env['payment.transaction'].sudo().form_feedback(post, 'adyen')
 
                 # Clear the payment_tx_ids
                 request.session['__payment_tx_ids__'] = []
@@ -70,7 +62,7 @@ class VSFAdyenController(AdyenController):
 
             # Adyen Success Flow
             if post.get('authResult') not in ['CANCELLED']:
-                request.env['payment.transaction'].sudo()._handle_feedback_data('adyen', post)
+                request.env['payment.transaction'].sudo().form_feedback(post, 'adyen')
 
                 # Confirm sale order
                 PaymentProcessing().payment_status_poll()
