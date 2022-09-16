@@ -51,8 +51,8 @@ class PaymentQuery(graphene.ObjectType):
         order = website.sale_get_order()
 
         domain = expression.AND([
-            ['&', '&', ('state', 'in', ['enabled', 'test']), ('company_id', '=', order.company_id.id),
-             ('vsf_active', '=', True)],
+            ['&', ('vsf_active', '=', True), ('state', 'in', ['enabled', 'test'])],
+            ['|', ('company_id', '=', False), ('company_id', '=', order.company_id.id)],
             ['|', ('website_id', '=', False), ('website_id', '=', website.id)],
             ['|', ('country_ids', '=', False), ('country_ids', 'in', [order.partner_id.country_id.id])]
         ])
