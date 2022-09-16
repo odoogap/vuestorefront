@@ -12,6 +12,8 @@ _logger = logging.getLogger(__name__)
 class PaymentAcquirer(models.Model):
     _inherit = 'payment.acquirer'
 
+    vsf_active = fields.Boolean('Active on VSF?')
+
     # Configuration fields
     redirect_form_view_id = fields.Many2one(
         string="Redirect Form Template", comodel_name='ir.ui.view',

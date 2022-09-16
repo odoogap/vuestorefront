@@ -8,7 +8,7 @@
     <record id="acquirer_form_adyen_direct" model="ir.ui.view">
         <field name="name">Adyen Direct Acquirer Form</field>
         <field name="model">payment.acquirer</field>
-        <field name="inherit_id" ref="payment.acquirer_form"/>
+        <field name="inherit_id" ref="payment_vsf.acquirer_form"/>
         <field name="arch" type="xml">
             <xpath expr='//group[@name="acquirer"]' position='inside'>
                 <group attrs="{'invisible': [('provider', '!=', 'adyen_direct')]}">

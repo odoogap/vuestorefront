@@ -51,7 +51,8 @@ class PaymentQuery(graphene.ObjectType):
         order = website.sale_get_order()
 
         domain = expression.AND([
-            ['&', ('state', 'in', ['enabled', 'test']), ('company_id', '=', order.company_id.id)],
+            ['&', '&', ('state', 'in', ['enabled', 'test']), ('company_id', '=', order.company_id.id),
+             ('vsf_active', '=', True)],
             ['|', ('website_id', '=', False), ('website_id', '=', website.id)],
             ['|', ('country_ids', '=', False), ('country_ids', 'in', [order.partner_id.country_id.id])]
         ])
@@ -79,37 +80,9 @@ class PaymentQuery(graphene.ObjectType):
         raise GraphQLError(_('Cart does not exist'))
 
 
-def validate_expiry(expiry_month, expiry_year):
-    # Validate expiry month and year
-    if expiry_month > 12 or expiry_month < 1:
-        raise GraphQLError(_('Invalid Month'))
-
-    cc_expiry = '%s / %s' % ("{:02d}".format(expiry_month), expiry_year)
-
-    expiry_date = datetime.strptime(cc_expiry, '%m / %Y').strftime('%Y%m')
-
-    if datetime.now().strftime('%Y%m') > expiry_date:
-        raise GraphQLError(_('Invalid Month / Year'))
-    return cc_expiry
-
-
-def prepare_payment_transaction(env, data, payment_acquire, order):
-    payment_token = payment_acquire.ogone_s2s_form_process(data)
-
-    # create normal s2s transaction
-    transaction = env['payment.transaction'].sudo().create({
-        'amount': order.amount_total,
-        'acquirer_id': payment_acquire.id,
-        'type': 'server2server',
-        'currency_id': order.currency_id.id,
-        'reference': order.name,
-        'payment_token_id': payment_token.id,
-        'partner_id': order.partner_id.id,
-        'sale_order_ids': [(6, 0, order.ids)]
-
-    })
-    return transaction
-
+# -------------------------- #
+#          Payment           #
+# -------------------------- #
 
 class MakePaymentResult(graphene.ObjectType):
     form = generic.GenericScalar()
