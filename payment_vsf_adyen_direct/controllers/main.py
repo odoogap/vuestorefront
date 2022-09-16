@@ -313,6 +313,9 @@ class AdyenDirectController(http.Controller):
                     # Confirm sale order
                     PaymentProcessing().payment_status_poll()
 
+                    # Clear the payment_tx_ids
+                    request.session['__payment_tx_ids__'] = []
+
                     return werkzeug.utils.redirect(vsf_payment_success_return_url)
 
                 elif event_code == 'CANCELLATION' and success:
