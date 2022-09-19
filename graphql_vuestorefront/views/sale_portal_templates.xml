@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Copyright 2022 ODOOGAP/PROMPTEQUATION LDA
+    License LGPL-3.0 or later (http://www.gnu.org/licenses/lgpl).
+-->
+<odoo>
+
+    <template id="sale_order_portal_template_inherit" inherit_id="sale.sale_order_portal_template">
+        <xpath expr="//t[@t-set='entries']//a[@id='o_sale_portal_paynow']" position="replace">
+            <a t-elif="sale_order.has_to_be_paid(True) and not sale_order.signature" role="button" id="o_sale_portal_accept" data-toggle="modal" data-target="#modalaccept" href="#" t-att-class="'btn-block mb8 %s' % ('btn btn-light' if sale_order.transaction_ids else 'btn btn-primary')" >
+                <i class="fa fa-check"/> Accept &amp; Pay
+            </a>
+            <t t-if="sale_order.website_id.vsf_pay_url">
+                <t t-value="sale_order.website_id.vsf_pay_url" t-set="vsf_pay_url"/>
+                <a t-if="sale_order.has_to_be_paid(True) and sale_order.signature" role="button" id="o_sale_portal_paynow" t-att-href="'%s?order_id=%s&amp;access_token=%s' % (vsf_pay_url, sale_order.id, sale_order.access_token)" t-att-class="'btn-block mb8 %s' % ('btn btn-light' if sale_order.transaction_ids else 'btn btn-primary')" >
+                    <i class="fa fa-check"/> Pay Now
+                </a>
+            </t>
+            <t t-else="">
+                <t t-value="website.vsf_pay_url" t-set="vsf_pay_url"/>
+                <a t-if="sale_order.has_to_be_paid(True) and sale_order.signature" role="button" id="o_sale_portal_paynow" t-att-href="'%s?order_id=%s&amp;access_token=%s' % (vsf_pay_url, sale_order.id, sale_order.access_token)" t-att-class="'btn-block mb8 %s' % ('btn btn-light' if sale_order.transaction_ids else 'btn btn-primary')" >
+                    <i class="fa fa-check"/> Pay Now
+                </a>
+            </t>
+        </xpath>
+    </template>
+
+</odoo>

@@ -14,6 +14,7 @@ class ResConfigSettings(models.TransientModel):
         'Payment Error Return Url', related='website_id.vsf_payment_error_return_url', readonly=False,
         required=True
     )
+    vsf_pay_url = fields.Char('Pay Url', related='website_id.vsf_pay_url', readonly=False, required=True)
     vsf_cache_invalidation_key = fields.Char('Cache Invalidation Key', required=True)
     vsf_cache_invalidation_url = fields.Char('Cache Invalidation Url', required=True)
     vsf_mailing_list_id = fields.Many2one('mailing.list', 'Newsletter', domain=[('is_public', '=', True)],

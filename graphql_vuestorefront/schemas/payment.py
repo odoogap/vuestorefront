@@ -20,6 +20,11 @@ from odoo.addons.website_sale.controllers.main import WebsiteSale
 from odoo.addons.payment_vsf_adyen_direct.controllers.main import AdyenDirectController
 
 
+class PaymentAcquirerFilterInput(graphene.InputObjectType):
+    order_id = graphene.Int()
+    access_token = graphene.String()
+
+
 class PaymentQuery(graphene.ObjectType):
     payment_acquirer = graphene.Field(
         PaymentAcquirer,
@@ -28,6 +33,7 @@ class PaymentQuery(graphene.ObjectType):
     )
     payment_acquirers = graphene.List(
         graphene.NonNull(PaymentAcquirer),
+        filter=graphene.Argument(PaymentAcquirerFilterInput, default_value={}),
     )
     payment_confirmation = graphene.Field(
         Cart,
@@ -43,12 +49,22 @@ class PaymentQuery(graphene.ObjectType):
             raise GraphQLError(_('Payment acquirer does not exist.'))
         return payment_acquirer
 
-    def resolve_payment_acquirers(self, info):
+    def resolve_payment_acquirers(self, info, filter):
         env = info.context["env"]
-
+        SaleOrder = env['sale.order'].sudo()
         website = env['website'].get_current_website()
         request.website = website
         order = website.sale_get_order()
+
+        if filter.get('order_id', False):
+            order = SaleOrder.search([('id', '=', filter['order_id'])], limit=1)
+
+            if (not filter.get('access_token')) or \
+                    (filter.get('access_token', False) and filter['access_token'] != order.sudo().access_token):
+                raise GraphQLError(_("Sorry! You cannot access this Order."))
+
+        if not order:
+            raise GraphQLError(_('Order does not exist.'))
 
         domain = expression.AND([
             ['&', ('vsf_active', '=', True), ('state', 'in', ['enabled', 'test'])],
@@ -78,37 +94,6 @@ class PaymentQuery(graphene.ObjectType):
                     return CartData(order=order)
 
         raise GraphQLError(_('Cart does not exist'))
-
-
-# -------------------------- #
-#          Payment           #
-# -------------------------- #
-
-class MakePaymentResult(graphene.ObjectType):
-    form = generic.GenericScalar()
-
-
-# Deprecated
-class MakePayment(graphene.Mutation):
-    class Arguments:
-        payment_acquire_id = graphene.Int(required=True)
-
-    Output = MakePaymentResult
-
-    @staticmethod
-    def mutate(self, info, payment_acquire_id):
-        env = info.context["env"]
-        website = env['website'].get_current_website()
-        request.website = website
-
-        return MakePaymentResult(
-            form=WebsiteSale().payment_transaction(payment_acquire_id).decode('utf-8')
-        )
-
-
-class PaymentMutation(graphene.ObjectType):
-    # Deprecated
-    make_payment = MakePayment.Field(description='Creates a new payment request.')
 
 
 # --------------------------------------- #
@@ -169,12 +154,14 @@ class AdyenAcquirerInfo(graphene.Mutation):
 class AdyenPaymentMethods(graphene.Mutation):
     class Arguments:
         acquirer_id = graphene.Int(required=True)
+        order_id = graphene.Int()
 
     Output = AdyenPaymentMethodsResult
 
     @staticmethod
-    def mutate(self, info, acquirer_id):
+    def mutate(self, info, acquirer_id, order_id):
         env = info.context["env"]
+        SaleOrder = env['sale.order'].sudo()
         PaymentAcquirer = env['payment.acquirer'].sudo()
         website = env['website'].get_current_website()
         request.website = website
@@ -183,6 +170,12 @@ class AdyenPaymentMethods(graphene.Mutation):
             ('id', '=', acquirer_id),
             ('state', 'in', ['enabled', 'test']),
         ]
+
+        if order_id:
+            order = SaleOrder.search([('id', '=', order_id)], limit=1)
+
+        if not order:
+            raise GraphQLError(_('Order does not exist.'))
 
         payment_acquirer_id = PaymentAcquirer.search(domain, limit=1)
         if not payment_acquirer_id:
@@ -204,20 +197,32 @@ class AdyenPaymentMethods(graphene.Mutation):
 class AdyenTransaction(graphene.Mutation):
     class Arguments:
         acquirer_id = graphene.Int(required=True)
+        order_id = graphene.Int()
 
     Output = AdyenTransactionResult
 
     @staticmethod
-    def mutate(self, info, acquirer_id):
+    def mutate(self, info, acquirer_id, order_id):
         env = info.context["env"]
+        SaleOrder = env['sale.order'].sudo()
         PaymentAcquirer = env['payment.acquirer'].sudo()
         PaymentTransaction = env['payment.transaction'].sudo()
         website = env['website'].get_current_website()
         request.website = website
+        order = website.sale_get_order()
         domain = [
             ('id', '=', acquirer_id),
             ('state', 'in', ['enabled', 'test']),
         ]
+
+        if order_id:
+            order = SaleOrder.search([('id', '=', order_id)], limit=1)
+
+        if not order:
+            raise GraphQLError(_('Order does not exist.'))
+
+        print('\n\n\n\n')
+        print(order.get_portal_url())
 
         payment_acquirer_id = PaymentAcquirer.search(domain, limit=1)
         if not payment_acquirer_id:
@@ -226,13 +231,17 @@ class AdyenTransaction(graphene.Mutation):
         if not payment_acquirer_id.provider == 'adyen_direct':
             raise GraphQLError(_('Payment acquirer with "adyen_direct" Provider does not exist.'))
 
-        transaction_form = WebsiteSale().payment_transaction(acquirer_id=acquirer_id).decode('utf-8')
+        transaction_form = WebsiteSale().payment_transaction(acquirer_id=acquirer_id, so_id=order.id).decode('utf-8')
 
         # Get the Transaction Reference Value
         soup = BeautifulSoup(transaction_form, "lxml")
         transaction_reference = soup.find('input', {'name': 'reference'}).get('value')
 
         transaction_id = PaymentTransaction.search([('reference', '=', transaction_reference)], limit=1)
+
+        # Condition to Control the redirects
+        if order_id:
+            transaction_id.vsf_pay_by_link = True
 
         converted_amount = payment_utils.to_minor_currency_units(
             transaction_id.amount,
@@ -355,7 +364,7 @@ class AdyenPaymentDetails(graphene.Mutation):
         return AdyenPaymentsResult(adyen_payment_details=adyen_payment_details)
 
 
-class AdyenPaymentMutation(graphene.ObjectType):
+class PaymentMutation(graphene.ObjectType):
     adyen_acquirer_info = AdyenAcquirerInfo.Field(description='Get Adyen Acquirer Info.')
     adyen_payment_methods = AdyenPaymentMethods.Field(description='Get Adyen Payment Methods.')
     adyen_transaction = AdyenTransaction.Field(description='Create Adyen Transaction')

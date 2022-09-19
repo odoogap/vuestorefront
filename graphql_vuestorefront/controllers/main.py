@@ -4,73 +4,13 @@
 
 import os
 import json
-import werkzeug
+
 from odoo import http
 from odoo.addons.graphql_base import GraphQLControllerMixin
-from odoo.addons.payment.controllers.portal import PaymentProcessing
-from odoo.addons.payment_adyen.controllers.main import AdyenController
 from odoo.http import request, Response
 from urllib.parse import urlparse
 
 from ..schema import schema
-
-
-class VSFAdyenController(AdyenController):
-
-    # Deprecated
-    @http.route(['/payment/adyen/return'], type='http', auth='public', csrf=False)
-    def adyen_return(self, **post):
-        # Confirm payment transaction
-        super(VSFAdyenController, self).adyen_return(**post)
-
-        tx_ids_list = request.session.get("__payment_tx_ids__", [])
-
-        # If the session have tx_ids_list it means that the SO payment was done in Odoo
-        if tx_ids_list:
-            return werkzeug.utils.redirect('/payment/process')
-
-        # If the Session not have Transactions Associated it means that the SO payment was done in VSF
-        elif not tx_ids_list and post.get('merchantReference'):
-            transaction_reference = post['merchantReference']
-
-            payment_transaction = request.env['payment.transaction'].sudo().search([
-                ('reference', 'like', str(transaction_reference))
-            ])
-
-            # Check the Order related with the transaction
-            sale_order_ids = payment_transaction.sale_order_ids.ids
-            sale_order = request.env['sale.order'].sudo().search([
-                ('id', 'in', sale_order_ids), ('website_id', '!=', False)
-            ], limit=1)
-
-            # Get Website
-            website = sale_order.website_id
-            # Redirect to VSF
-            vsf_payment_success_return_url = website.vsf_payment_success_return_url
-            vsf_payment_error_return_url = website.vsf_payment_error_return_url
-
-            request.session["__payment_tx_ids__"] = [payment_transaction.id]
-
-            # Adyen Error Flow
-            if post.get('authResult') and post['authResult'] == 'REFUSED':
-                request.env['payment.transaction'].sudo().form_feedback(post, 'adyen')
-
-                # Clear the payment_tx_ids
-                request.session['__payment_tx_ids__'] = []
-
-                return werkzeug.utils.redirect(vsf_payment_error_return_url)
-
-            # Adyen Success Flow
-            if post.get('authResult') not in ['CANCELLED']:
-                request.env['payment.transaction'].sudo().form_feedback(post, 'adyen')
-
-                # Confirm sale order
-                PaymentProcessing().payment_status_poll()
-
-                # Clear the payment_tx_ids
-                request.session['__payment_tx_ids__'] = []
-
-                return werkzeug.utils.redirect(vsf_payment_success_return_url)
 
 
 class GraphQLController(http.Controller, GraphQLControllerMixin):
