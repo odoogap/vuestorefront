@@ -215,8 +215,8 @@ class AdyenDirectController(http.Controller):
         vsf_payment_error_return_url = website.vsf_payment_error_return_url
         # Redirects to VSF -> Pay by Link (On Portal)
         if payment_transaction.vsf_pay_by_link:
-            vsf_payment_success_return_url = website.vsf_pay_url
-            vsf_payment_error_return_url = sale_order.get_portal_url()
+            vsf_payment_success_return_url = sale_order.get_portal_url()
+            vsf_payment_error_return_url = website.vsf_pay_url
 
         request.session["__payment_tx_ids__"] = [payment_transaction.id]
 
@@ -313,7 +313,7 @@ class AdyenDirectController(http.Controller):
                     vsf_payment_success_return_url = website.vsf_payment_success_return_url
                     # Redirects to VSF -> Pay by Link (On Portal)
                     if payment_transaction.vsf_pay_by_link:
-                        vsf_payment_success_return_url = website.vsf_pay_url
+                        vsf_payment_success_return_url = sale_order.get_portal_url()
 
                     request.session["__payment_tx_ids__"] = [payment_transaction.id]
 
