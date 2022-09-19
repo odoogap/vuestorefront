@@ -221,9 +221,6 @@ class AdyenTransaction(graphene.Mutation):
         if not order:
             raise GraphQLError(_('Order does not exist.'))
 
-        print('\n\n\n\n')
-        print(order.get_portal_url())
-
         payment_acquirer_id = PaymentAcquirer.search(domain, limit=1)
         if not payment_acquirer_id:
             raise GraphQLError(_('Payment acquirer does not exist.'))

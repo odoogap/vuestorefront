@@ -7,3 +7,4 @@ from . import website
 from . import product
 from . import res_config_settings
 from . import res_users
+from . import payment_transaction

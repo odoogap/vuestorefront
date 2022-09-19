@@ -19,8 +19,6 @@ _logger = logging.getLogger(__name__)
 class PaymentTransaction(models.Model):
     _inherit = 'payment.transaction'
 
-    vsf_pay_by_link = fields.Boolean('VSF Pay by Link (On Portal)', default=False)
-
     company_id = fields.Many2one(  # Indexed to speed-up ORM searches (from ir_rule or others)
         related='acquirer_id.company_id', store=True, index=True)
     payment_token_id = fields.Many2one('payment.token', 'Payment Token', readonly=True,
