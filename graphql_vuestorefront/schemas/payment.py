@@ -228,7 +228,11 @@ class AdyenTransaction(graphene.Mutation):
         if not payment_acquirer_id.provider == 'adyen_direct':
             raise GraphQLError(_('Payment acquirer with "adyen_direct" Provider does not exist.'))
 
-        transaction_form = WebsiteSale().payment_transaction(acquirer_id=acquirer_id, so_id=order.id).decode('utf-8')
+        transaction_form = WebsiteSale().payment_transaction(
+            acquirer_id=acquirer_id,
+            so_id=order.id,
+            access_token=order.access_token
+        ).decode('utf-8')
 
         # Get the Transaction Reference Value
         soup = BeautifulSoup(transaction_form, "lxml")
