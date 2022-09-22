@@ -59,6 +59,9 @@ class PaymentQuery(graphene.ObjectType):
         if filter.get('order_id', False):
             order = SaleOrder.search([('id', '=', filter['order_id'])], limit=1)
 
+            if not order:
+                raise GraphQLError(_('Order does not exist.'))
+
             if (not filter.get('access_token')) or \
                     (filter.get('access_token', False) and filter['access_token'] != order.sudo().access_token):
                 raise GraphQLError(_("Sorry! You cannot access this Order."))

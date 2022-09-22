@@ -76,7 +76,7 @@ class OrderQuery(graphene.ObjectType):
         error_msg = 'Sale Order does not exist.'
         # This Condition will be used just on the Payment of one specific Order (Public Access)
         if access_token:
-            order = SaleOrder.sudo().search([('id', '=', id)])
+            order = SaleOrder.sudo().search([('id', '=', id)], limit=1)
             if not order:
                 raise GraphQLError(_(error_msg))
             if access_token != order.access_token:
