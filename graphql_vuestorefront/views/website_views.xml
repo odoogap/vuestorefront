@@ -16,6 +16,7 @@
                         <field name="vsf_payment_success_return_url"/>
                         <field name="vsf_payment_error_return_url"/>
                         <field name="vsf_pay_url"/>
+                        <field name="vsf_pay_error_url"/>
                     </group>
                 </div>
             </xpath>

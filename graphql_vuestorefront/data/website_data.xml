@@ -12,6 +12,7 @@
         <field name="vsf_payment_success_return_url">http://localhost:3000/checkout/thank-you</field>
         <field name="vsf_payment_error_return_url">http://localhost:3000/checkout/payment-error</field>
         <field name="vsf_pay_url">http://localhost:3000/pay</field>
+        <field name="vsf_pay_error_url">http://localhost:3000/pay/fail</field>
         <field name="vsf_mailing_list_id" eval="ref('mass_mailing.mailing_list_data')"/>
     </record>
 

@@ -57,6 +57,7 @@ class OrderQuery(graphene.ObjectType):
         Order,
         required=True,
         id=graphene.Int(),
+        access_token=graphene.String()
     )
     orders = graphene.Field(
         Orders,
@@ -70,12 +71,20 @@ class OrderQuery(graphene.ObjectType):
     )
 
     @staticmethod
-    def resolve_order(self, info, id):
+    def resolve_order(self, info, id, access_token):
         SaleOrder = info.context['env']['sale.order']
         error_msg = 'Sale Order does not exist.'
-        order = get_document_with_check_access(SaleOrder, [('id', '=', id)], error_msg=error_msg)
-        if not order:
-            raise GraphQLError(_(error_msg))
+        # This Condition will be used just on the Payment of one specific Order (Public Access)
+        if access_token:
+            order = SaleOrder.sudo().search([('id', '=', id)])
+            if not order:
+                raise GraphQLError(_(error_msg))
+            if access_token != order.access_token:
+                raise GraphQLError(_("Sorry! You cannot access this Order."))
+        else:
+            order = get_document_with_check_access(SaleOrder, [('id', '=', id)], error_msg=error_msg)
+            if not order:
+                raise GraphQLError(_(error_msg))
         return order.sudo()
 
     @staticmethod
