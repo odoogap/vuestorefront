@@ -123,7 +123,7 @@ class ProductPublicCategory(models.Model):
             if self.search([('website_slug', '=', category.website_slug), ('id', '!=', category.id)], limit=1):
                 raise ValidationError(_('Slug is already in use: {}'.format(category.website_slug)))
 
-    website_slug = fields.Char('Website Slug', translate=True)
+    website_slug = fields.Char('Website Slug', translate=True, copy=False)
 
     @api.model
     def create(self, vals):
