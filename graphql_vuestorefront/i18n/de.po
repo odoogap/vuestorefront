@@ -7,6 +7,11 @@
 #
 
 #. module: graphql_vuestorefront
+#: model_terms:ir.ui.view,arch_db:graphql_vuestorefront.sale_order_portal_template_inherit
+msgid "Accept &amp; Pay"
+msgstr "Akzeptieren &amp; Bezahlen"
+
+#. module: graphql_vuestorefront
 #: code:addons/sale/models/payment.py:0
 #: model_terms:ir.ui.view,arch_db:graphql_vuestorefront.sale_order_portal_template_inherit
 #, python-format
