@@ -19,7 +19,7 @@
             <div t-elif="sale_order.has_to_be_paid(True)" class="col-sm-auto mt8">
                 <t t-if="sale_order.website_id.vsf_pay_url" t-set="vsf_pay_url" t-value="sale_order.website_id.vsf_pay_url"/>
                 <t t-else="" t-set="vsf_pay_url" t-value="website.vsf_pay_url"/>
-                <a role="button" dt-att-href="'%s?order_id=%s&amp;access_token=%s' % (vsf_pay_url, sale_order.id, sale_order.access_token)" t-att-class="'%s' % ('btn btn-light' if sale_order.transaction_ids else 'btn btn-primary')" >
+                <a role="button" t-att-href="'%s?order_id=%s&amp;access_token=%s' % (vsf_pay_url, sale_order.id, sale_order.access_token)" t-att-class="'%s' % ('btn btn-light' if sale_order.transaction_ids else 'btn btn-primary')" >
                     <i class="fa fa-check"/> <t t-if="not sale_order.signature">Accept &amp; Pay</t><t t-else="">Pay Now</t>
                 </a>
             </div>
