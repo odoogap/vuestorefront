@@ -4,7 +4,7 @@
 import json
 import requests
 from odoo import models, fields, api, tools, _
-from odoo.addons.http_routing.models.ir_http import slug
+from odoo.addons.http_routing.models.ir_http import slug, slugify
 from odoo.exceptions import ValidationError
 
 
@@ -52,7 +52,9 @@ class ProductTemplate(models.Model):
                 if not product.id:
                     product.website_slug = None
                 else:
-                    product.website_slug = '/product/{}'.format(slug(product))
+                    prefix = '/product'
+                    slug_name = slugify(product.name or '').strip().strip('-')
+                    product.website_slug = '{}/{}-{}'.format(prefix, slug_name, product.id)
 
     @api.depends('product_variant_ids')
     def _compute_variant_attribute_value_ids(self):
@@ -124,6 +126,8 @@ class ProductTemplate(models.Model):
         if self.image_1920:
             images.append('%s/web/image/product.product/%s/image' % (base_url, self.id))
 
+        website = self.env['website'].get_current_website()
+
         json_ld = {
             "@context": "https://schema.org/",
             "@type": "Product",
@@ -138,7 +142,7 @@ class ProductTemplate(models.Model):
                 "availability": "https://schema.org/InStock",
                 "seller": {
                     "@type": "Organization",
-                    "name": "Greenmind"
+                    "name": website and website.display_name or self.env.user.company_id.display_name
                 }
             }
         }
@@ -167,6 +171,8 @@ class ProductProduct(models.Model):
         if self.image_1920:
             images.append('%s/web/image/product.product/%s/image' % (base_url, self.id))
 
+        website = self.env['website'].get_current_website()
+
         json_ld = {
             "@context": "https://schema.org/",
             "@type": "Product",
@@ -181,7 +187,7 @@ class ProductProduct(models.Model):
                 "availability": "https://schema.org/InStock",
                 "seller": {
                     "@type": "Organization",
-                    "name": "Greenmind"
+                    "name": website and website.display_name or self.env.user.company_id.display_name
                 }
             }
         }
