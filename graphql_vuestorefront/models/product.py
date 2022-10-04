@@ -4,7 +4,7 @@
 
 import requests
 from odoo import models, fields, api, tools, _
-from odoo.addons.http_routing.models.ir_http import slug
+from odoo.addons.http_routing.models.ir_http import slugify
 from odoo.exceptions import ValidationError
 
 
@@ -52,7 +52,9 @@ class ProductTemplate(models.Model):
                 if not product.id:
                     product.website_slug = None
                 else:
-                    product.website_slug = '/product/{}'.format(slug(product))
+                    prefix = '/product'
+                    slug_name = slugify(product.name or '').strip().strip('-')
+                    product.website_slug = '{}/{}-{}'.format(prefix, slug_name, product.id)
 
     @api.depends('product_variant_ids')
     def _compute_variant_attribute_value_ids(self):
