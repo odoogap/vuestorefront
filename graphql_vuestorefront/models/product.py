@@ -2,9 +2,7 @@
 # Copyright 2022 ODOOGAP/PROMPTEQUATION LDA
 # License LGPL-3.0 or later (http://www.gnu.org/licenses/lgpl).
 import json
-import requests
-from odoo import models, fields, api, tools, _
-from odoo.addons.http_routing.models.ir_http import slug, slugify
+from odoo import models, fields, api, _
 from odoo.exceptions import ValidationError
 
 
@@ -40,21 +38,6 @@ class ProductTemplate(models.Model):
                     INSERT INTO product_template_product_public_category_slug_rel(product_template_id, product_public_category_id)
                     VALUES(%s, %s);
                 """, (product.id, category_id,))
-
-    # @api.depends('name')
-    # def _compute_website_slug(self):
-    #     langs = self.env['res.lang'].search([])
-
-    #     for product in self:
-    #         for lang in langs:
-    #             product = product.with_context(lang=lang.code)
-
-    #             if not product.id:
-    #                 product.website_slug = None
-    #             else:
-    #                 prefix = '/product'
-    #                 slug_name = slugify(product.name or '').strip().strip('-')
-    #                 product.website_slug = '{}/{}-{}'.format(prefix, slug_name, product.id)
 
     def _validate_prod_website_slug(self):
         for product in self.filtered(lambda c: c.website_slug):
