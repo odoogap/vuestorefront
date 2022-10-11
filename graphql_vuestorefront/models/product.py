@@ -41,21 +41,62 @@ class ProductTemplate(models.Model):
                     VALUES(%s, %s);
                 """, (product.id, category_id,))
 
-    @api.depends('name')
-    def _compute_website_slug(self):
-        langs = self.env['res.lang'].search([])
+    # @api.depends('name')
+    # def _compute_website_slug(self):
+    #     langs = self.env['res.lang'].search([])
 
-        for product in self:
-            for lang in langs:
-                product = product.with_context(lang=lang.code)
+    #     for product in self:
+    #         for lang in langs:
+    #             product = product.with_context(lang=lang.code)
 
-                if not product.id:
-                    product.website_slug = None
-                else:
-                    prefix = '/product'
-                    slug_name = slugify(product.name or '').strip().strip('-')
-                    product.website_slug = '{}/{}-{}'.format(prefix, slug_name, product.id)
+    #             if not product.id:
+    #                 product.website_slug = None
+    #             else:
+    #                 prefix = '/product'
+    #                 slug_name = slugify(product.name or '').strip().strip('-')
+    #                 product.website_slug = '{}/{}-{}'.format(prefix, slug_name, product.id)
 
+    def _validate_prod_website_slug(self):
+        for product in self.filtered(lambda c: c.website_slug):
+            if product.website_slug[0] != "/":
+                raise ValidationError(_("Slug should start with /"))
+
+            if not product.website_id:
+                res = self.search(
+                    [
+                        ("website_slug", "=", product.website_slug),
+                        ("id", "!=", product.id),
+                    ],
+                    limit=1,
+                )
+                if res:
+                    raise ValidationError(
+                        _(
+                            "Slug: (%s) is already in use for other product."
+                            % (product.website_slug)
+                        )
+                    )
+            if product.website_id:
+                slug_cats = self.search(
+                    [
+                        ("website_slug", "=", product.website_slug),
+                        ("website_id", "=", product.website_id.id),
+                        ("id", "!=", product.id),
+                    ]
+                )
+                for prod in slug_cats:
+                    if product.website_id.id == prod.website_id.id:
+                        raise ValidationError(
+                            _(
+                                "Duplicate Slugs within a website are not allowed. Slug: (%s) is already in use for the product: (%s) and same website: (%s)."
+                                % (
+                                    product.website_slug,
+                                    prod.name,
+                                    prod.website_id.name,
+                                )
+                            )
+                        )
+    
     @api.depends('product_variant_ids')
     def _compute_variant_attribute_value_ids(self):
         """
@@ -76,8 +117,9 @@ class ProductTemplate(models.Model):
                                                    'product_template_variant_product_attribute_value_rel',
                                                    compute='_compute_variant_attribute_value_ids',
                                                    store=True, readonly=True)
-    website_slug = fields.Char('Website Slug', compute='_compute_website_slug', store=True, readonly=True,
-                               translate=True)
+    # website_slug = fields.Char('Website Slug', compute='_compute_website_slug', store=True, readonly=True,
+    #                            translate=True)
+    website_slug = fields.Char("Website Slug", translate=True, store=True, copy=False)
     public_categ_slug_ids = fields.Many2many('product.public.category',
                                              'product_template_product_public_category_slug_rel',
                                              compute='_compute_public_categ_slug_ids',
@@ -86,11 +128,15 @@ class ProductTemplate(models.Model):
 
     def write(self, vals):
         res = super(ProductTemplate, self).write(vals)
-        self.env['invalidate.cache'].create_invalidate_cache(self._name, self.ids, vals)
+        if vals.get("website_slug") or vals.get("website_id"):
+            self._validate_prod_website_slug()
+        elif not vals.get("website_slug") or not vals.get("website_id"):
+            self._validate_prod_website_slug()
+        self.env["invalidate.cache"].create_invalidate_cache(self._name, self.ids, vals)
         return res
 
     def unlink(self):
-        self.env['invalidate.cache'].create_invalidate_cache(self._name, self.ids)
+        self.env["invalidate.cache"].create_invalidate_cache(self._name, self.ids)
         return super(ProductTemplate, self).unlink()
 
     def _get_combination_info(self, combination=False, product_id=False, add_qty=1, pricelist=False,
@@ -204,13 +250,45 @@ class ProductProduct(models.Model):
 class ProductPublicCategory(models.Model):
     _inherit = 'product.public.category'
 
-    def _validate_website_slug(self):
+    def _validate_cat_website_slug(self):
         for category in self.filtered(lambda c: c.website_slug):
-            if category.website_slug[0] != '/':
-                raise ValidationError(_('Slug should start with /'))
-
-            if self.search([('website_slug', '=', category.website_slug), ('id', '!=', category.id)], limit=1):
-                raise ValidationError(_('Slug is already in use: {}'.format(category.website_slug)))
+            if category.website_slug[0] != "/":
+                raise ValidationError(_("Slug should start with /"))
+            if not category.website_id:
+                res = self.search(
+                    [
+                        ("website_slug", "=", category.website_slug),
+                        ("id", "!=", category.id),
+                    ],
+                    limit=1,
+                )
+                if res:
+                    raise ValidationError(
+                        _(
+                            "Slug: (%s) is already in use for other category."
+                            % (category.website_slug)
+                        )
+                    )
+            if category.website_id:
+                slug_cats = self.search(
+                    [
+                        ("website_slug", "=", category.website_slug),
+                        ("website_id", "=", category.website_id.id),
+                        ("id", "!=", category.id),
+                    ]
+                )
+                for cat in slug_cats:
+                    if category.website_id.id == cat.website_id.id:
+                        raise ValidationError(
+                            _(
+                                "Duplicate Slugs within a website are not allowed. Slug: (%s) is already in use for the category: (%s) and same website: (%s)."
+                                % (
+                                    category.website_slug,
+                                    cat.name,
+                                    cat.website_id.name,
+                                )
+                            )
+                        )
 
     website_slug = fields.Char('Website Slug', translate=True, copy=False)
 
@@ -219,19 +297,21 @@ class ProductPublicCategory(models.Model):
         rec = super(ProductPublicCategory, self).create(vals)
 
         if rec.website_slug:
-            rec._validate_website_slug()
+            rec._validate_cat_website_slug()
         else:
-            rec.website_slug = '/category/{}'.format(rec.id)
+            rec.website_slug = "/category/{}".format(rec.id)
 
         return rec
 
     def write(self, vals):
         res = super(ProductPublicCategory, self).write(vals)
-        if vals.get('website_slug', False):
-            self._validate_website_slug()
-        self.env['invalidate.cache'].create_invalidate_cache(self._name, self.ids, vals)
+        if vals.get("website_slug") or vals.get("website_id"):
+            self._validate_cat_website_slug()
+        elif not vals.get("website_slug") or not vals.get("website_id"):
+            self._validate_cat_website_slug()
+        self.env["invalidate.cache"].create_invalidate_cache(self._name, self.ids, vals)
         return res
 
     def unlink(self):
-        self.env['invalidate.cache'].create_invalidate_cache(self._name, self.ids)
+        self.env["invalidate.cache"].create_invalidate_cache(self._name, self.ids)
         return super(ProductPublicCategory, self).unlink()
