@@ -35,6 +35,12 @@ class PaymentQuery(graphene.ObjectType):
         graphene.NonNull(PaymentAcquirer),
         filter=graphene.Argument(PaymentAcquirerFilterInput, default_value={}),
     )
+    payment_transaction = graphene.Field(
+        PaymentTransaction,
+        required=True,
+        id=graphene.Int(),
+        reference=graphene.String()
+    )
     payment_confirmation = graphene.Field(
         Cart,
     )
@@ -76,6 +82,21 @@ class PaymentQuery(graphene.ObjectType):
             ['|', ('country_ids', '=', False), ('country_ids', 'in', [order.partner_id.country_id.id])]
         ])
         return env['payment.acquirer'].sudo().search(domain)
+
+    def resolve_payment_transaction(self, info, id, reference):
+        env = info.context["env"]
+        PaymentTransaction = env['payment.transaction']
+
+        if id:
+            payment_transaction = PaymentTransaction.sudo().search([('id', '=', id)], limit=1)
+        elif reference:
+            payment_transaction = PaymentTransaction.sudo().search([('reference', '=', reference)], limit=1)
+        else:
+            payment_transaction = None
+
+        if not payment_transaction:
+            raise GraphQLError(_('Payment Transaction does not exist.'))
+        return payment_transaction
 
     def resolve_payment_confirmation(self, info):
         env = info.context["env"]
