@@ -38,8 +38,8 @@ class PaymentQuery(graphene.ObjectType):
     payment_transaction = graphene.Field(
         PaymentTransaction,
         required=True,
-        id=graphene.Int(),
-        reference=graphene.String()
+        id=graphene.Int(default_value=None),
+        reference=graphene.String(default_value=None)
     )
     payment_confirmation = graphene.Field(
         Cart,
@@ -178,7 +178,7 @@ class AdyenAcquirerInfo(graphene.Mutation):
 class AdyenPaymentMethods(graphene.Mutation):
     class Arguments:
         acquirer_id = graphene.Int(required=True)
-        order_id = graphene.Int()
+        order_id = graphene.Int(default_value=None)
 
     Output = AdyenPaymentMethodsResult
 
@@ -221,7 +221,7 @@ class AdyenPaymentMethods(graphene.Mutation):
 class AdyenTransaction(graphene.Mutation):
     class Arguments:
         acquirer_id = graphene.Int(required=True)
-        order_id = graphene.Int()
+        order_id = graphene.Int(default_value=None)
 
     Output = AdyenTransactionResult
 

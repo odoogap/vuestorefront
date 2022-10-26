@@ -46,7 +46,7 @@ class CategoryList(graphene.ObjectType):
 class CategoryQuery(graphene.ObjectType):
     category = graphene.Field(
         Category,
-        id=graphene.Int(),
+        id=graphene.Int(default_value=None),
         slug=graphene.String(default_value=None),
     )
     categories = graphene.Field(

@@ -57,7 +57,7 @@ class OrderQuery(graphene.ObjectType):
         Order,
         required=True,
         id=graphene.Int(),
-        access_token=graphene.String()
+        access_token=graphene.String(default_value=None)
     )
     orders = graphene.Field(
         Orders,
