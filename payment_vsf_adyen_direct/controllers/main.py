@@ -74,7 +74,7 @@ class AdyenDirectController(http.Controller):
             'shopperReference': shopper_reference,
             'channel': 'Web',
         }
-        response_content = acquirer_sudo._adyen_make_request(
+        response_content = acquirer_sudo._adyen_direct_make_request(
             url_field_name='adyen_checkout_api_url',
             endpoint='/paymentMethods',
             payload=data,
@@ -138,7 +138,7 @@ class AdyenDirectController(http.Controller):
                 f'/payment/adyen_direct/return?merchantReference={reference}'
             ),
         }
-        response_content = acquirer_sudo._adyen_make_request(
+        response_content = acquirer_sudo._adyen_direct_make_request(
             url_field_name='adyen_checkout_api_url',
             endpoint='/payments',
             payload=data,
@@ -167,7 +167,7 @@ class AdyenDirectController(http.Controller):
         """
         # Make the payment details request to Adyen
         acquirer_sudo = request.env['payment.acquirer'].browse(acquirer_id).sudo()
-        response_content = acquirer_sudo._adyen_make_request(
+        response_content = acquirer_sudo._adyen_direct_make_request(
             url_field_name='adyen_checkout_api_url',
             endpoint='/payments/details',
             payload=payment_details,
@@ -210,15 +210,9 @@ class AdyenDirectController(http.Controller):
 
         # Get Website
         website = sale_order.website_id
-        # Redirects to VSF -> Normal Payment
+        # Redirects to VSF
         vsf_payment_success_return_url = website.vsf_payment_success_return_url
         vsf_payment_error_return_url = website.vsf_payment_error_return_url
-        # Redirects to VSF -> Pay by Link (On Portal)
-        if payment_transaction.vsf_pay_by_link:
-            vsf_payment_success_return_url = sale_order.get_portal_url()
-            vsf_payment_error_return_url = '%s?order_id=%s&access_token=%s' % (
-                website.vsf_pay_error_url, sale_order.id, sale_order.access_token
-            )
 
         request.session["__payment_tx_ids__"] = [payment_transaction.id]
 
@@ -290,7 +284,7 @@ class AdyenDirectController(http.Controller):
                 acquirer_sudo = PaymentTransaction.sudo()._get_tx_from_feedback_data(
                     'adyen_direct', notification_data
                 ).acquirer_id  # Find the acquirer based on the transaction
-                if not self._verify_notification_signature(
+                if not self._adyen_direct_verify_notification_signature(
                     received_signature, notification_data, acquirer_sudo.adyen_hmac_key
                 ):
                     continue
@@ -311,11 +305,8 @@ class AdyenDirectController(http.Controller):
 
                     # Get Website
                     website = sale_order.website_id
-                    # Redirects to VSF -> Normal Payment
+                    # Redirects to VSF
                     vsf_payment_success_return_url = website.vsf_payment_success_return_url
-                    # Redirects to VSF -> Pay by Link (On Portal)
-                    if payment_transaction.vsf_pay_by_link:
-                        vsf_payment_success_return_url = sale_order.get_portal_url()
 
                     request.session["__payment_tx_ids__"] = [payment_transaction.id]
 
@@ -341,7 +332,7 @@ class AdyenDirectController(http.Controller):
 
         return '[accepted]'  # Acknowledge the notification
 
-    def _verify_notification_signature(self, received_signature, payload, hmac_key):
+    def _adyen_direct_verify_notification_signature(self, received_signature, payload, hmac_key):
         """ Check that the signature computed from the payload matches the received one.
 
         See https://docs.adyen.com/development-resources/webhooks/verify-hmac-signatures

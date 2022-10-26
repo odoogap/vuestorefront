@@ -53,7 +53,7 @@ class PaymentTransaction(models.Model):
             'shopperIP': payment_utils.get_customer_ip_address(),
             'shopperInteraction': 'ContAuth',
         }
-        response_content = self.acquirer_id._adyen_make_request(
+        response_content = self.acquirer_id._adyen_direct_make_request(
             url_field_name='adyen_checkout_api_url',
             endpoint='/payments',
             payload=data,
@@ -97,7 +97,7 @@ class PaymentTransaction(models.Model):
             },
             'reference': refund_tx.reference,
         }
-        response_content = refund_tx.acquirer_id._adyen_make_request(
+        response_content = refund_tx.acquirer_id._adyen_direct_make_request(
             url_field_name='adyen_checkout_api_url',
             endpoint='/payments/{}/refunds',
             endpoint_param=self.acquirer_reference,

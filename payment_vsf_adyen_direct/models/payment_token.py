@@ -32,7 +32,7 @@ class PaymentToken(models.Model):
             'recurringDetailReference': self.acquirer_ref,
         }
         try:
-            self.acquirer_id._adyen_make_request(
+            self.acquirer_id._adyen_direct_make_request(
                 url_field_name='adyen_recurring_api_url',
                 endpoint='/disable',
                 payload=data,

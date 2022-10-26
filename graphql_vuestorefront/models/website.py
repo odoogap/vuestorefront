@@ -15,8 +15,6 @@ class Website(models.Model):
     vsf_payment_error_return_url = fields.Char(
         'Payment Error Return Url', required=True, translate=True, default='Dummy'
     )
-    vsf_pay_url = fields.Char('Pay Url', required=True, translate=True, default='Dummy')
-    vsf_pay_error_url = fields.Char('Pay Error Url', required=True, translate=True, default='Dummy')
     vsf_mailing_list_id = fields.Many2one('mailing.list', 'Newsletter', domain=[('is_public', '=', True)])
 
     @api.model

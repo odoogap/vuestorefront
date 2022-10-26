@@ -264,10 +264,6 @@ class AdyenTransaction(graphene.Mutation):
 
         transaction_id = PaymentTransaction.search([('reference', '=', transaction_reference)], limit=1)
 
-        # Condition to Control the redirects
-        if order_id:
-            transaction_id.vsf_pay_by_link = True
-
         converted_amount = payment_utils.to_minor_currency_units(
             transaction_id.amount,
             transaction_id.currency_id,

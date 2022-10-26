@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Copyright 2022 ODOOGAP/PROMPTEQUATION LDA
+    License LGPL-3.0 or later (http://www.gnu.org/licenses/lgpl).
+-->
+<odoo>
+
+    <template id="payment_tokens_list_inherit" inherit_id="payment.payment_tokens_list">
+        <xpath expr="//div[hasclass('card')]//t[@t-set='acquirers_count']" position="before">
+            <t t-set="acquirers" t-value="acquirers.filtered(lambda acq: not acq.vsf_active)"/>
+        </xpath>
+    </template>
+
+</odoo>

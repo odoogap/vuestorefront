@@ -61,7 +61,7 @@ class PaymentAcquirer(models.Model):
 
     #=== BUSINESS METHODS ===#
 
-    def _adyen_make_request(
+    def _adyen_direct_make_request(
         self, url_field_name, endpoint, endpoint_param=None, payload=None, method='POST'
     ):
         """ Make a request to Adyen API at the specified endpoint.

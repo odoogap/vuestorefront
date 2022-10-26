@@ -30,22 +30,6 @@
                             </div>
                         </div>
                     </div>
-                    <div class="col-12 col-lg-6 o_setting_box" id="vsf_pay_url_settings">
-                        <div class="o_setting_right_pane">
-                            <label for="vsf_pay_url"/>
-                            <div class="content-group">
-                                <field name="vsf_pay_url"/>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-12 col-lg-6 o_setting_box" id="vsf_pay_error_url_settings">
-                        <div class="o_setting_right_pane">
-                            <label for="vsf_pay_url"/>
-                            <div class="content-group">
-                                <field name="vsf_pay_error_url"/>
-                            </div>
-                        </div>
-                    </div>
                     <div class="col-12 col-lg-6 o_setting_box" id="vsf_cache_invalidation_key_settings">
                         <div class="o_setting_right_pane">
                             <label for="vsf_cache_invalidation_key"/>

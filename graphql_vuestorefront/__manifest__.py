@@ -32,7 +32,7 @@
         'views/product_views.xml',
         'views/res_config_settings_views.xml',
         'views/website_views.xml',
-        'views/sale_portal_templates.xml',
+        'views/payment_templates.xml',
     ],
     'demo': [
         'data/demo_product_attribute.xml',
