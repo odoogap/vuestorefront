@@ -233,7 +233,7 @@ class PaymentTransaction(models.Model):
         else:  # Classify unsupported payment state as `error` tx state
             _logger.warning("received data with invalid payment state: %s", payment_state)
             self._set_error(
-                "adyen Direct: " + _("Received data with invalid payment state: %s", payment_state)
+                "Adyen Direct: " + _("Received data with invalid payment state: %s", payment_state)
             )
 
     def _adyen_tokenize_from_feedback_data(self, data):

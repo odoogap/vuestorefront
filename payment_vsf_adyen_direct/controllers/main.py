@@ -106,7 +106,7 @@ class AdyenDirectController(http.Controller):
         if not payment_utils.check_access_token(
             access_token, reference, converted_amount, partner_id
         ):
-            raise ValidationError("adyen Direct: " + _("Received tampered payment request data."))
+            raise ValidationError("Adyen Direct: " + _("Received tampered payment request data."))
 
         # Make the payment request to Adyen
         acquirer_sudo = request.env['payment.acquirer'].sudo().browse(acquirer_id).exists()

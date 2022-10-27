@@ -26,6 +26,7 @@
         'payment',
         'payment_vsf',
         'payment_adyen',
+        'payment_adyen_paybylink',
     ],
 
     # Views

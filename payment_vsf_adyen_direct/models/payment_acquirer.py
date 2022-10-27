@@ -20,17 +20,8 @@ class PaymentAcquirer(models.Model):
 
     provider = fields.Selection(
         selection_add=[('adyen_direct', "Adyen Direct")], ondelete={'adyen_direct': 'set default'})
-    adyen_api_key = fields.Char(
-        string="API Key", help="The API key of the webservice user", required_if_provider='adyen_direct',
-        groups='base.group_user')
     adyen_client_key = fields.Char(
         string="Client Key", help="The client key of the webservice user",
-        required_if_provider='adyen_direct')
-    adyen_hmac_key = fields.Char(
-        string="HMAC Key", help="The HMAC key of the webhook", required_if_provider='adyen_direct',
-        groups='base.group_user')
-    adyen_checkout_api_url = fields.Char(
-        string="Checkout API URL", help="The base URL for the Checkout API endpoints",
         required_if_provider='adyen_direct')
     adyen_recurring_api_url = fields.Char(
         string="Recurring API URL", help="The base URL for the Recurring API endpoints",
