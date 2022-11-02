@@ -3,8 +3,6 @@
 # License LGPL-3.0 or later (http://www.gnu.org/licenses/lgpl).
 
 import graphene
-from graphql import GraphQLError
-from odoo import _
 
 from odoo.addons.graphql_vuestorefront.schemas.objects import (
     SortEnum, Category
@@ -61,20 +59,19 @@ class CategoryQuery(graphene.ObjectType):
     @staticmethod
     def resolve_category(self, info, id=None, slug=None):
         env = info.context['env']
+        Category = env['product.public.category']
 
         domain = env['website'].get_current_website().website_domain()
 
         if id:
             domain += [('id', '=', id)]
-            category = env['product.public.category'].search(domain, limit=1)
+            category = Category.search(domain, limit=1)
         elif slug:
             domain += [('website_slug', '=', slug)]
-            category = env['product.public.category'].search(domain, limit=1)
+            category = Category.search(domain, limit=1)
         else:
-            category = None
+            category = Category
 
-        if not category:
-            raise GraphQLError(_('Category does not exist.'))
         return category
 
     @staticmethod
