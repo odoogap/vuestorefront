@@ -125,11 +125,7 @@ class MailingListQuery(graphene.ObjectType):
 
     @staticmethod
     def resolve_mailing_list(self, info, id):
-        env = info.context['env']
-        mailing_list = env['mailing.list'].sudo().search([('id', '=', id), ('is_public', '=', True)], limit=1)
-        if not mailing_list:
-            raise GraphQLError(_('Mailing List does not exist.'))
-        return mailing_list
+        return info.context['env']['mailing.list'].sudo().search([('id', '=', id), ('is_public', '=', True)], limit=1)
 
     @staticmethod
     def resolve_mailing_lists(self, info, filter, current_page, page_size, search, sort):

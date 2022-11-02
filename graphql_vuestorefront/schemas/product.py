@@ -198,21 +198,23 @@ class ProductQuery(graphene.ObjectType):
     @staticmethod
     def resolve_product(self, info, id=None, slug=None, barcode=None):
         env = info.context["env"]
+        Product = env["product.template"].sudo()
 
         if id:
-            product = env["product.template"].sudo().search([('id', '=', id)], limit=1)
+            product = Product.search([('id', '=', id)], limit=1)
         elif slug:
-            product = env["product.template"].sudo().search([('website_slug', '=', slug)], limit=1)
+            product = Product.search([('website_slug', '=', slug)], limit=1)
         elif barcode:
-            product = env["product.template"].sudo().search([('barcode', '=', barcode)], limit=1)
+            product = Product.search([('barcode', '=', barcode)], limit=1)
         else:
-            product = None
+            product = Product
 
-        website = env['website'].get_current_website()
-        request.website = website
+        if product:
+            website = env['website'].get_current_website()
+            request.website = website
+            if not product.can_access_from_current_website():
+                product = Product
 
-        if not product or not product.can_access_from_current_website():
-            raise GraphQLError(_('Product does not exist.'))
         return product
 
     @staticmethod
@@ -225,10 +227,7 @@ class ProductQuery(graphene.ObjectType):
 
     @staticmethod
     def resolve_attribute(self, info, id):
-        attribute = info.context["env"]["product.attribute"].search([('id', '=', id)], limit=1)
-        if not attribute:
-            raise GraphQLError(_('Attribute does not exist.'))
-        return attribute
+        return info.context["env"]["product.attribute"].search([('id', '=', id)], limit=1)
 
     @staticmethod
     def resolve_product_variant(self, info, product_template_id, combination_id):

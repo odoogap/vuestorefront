@@ -3,8 +3,6 @@
 # License LGPL-3.0 or later (http://www.gnu.org/licenses/lgpl).
 
 import graphene
-from graphql import GraphQLError
-from odoo import _
 
 from odoo.addons.graphql_vuestorefront.schemas.objects import (
     SortEnum, Country
@@ -62,10 +60,7 @@ class CountryQuery(graphene.ObjectType):
 
     @staticmethod
     def resolve_country(self, info, id):
-        country = info.context['env']['res.country'].search([('id', '=', id)], limit=1)
-        if not country:
-            raise GraphQLError(_('Country does not exist.'))
-        return country
+        return info.context['env']['res.country'].search([('id', '=', id)], limit=1)
 
     @staticmethod
     def resolve_countries(self, info, filter, current_page, page_size, search, sort):
