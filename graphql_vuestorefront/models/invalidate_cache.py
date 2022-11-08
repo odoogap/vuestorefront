@@ -39,7 +39,7 @@ class InvalidateCache(models.Model):
         return cr.fetchone()
 
     @api.model
-    def create_invalidate_cache(self, res_model, res_ids, vals=None):
+    def create_invalidate_cache(self, res_model, res_ids):
         for res_id in res_ids:
             if not self.find_invalidate_cache(res_model, res_id):
                 query = """
