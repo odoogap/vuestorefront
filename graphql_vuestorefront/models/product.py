@@ -85,7 +85,7 @@ class ProductTemplate(models.Model):
 
     def write(self, vals):
         res = super(ProductTemplate, self).write(vals)
-        self.env['invalidate.cache'].create_invalidate_cache(self._name, self.ids, vals)
+        self.env['invalidate.cache'].create_invalidate_cache(self._name, self.ids)
         return res
 
     def unlink(self):
@@ -142,7 +142,7 @@ class ProductPublicCategory(models.Model):
         res = super(ProductPublicCategory, self).write(vals)
         if vals.get('website_slug', False):
             self._validate_website_slug()
-        self.env['invalidate.cache'].create_invalidate_cache(self._name, self.ids, vals)
+        self.env['invalidate.cache'].create_invalidate_cache(self._name, self.ids)
         return res
 
     def unlink(self):
