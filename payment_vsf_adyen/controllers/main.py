@@ -19,11 +19,61 @@ from odoo.http import request
 from odoo.tools.pycompat import to_text
 
 from odoo.addons.payment_vsf import utils as payment_utils
-from odoo.addons.payment_vsf_adyen_direct.const import CURRENCY_DECIMALS
+from odoo.addons.payment_vsf_adyen.const import CURRENCY_DECIMALS
 from odoo.addons.payment.controllers.portal import PaymentProcessing
+from odoo.addons.payment_adyen_paybylink.controllers.main import AdyenPayByLinkController
 
 _logger = logging.getLogger(__name__)
 
+
+# -------------------------------------------- #
+#               ADYEN PAYBYLYNK                #
+# -------------------------------------------- #
+
+class AdyenPayByLinkControllerInherit(AdyenPayByLinkController):
+
+    @http.route()
+    def adyen_notification(self, **post):
+        """ Process the data sent by Adyen to the webhook based on the event code.
+
+        See https://docs.adyen.com/development-resources/webhooks/understand-notifications for the
+        exhaustive list of event codes.
+
+        :return: The '[accepted]' string to acknowledge the notification
+        :rtype: str
+        """
+        payment_transaction = post.get('merchantReference') and request.env['payment.transaction'].sudo().search(
+            [('reference', 'in', [post.get('merchantReference')])], limit=1
+        )
+        acquirer = payment_transaction.acquirer_id
+
+        if acquirer.provider == 'adyen':
+            _logger.info("notification received from Adyen with data:\n%s", pprint.pformat(post))
+            try:
+                # Check the integrity of the notification
+                tx_sudo = request.env['payment.transaction'].sudo()._adyen_form_get_tx_from_data(post)
+                self._verify_notification_signature(post, tx_sudo)
+
+                # Check whether the event of the notification succeeded and reshape the notification
+                # data for parsing
+                event_code = post['eventCode']
+                if event_code == 'AUTHORISATION' and post['success'] == 'true':
+                    post['authResult'] = 'AUTHORISED'
+
+                    # Handle the notification data
+                    request.env['payment.transaction'].sudo().form_feedback(post, 'adyen')
+            except ValidationError:  # Acknowledge the notification to avoid getting spammed
+                _logger.exception("unable to handle the notification data; skipping to acknowledge")
+
+            return '[accepted]'  # Acknowledge the notification
+
+        else:
+            return
+
+
+# -------------------------------------------- #
+#                ADYEN DIRECT                  #
+# -------------------------------------------- #
 
 class AdyenDirectController(http.Controller):
 
@@ -275,60 +325,66 @@ class AdyenDirectController(http.Controller):
             # Check the source and integrity of the notification
             received_signature = notification_data.get('additionalData', {}).get('hmacSignature')
             PaymentTransaction = request.env['payment.transaction']
-            try:
 
-                payment_transaction = notification_data.get('merchantReference') and PaymentTransaction.sudo().search(
-                    [('reference', 'in', [notification_data.get('merchantReference')])], limit=1
-                )
+            payment_transaction = notification_data.get('merchantReference') and PaymentTransaction.sudo().search(
+                [('reference', 'in', [notification_data.get('merchantReference')])], limit=1
+            )
+            acquirer = payment_transaction.acquirer_id
 
-                acquirer_sudo = PaymentTransaction.sudo()._get_tx_from_feedback_data(
-                    'adyen_direct', notification_data
-                ).acquirer_id  # Find the acquirer based on the transaction
-                if not self._adyen_direct_verify_notification_signature(
-                    received_signature, notification_data, acquirer_sudo.adyen_hmac_key
-                ):
-                    continue
+            if acquirer.provider == 'adyen_direct':
+                try:
+                    acquirer_sudo = PaymentTransaction.sudo()._get_tx_from_feedback_data(
+                        'adyen_direct', notification_data
+                    ).acquirer_id  # Find the acquirer based on the transaction
+                    if not self._adyen_direct_verify_notification_signature(
+                        received_signature, notification_data, acquirer_sudo.adyen_hmac_key
+                    ):
+                        continue
 
-                # Check whether the event of the notification succeeded and reshape the notification
-                # data for parsing
-                _logger.info("notification received:\n%s", pprint.pformat(notification_data))
-                success = notification_data['success'] == 'true'
-                event_code = notification_data['eventCode']
-                if event_code == 'AUTHORISATION' and success:
-                    notification_data['resultCode'] = 'Authorised'
+                    # Check whether the event of the notification succeeded and reshape the notification
+                    # data for parsing
+                    _logger.info("notification received:\n%s", pprint.pformat(notification_data))
+                    success = notification_data['success'] == 'true'
+                    event_code = notification_data['eventCode']
+                    if event_code == 'AUTHORISATION' and success:
+                        notification_data['resultCode'] = 'Authorised'
+                    elif event_code == 'CANCELLATION' and success:
+                        notification_data['resultCode'] = 'Cancelled'
+                    elif event_code == 'REFUND':
+                        notification_data['resultCode'] = 'Authorised' if success else 'Error'
+                    else:
+                        continue  # Don't handle unsupported event codes and failed events
 
-                    # Check the Order related with the transaction
-                    sale_order_ids = payment_transaction.sale_order_ids.ids
-                    sale_order = request.env['sale.order'].sudo().search([
-                        ('id', 'in', sale_order_ids), ('website_id', '!=', False)
-                    ], limit=1)
+                    # Handle the notification data as a regular feedback
+                    PaymentTransaction.sudo()._handle_feedback_data('adyen_direct', notification_data)
 
-                    # Get Website
-                    website = sale_order.website_id
-                    # Redirects to VSF
-                    vsf_payment_success_return_url = website.vsf_payment_success_return_url
+                    if event_code == 'AUTHORISATION' and success:
+                        # Check the Order related with the transaction
+                        sale_order_ids = payment_transaction.sale_order_ids.ids
+                        sale_order = request.env['sale.order'].sudo().search([
+                            ('id', 'in', sale_order_ids), ('website_id', '!=', False)
+                        ], limit=1)
 
-                    request.session["__payment_tx_ids__"] = [payment_transaction.id]
+                        # Get Website
+                        website = sale_order.website_id
+                        # Redirects to VSF
+                        vsf_payment_success_return_url = website.vsf_payment_success_return_url
 
-                    # Confirm sale order
-                    PaymentProcessing().payment_status_poll()
+                        request.session["__payment_tx_ids__"] = [payment_transaction.id]
 
-                    # Clear the payment_tx_ids
-                    request.session['__payment_tx_ids__'] = []
+                        # Confirm sale order
+                        PaymentProcessing().payment_status_poll()
 
-                    return werkzeug.utils.redirect(vsf_payment_success_return_url)
+                        # Clear the payment_tx_ids
+                        request.session['__payment_tx_ids__'] = []
 
-                elif event_code == 'CANCELLATION' and success:
-                    notification_data['resultCode'] = 'Cancelled'
-                elif event_code == 'REFUND':
-                    notification_data['resultCode'] = 'Authorised' if success else 'Error'
-                else:
-                    continue  # Don't handle unsupported event codes and failed events
+                        return werkzeug.utils.redirect(vsf_payment_success_return_url)
 
-                # Handle the notification data as a regular feedback
-                PaymentTransaction.sudo()._handle_feedback_data('adyen_direct', notification_data)
-            except ValidationError:  # Acknowledge the notification to avoid getting spammed
-                _logger.exception("unable to handle the notification data; skipping to acknowledge")
+                except ValidationError:  # Acknowledge the notification to avoid getting spammed
+                    _logger.exception("unable to handle the notification data; skipping to acknowledge")
+
+            else:
+                return
 
         return '[accepted]'  # Acknowledge the notification
 

@@ -9,7 +9,7 @@ from odoo import _, api, fields, models
 from odoo.exceptions import UserError, ValidationError
 
 from odoo.addons.payment_vsf import utils as payment_utils
-from odoo.addons.payment_vsf_adyen_direct.const import CURRENCY_DECIMALS, RESULT_CODES_MAPPING
+from odoo.addons.payment_vsf_adyen.const import CURRENCY_DECIMALS, RESULT_CODES_MAPPING
 
 _logger = logging.getLogger(__name__)
 

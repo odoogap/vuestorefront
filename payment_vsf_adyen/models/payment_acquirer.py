@@ -10,7 +10,7 @@ import requests
 from odoo import _, api, fields, models
 from odoo.exceptions import ValidationError
 
-from odoo.addons.payment_vsf_adyen_direct.const import API_ENDPOINT_VERSIONS
+from odoo.addons.payment_vsf_adyen.const import API_ENDPOINT_VERSIONS
 
 _logger = logging.getLogger(__name__)
 
