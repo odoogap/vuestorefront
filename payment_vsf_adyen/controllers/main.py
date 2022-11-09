@@ -65,10 +65,10 @@ class AdyenPayByLinkControllerInherit(AdyenPayByLinkController):
             except ValidationError:  # Acknowledge the notification to avoid getting spammed
                 _logger.exception("unable to handle the notification data; skipping to acknowledge")
 
-            return '[accepted]'  # Acknowledge the notification
-
         else:
             return
+
+        return '[accepted]'  # Acknowledge the notification
 
 
 # -------------------------------------------- #
