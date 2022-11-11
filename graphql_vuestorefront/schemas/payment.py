@@ -382,7 +382,7 @@ class AdyenPaymentDetails(graphene.Mutation):
             payment_details=payment_details
         )
 
-        return AdyenPaymentsResult(adyen_payment_details=adyen_payment_details)
+        return AdyenPaymentDetailsResult(adyen_payment_details=adyen_payment_details)
 
 
 class PaymentMutation(graphene.ObjectType):
