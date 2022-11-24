@@ -221,7 +221,7 @@ class CreateUpdatePartner(graphene.Mutation):
         partner = order.partner_id
 
         # Is public user
-        if request.env.user.id == request.website.user_id.id:
+        if partner.id == website.user_id.partner_id.id:
             partner = env['res.partner'].sudo().create(data)
 
             order.write({
@@ -230,7 +230,7 @@ class CreateUpdatePartner(graphene.Mutation):
                 'partner_shipping_id': partner.id,
             })
         else:
-            order.partner_id.write(data)
+            partner.write(data)
 
         # Subscribe to newsletter
         if subscribe_newsletter:
