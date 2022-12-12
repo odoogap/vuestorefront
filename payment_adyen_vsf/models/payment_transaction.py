@@ -310,7 +310,7 @@ class PaymentTransaction(models.Model):
             amount = sum(self.sale_order_ids.mapped('amount_total'))
         if self.amount < amount:
             adyen_payment_channel = self.sudo().env.ref(
-                'payment_adyen_og.channel_adyen_payment_announcement')
+                'payment_adyen_vsf.channel_adyen_payment_announcement')
             partner = self.env.user.partner_id
             currency = self.currency_id.symbol
             message = "<p>we couldn't authorize <strong>%s %s</strong> amount on <strong>%s %s</strong> order %s.</p>" % \

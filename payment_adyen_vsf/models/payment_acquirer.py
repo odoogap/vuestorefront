@@ -55,7 +55,7 @@ class AcquirerAdyen(models.Model):
         self.ensure_one()
         if self.provider != 'adyen_og':
             return super()._get_default_payment_method_id()
-        return self.env.ref('payment_adyen_og.payment_method_adyen_og').id
+        return self.env.ref('payment_adyen_vsf.payment_method_adyen_og').id
 
     def _adyen_make_request(
             self, url_field_name, endpoint, endpoint_param=None, payload=None, method='POST'

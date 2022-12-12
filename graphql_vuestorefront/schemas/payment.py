@@ -10,12 +10,12 @@ from odoo.http import request
 from odoo.osv import expression
 
 from odoo.addons.payment import utils as payment_utils
-# from odoo.addons.payment_adyen_og.const import SUPPORTED_CURRENCIES
+# from odoo.addons.payment_adyen_vsf.const import SUPPORTED_CURRENCIES
 from odoo.addons.graphql_vuestorefront.schemas.objects import PaymentAcquirer, PaymentTransaction
 from odoo.addons.graphql_vuestorefront.schemas.shop import Cart, CartData
 from odoo.addons.website_sale.controllers.main import PaymentPortal
 from odoo.addons.payment_adyen.controllers.main import AdyenController
-# from odoo.addons.payment_adyen_og.controllers.main import AdyenControllerInherit
+# from odoo.addons.payment_adyen_vsf.controllers.main import AdyenControllerInherit
 
 
 class PaymentQuery(graphene.ObjectType):
