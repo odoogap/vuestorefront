@@ -22,7 +22,7 @@
         'contacts',
         'crm',
         'theme_default',
-        'payment_adyen_og',
+        # 'payment_adyen_og',
     ],
     'data': [
         'security/ir.model.access.csv',

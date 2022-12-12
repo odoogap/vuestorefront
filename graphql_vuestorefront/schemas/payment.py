@@ -10,12 +10,12 @@ from odoo.http import request
 from odoo.osv import expression
 
 from odoo.addons.payment import utils as payment_utils
-from odoo.addons.payment_adyen_og.const import SUPPORTED_CURRENCIES
+# from odoo.addons.payment_adyen_og.const import SUPPORTED_CURRENCIES
 from odoo.addons.graphql_vuestorefront.schemas.objects import PaymentAcquirer, PaymentTransaction
 from odoo.addons.graphql_vuestorefront.schemas.shop import Cart, CartData
 from odoo.addons.website_sale.controllers.main import PaymentPortal
 from odoo.addons.payment_adyen.controllers.main import AdyenController
-from odoo.addons.payment_adyen_og.controllers.main import AdyenControllerInherit
+# from odoo.addons.payment_adyen_og.controllers.main import AdyenControllerInherit
 
 
 class PaymentQuery(graphene.ObjectType):
@@ -276,58 +276,58 @@ class AdyenTransaction(graphene.Mutation):
         return AdyenTransactionResult(transaction=transaction)
 
 
-class AdyenPayments(graphene.Mutation):
-    class Arguments:
-        acquirer_id = graphene.Int(required=True)
-        transaction_reference = graphene.String(required=True)
-        access_token = graphene.String(required=True)
-        payment_method = generic.GenericScalar(required=True, description='Return state.data.paymentMethod')
-        browser_info = generic.GenericScalar(required=True, description='Return state.data.browserInfo')
-
-    Output = AdyenPaymentsResult
-
-    @staticmethod
-    def mutate(self, info, acquirer_id, transaction_reference, access_token, payment_method, browser_info):
-        env = info.context["env"]
-        PaymentAcquirer = env['payment.acquirer'].sudo()
-        PaymentTransaction = env['payment.transaction'].sudo()
-        website = env['website'].get_current_website()
-        request.website = website
-        domain = [
-            ('id', '=', acquirer_id),
-            ('state', 'in', ['enabled', 'test']),
-        ]
-
-        payment_acquirer_id = PaymentAcquirer.search(domain, limit=1)
-        if not payment_acquirer_id:
-            raise GraphQLError(_('Payment acquirer does not exist.'))
-
-        if not payment_acquirer_id.provider == 'adyen':
-            raise GraphQLError(_('Payment acquirer with "adyen" Provider does not exist.'))
-
-        transaction = PaymentTransaction.search([('reference', '=', transaction_reference)], limit=1)
-        if not transaction:
-            raise GraphQLError(_('Payment transaction does not exist.'))
-
-        converted_amount = payment_utils.to_minor_currency_units(
-            transaction.amount,
-            transaction.currency_id,
-            arbitrary_decimal_number=SUPPORTED_CURRENCIES.get(transaction.currency_id.name, 2)
-        )
-
-        # Create Payment
-        adyen_payment = AdyenControllerInherit().adyen_payments(
-            acquirer_id=payment_acquirer_id.id,
-            reference=transaction.reference,
-            converted_amount=converted_amount,
-            currency_id=transaction.currency_id.id,
-            partner_id=transaction.partner_id.id,
-            payment_method=payment_method,
-            access_token=access_token,
-            browser_info=browser_info
-        )
-
-        return AdyenPaymentsResult(adyen_payments=adyen_payment)
+# class AdyenPayments(graphene.Mutation):
+#     class Arguments:
+#         acquirer_id = graphene.Int(required=True)
+#         transaction_reference = graphene.String(required=True)
+#         access_token = graphene.String(required=True)
+#         payment_method = generic.GenericScalar(required=True, description='Return state.data.paymentMethod')
+#         browser_info = generic.GenericScalar(required=True, description='Return state.data.browserInfo')
+#
+#     Output = AdyenPaymentsResult
+#
+#     @staticmethod
+#     def mutate(self, info, acquirer_id, transaction_reference, access_token, payment_method, browser_info):
+#         env = info.context["env"]
+#         PaymentAcquirer = env['payment.acquirer'].sudo()
+#         PaymentTransaction = env['payment.transaction'].sudo()
+#         website = env['website'].get_current_website()
+#         request.website = website
+#         domain = [
+#             ('id', '=', acquirer_id),
+#             ('state', 'in', ['enabled', 'test']),
+#         ]
+#
+#         payment_acquirer_id = PaymentAcquirer.search(domain, limit=1)
+#         if not payment_acquirer_id:
+#             raise GraphQLError(_('Payment acquirer does not exist.'))
+#
+#         if not payment_acquirer_id.provider == 'adyen':
+#             raise GraphQLError(_('Payment acquirer with "adyen" Provider does not exist.'))
+#
+#         transaction = PaymentTransaction.search([('reference', '=', transaction_reference)], limit=1)
+#         if not transaction:
+#             raise GraphQLError(_('Payment transaction does not exist.'))
+#
+#         converted_amount = payment_utils.to_minor_currency_units(
+#             transaction.amount,
+#             transaction.currency_id,
+#             arbitrary_decimal_number=SUPPORTED_CURRENCIES.get(transaction.currency_id.name, 2)
+#         )
+#
+#         # Create Payment
+#         adyen_payment = AdyenControllerInherit().adyen_payments(
+#             acquirer_id=payment_acquirer_id.id,
+#             reference=transaction.reference,
+#             converted_amount=converted_amount,
+#             currency_id=transaction.currency_id.id,
+#             partner_id=transaction.partner_id.id,
+#             payment_method=payment_method,
+#             access_token=access_token,
+#             browser_info=browser_info
+#         )
+#
+#         return AdyenPaymentsResult(adyen_payments=adyen_payment)
 
 
 class AdyenPaymentDetails(graphene.Mutation):
@@ -375,5 +375,5 @@ class AdyenPaymentMutation(graphene.ObjectType):
     adyen_acquirer_info = AdyenAcquirerInfo.Field(description='Get Adyen Acquirer Info.')
     adyen_payment_methods = AdyenPaymentMethods.Field(description='Get Adyen Payment Methods.')
     adyen_transaction = AdyenTransaction.Field(description='Create Adyen Transaction')
-    adyen_payments = AdyenPayments.Field(description='Make Adyen Payment request.')
+    # adyen_payments = AdyenPayments.Field(description='Make Adyen Payment request.')
     adyen_payment_details = AdyenPaymentDetails.Field(description='Submit the Adyen Payment Details.')

@@ -4,15 +4,15 @@
 
 {
     # Application Information
-    'name': 'Adyen Payment Acquirer',
+    'name': 'Adyen Payment Acquirer to VSF',
     'category': 'Accounting/Payment Acquirers',
     'version': '15.0.1.0.0',
-    'summary': 'Payment Acquirer: Adyen Implementation with form redirection(HPP) method.',
+    'summary': 'Adyen Payment Acquirer: Adapting Adyen to VSF',
 
     # Author
-    'author': "Odoo Gap",
+    'author': "OdooGap",
     'website': "https://www.odoogap.com/",
-    'maintainer': 'Odoo Gap',
+    'maintainer': 'OdooGap',
     'license': 'LGPL-3',
 
     # Dependencies
