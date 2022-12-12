@@ -109,8 +109,6 @@ class AdyenControllerInherit(AdyenController):
             [('reference', 'in', [data.get('merchantReference')])], limit=1
         )
 
-        acquirer = payment_transaction.acquirer_id
-
         # Check the Order and respective website related with the transaction
         # Check the payment_return url for the success and error pages
         # Pass the transaction_id on the session
@@ -150,22 +148,23 @@ class AdyenControllerInherit(AdyenController):
             },
         )
 
-        # Redirect the user to the status page
-        if not payment_transaction.created_on_vsf:
+        if payment_transaction.created_on_vsf:
+            # For Redirect 3DS2 and MobilePay (Success flow)
+            if result and result.get('resultCode') and result['resultCode'] == 'Authorised':
+
+                # Confirm sale order
+                PaymentPostProcessing().poll_status()
+
+                return werkzeug.utils.redirect(vsf_payment_success_return_url)
+
+            # For Redirect 3DS2 and MobilePay (Cancel/Error flow)
+            elif result and result.get('resultCode') and result['resultCode'] in ['Refused', 'Cancelled']:
+
+                return werkzeug.utils.redirect(vsf_payment_error_return_url)
+
+        else:
+            # Redirect the user to the status page
             return request.redirect('/payment/status')
-
-        # For Redirect 3DS2 and MobilePay (Success flow)
-        elif result and result.get('resultCode') and result['resultCode'] == 'Authorised':
-
-            # Confirm sale order
-            PaymentPostProcessing().poll_status()
-
-            return werkzeug.utils.redirect(vsf_payment_success_return_url)
-
-        # For Redirect 3DS2 and MobilePay (Cancel/Error flow)
-        elif result and result.get('resultCode') and result['resultCode'] in ['Refused', 'Cancelled']:
-
-            return werkzeug.utils.redirect(vsf_payment_error_return_url)
 
     @http.route('/payment/adyen/notification', type='json', auth='public')
     def adyen_notification(self):
