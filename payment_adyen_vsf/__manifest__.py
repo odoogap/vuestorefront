@@ -6,7 +6,7 @@
     # Application Information
     'name': 'Adyen Payment Acquirer to VSF',
     'category': 'Accounting/Payment Acquirers',
-    'version': '15.0.1.0.0',
+    'version': '15.0.1.0.1',
     'summary': 'Adyen Payment Acquirer: Adapting Adyen to VSF',
 
     # Author
@@ -23,10 +23,7 @@
 
     # Views
     'data': [
-        # 'data/payment_acquirer_data.xml',
-        # 'data/mail_channel_data.xml',
-        # 'views/payment_adyen_templates.xml',
-        # 'views/payment_views.xml',
+        'data/mail_channel_data.xml'
     ],
 
     # Technical

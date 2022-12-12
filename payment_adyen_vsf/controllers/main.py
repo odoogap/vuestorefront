@@ -127,61 +127,45 @@ class AdyenControllerInherit(AdyenController):
 
         request.session["__payment_monitored_tx_ids__"] = [payment_transaction.id]
 
-        if acquirer.provider == 'adyen':
-            # Retrieve the transaction based on the reference included in the return url
-            tx_sudo = request.env['payment.transaction'].sudo()._get_tx_from_feedback_data(
-                'adyen', data
-            )
+        # Retrieve the transaction based on the reference included in the return url
+        tx_sudo = request.env['payment.transaction'].sudo()._get_tx_from_feedback_data(
+            'adyen', data
+        )
 
-            # Overwrite the operation to force the flow to 'redirect'. This is necessary because even
-            # thought Adyen is implemented as a direct payment provider, it will redirect the user out
-            # of Odoo in some cases. For instance, when a 3DS1 authentication is required, or for
-            # special payment methods that are not handled by the drop-in (e.g. Sofort).
-            tx_sudo.operation = 'online_redirect'
+        # Overwrite the operation to force the flow to 'redirect'. This is necessary because even
+        # thought Adyen is implemented as a direct payment provider, it will redirect the user out
+        # of Odoo in some cases. For instance, when a 3DS1 authentication is required, or for
+        # special payment methods that are not handled by the drop-in (e.g. Sofort).
+        tx_sudo.operation = 'online_redirect'
 
-            # Query and process the result of the additional actions that have been performed
-            _logger.info("handling redirection from Adyen with data:\n%s", pprint.pformat(data))
-            result = self.adyen_payment_details(
-                tx_sudo.acquirer_id.id,
-                data['merchantReference'],
-                {
-                    'details': {
-                        'redirectResult': data['redirectResult'],
-                    },
+        # Query and process the result of the additional actions that have been performed
+        _logger.info("handling redirection from Adyen with data:\n%s", pprint.pformat(data))
+        result = self.adyen_payment_details(
+            tx_sudo.acquirer_id.id,
+            data['merchantReference'],
+            {
+                'details': {
+                    'redirectResult': data['redirectResult'],
                 },
-            )
+            },
+        )
 
-            # For Redirect 3DS2 and MobilePay (Success flow)
-            if result and result.get('resultCode') and result['resultCode'] == 'Authorised':
+        # Redirect the user to the status page
+        if not payment_transaction.created_on_vsf:
+            return request.redirect('/payment/status')
 
-                # Confirm sale order
-                PaymentPostProcessing().poll_status()
+        # For Redirect 3DS2 and MobilePay (Success flow)
+        elif result and result.get('resultCode') and result['resultCode'] == 'Authorised':
 
-                return werkzeug.utils.redirect(vsf_payment_success_return_url)
+            # Confirm sale order
+            PaymentPostProcessing().poll_status()
 
-            # For Redirect 3DS2 and MobilePay (Cancel/Error flow)
-            elif result and result.get('resultCode') and result['resultCode'] in ['Refused', 'Cancelled']:
+            return werkzeug.utils.redirect(vsf_payment_success_return_url)
 
-                return werkzeug.utils.redirect(vsf_payment_error_return_url)
+        # For Redirect 3DS2 and MobilePay (Cancel/Error flow)
+        elif result and result.get('resultCode') and result['resultCode'] in ['Refused', 'Cancelled']:
 
-        elif acquirer.provider == 'adyen_og':
-            # Get the route payment/adyen/return of the v14
-            _logger.info('Beginning Adyen form_feedback with post data %s', pprint.pformat(data))  # debug
-
-            # For Adyen Hosted (Error flow)
-            if data.get('authResult') and data['authResult'] == 'REFUSED':
-                request.env['payment.transaction'].sudo()._handle_feedback_data('adyen_og', data)
-
-                return werkzeug.utils.redirect(vsf_payment_error_return_url)
-
-            # For Adyen Hosted (Success flow)
-            elif data.get('authResult') not in ['CANCELLED']:
-                request.env['payment.transaction'].sudo()._handle_feedback_data('adyen_og', data)
-
-                # Confirm sale order
-                PaymentPostProcessing().poll_status()
-
-                return werkzeug.utils.redirect(vsf_payment_success_return_url)
+            return werkzeug.utils.redirect(vsf_payment_error_return_url)
 
     @http.route('/payment/adyen/notification', type='json', auth='public')
     def adyen_notification(self):
@@ -206,86 +190,53 @@ class AdyenControllerInherit(AdyenController):
                     [('reference', 'in', [notification_data.get('merchantReference')])], limit=1
                 )
 
-                acquirer = payment_transaction.acquirer_id
+                acquirer_sudo = PaymentTransaction.sudo()._get_tx_from_feedback_data(
+                    'adyen', notification_data
+                ).acquirer_id  # Find the acquirer based on the transaction
+                if not self._verify_notification_signature(
+                        received_signature, notification_data, acquirer_sudo.adyen_hmac_key
+                ):
+                    continue
 
-                if acquirer.provider == 'adyen':
-                    acquirer_sudo = PaymentTransaction.sudo()._get_tx_from_feedback_data(
-                        'adyen', notification_data
-                    ).acquirer_id  # Find the acquirer based on the transaction
-                    if not self._verify_notification_signature(
-                            received_signature, notification_data, acquirer_sudo.adyen_hmac_key
-                    ):
-                        continue
+                # Check whether the event of the notification succeeded and reshape the notification
+                # data for parsing
+                _logger.info("notification received:\n%s", pprint.pformat(notification_data))
+                success = notification_data['success'] == 'true'
+                event_code = notification_data['eventCode']
+                if event_code == 'AUTHORISATION' and success:
+                    notification_data['resultCode'] = 'Authorised'
+                elif event_code == 'CANCELLATION' and success:
+                    notification_data['resultCode'] = 'Cancelled'
+                elif event_code == 'REFUND':
+                    notification_data['resultCode'] = 'Authorised' if success else 'Error'
+                else:
+                    continue  # Don't handle unsupported event codes and failed events
 
-                    # Check whether the event of the notification succeeded and reshape the notification
-                    # data for parsing
-                    _logger.info("notification received:\n%s", pprint.pformat(notification_data))
-                    success = notification_data['success'] == 'true'
-                    event_code = notification_data['eventCode']
-                    if event_code == 'AUTHORISATION' and success:
-                        notification_data['resultCode'] = 'Authorised'
+                # Handle the notification data as a regular feedback
+                PaymentTransaction.sudo()._handle_feedback_data('adyen', notification_data)
 
-                        # Case the transaction was created on vsf (Success flow)
-                        if payment_transaction.created_on_vsf:
+                # Case the transaction was created on vsf (Success flow)
+                if event_code == 'AUTHORISATION' and success and payment_transaction.created_on_vsf:
+                    # Check the Order and respective website related with the transaction
+                    # Check the payment_return url for the success and error pages
+                    sale_order_ids = payment_transaction.sale_order_ids.ids
+                    sale_order = request.env['sale.order'].sudo().search([
+                        ('id', 'in', sale_order_ids), ('website_id', '!=', False)
+                    ], limit=1)
 
-                            # Check the Order and respective website related with the transaction
-                            # Check the payment_return url for the success and error pages
-                            sale_order_ids = payment_transaction.sale_order_ids.ids
-                            sale_order = request.env['sale.order'].sudo().search([
-                                ('id', 'in', sale_order_ids), ('website_id', '!=', False)
-                            ], limit=1)
+                    # Get Website
+                    website = sale_order.website_id
+                    # Redirect to VSF
+                    vsf_payment_success_return_url = website.vsf_payment_success_return_url
 
-                            # Get Website
-                            website = sale_order.website_id
-                            # Redirect to VSF
-                            vsf_payment_success_return_url = website.vsf_payment_success_return_url
+                    request.session["__payment_monitored_tx_ids__"] = [payment_transaction.id]
 
-                            request.session["__payment_monitored_tx_ids__"] = [payment_transaction.id]
+                    # Confirm sale order
+                    PaymentPostProcessing().poll_status()
 
-                            # Confirm sale order
-                            PaymentPostProcessing().poll_status()
-
-                            return werkzeug.utils.redirect(vsf_payment_success_return_url)
-
-                    elif event_code == 'CANCELLATION' and success:
-                        notification_data['resultCode'] = 'Cancelled'
-                    elif event_code == 'REFUND':
-                        notification_data['resultCode'] = 'Authorised' if success else 'Error'
-                    else:
-                        continue  # Don't handle unsupported event codes and failed events
-
-                    # Handle the notification data as a regular feedback
-                    PaymentTransaction.sudo()._handle_feedback_data('adyen', notification_data)
-
-                # Get the route payment/adyen/notification of the v14
-                elif acquirer.provider == 'adyen_og':
-                    _logger.info("notification received:\n%s", pprint.pformat(data))
-                    tx = notification_data.get('merchantReference') and PaymentTransaction.sudo().search(
-                        [('reference', 'in', [notification_data.get('merchantReference')])], limit=1)
-                    if notification_data.get('eventCode') in ['AUTHORISATION'] and tx:
-                        states = (
-                            notification_data.get('merchantReference'),
-                            notification_data.get('success'),
-                            tx.state
-                        )
-                        if (notification_data.get('success') == 'true' and tx.state == 'done') or (
-                                notification_data.get('success') == 'false' and tx.state in ['cancel', 'error']
-                        ):
-                            _logger.info(
-                                'Notification from Adyen for the reference %s: received %s, state is %s',
-                                states[0], states[1], states[2]
-                            )
-                        else:
-                            _logger.warning(
-                                'Notification from Adyen for the reference %s: received %s but state is %s',
-                                states[0], states[1], states[2]
-                            )
+                    return werkzeug.utils.redirect(vsf_payment_success_return_url)
 
             except ValidationError:  # Acknowledge the notification to avoid getting spammed
                 _logger.exception("unable to handle the notification data; skipping to acknowledge")
 
         return '[accepted]'  # Acknowledge the notification
-
-
-class AdyenOGController(http.Controller):
-    _return_url = '/payment/adyen/return/'

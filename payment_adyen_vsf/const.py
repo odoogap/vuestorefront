@@ -4,11 +4,6 @@
 
 from odoo.addons.payment_adyen.const import API_ENDPOINT_VERSIONS, CURRENCY_DECIMALS, RESULT_CODES_MAPPING
 
-# ------------- #
-#   TO REMOVE   #
-# ------------- #
-SUPPORTED_CURRENCIES = {}
-
 # Endpoints of the API.
 # See https://docs.adyen.com/api-explorer/#/CheckoutService/v67/overview for Checkout API
 # See https://docs.adyen.com/api-explorer/#/Recurring/v49/overview for Recurring API
