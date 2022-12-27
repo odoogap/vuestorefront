@@ -49,6 +49,13 @@ class AdyenControllerInherit(AdyenController):
         # Make the payment request to Adyen
         acquirer_sudo = request.env['payment.acquirer'].sudo().browse(acquirer_id).exists()
         tx_sudo = request.env['payment.transaction'].sudo().search([('reference', '=', reference)])
+
+        shopper_ip = payment_utils.get_customer_ip_address()
+        if tx_sudo.created_on_vsf:
+            if request.httprequest.headers.environ.get('HTTP_REAL_IP', False) and \
+                    request.httprequest.headers.environ['HTTP_REAL_IP']:
+                shopper_ip = request.httprequest.headers.environ['HTTP_REAL_IP']
+
         data = {
             'merchantAccount': acquirer_sudo.adyen_merchant_account,
             'amount': {
@@ -59,7 +66,7 @@ class AdyenControllerInherit(AdyenController):
             'paymentMethod': payment_method,
             'shopperReference': acquirer_sudo._adyen_compute_shopper_reference(partner_id),
             'recurringProcessingModel': 'CardOnFile',  # Most susceptible to trigger a 3DS check
-            'shopperIP': payment_utils.get_customer_ip_address(),
+            'shopperIP': shopper_ip,
             'shopperInteraction': 'Ecommerce',
             'storePaymentMethod': tx_sudo.tokenize,  # True by default on Adyen side
             # 'additionalData': {

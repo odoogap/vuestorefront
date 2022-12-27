@@ -8,6 +8,8 @@ from odoo import models, api, fields, tools, _
 class PaymentTransactionInherit(models.Model):
     _inherit = 'payment.transaction'
 
+    created_on_vsf = fields.Boolean(string='Created on Vsf?', default=False)
+
     def _set_pending(self, state_message=None):
         """
             Override of payment to not update the order to 'sent' State and to not sent the quotation email confirmation
