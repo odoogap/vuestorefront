@@ -59,3 +59,9 @@ class WebsiteRewrite(models.Model):
     def unlink(self):
         self._vsf_request_cache_invalidation()
         return super(WebsiteRewrite, self).unlink()
+
+
+class WebsiteMenu(models.Model):
+    _inherit = 'website.menu'
+
+    is_footer = fields.Boolean('Is Footer', default=False)

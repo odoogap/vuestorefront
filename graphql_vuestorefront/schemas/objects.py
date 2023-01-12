@@ -765,3 +765,18 @@ class MailingContact(OdooObjectType):
 
     def resolve_subscription_list(self, info):
         return self.subscription_list_ids or None
+
+
+class WebsiteMenu(OdooObjectType):
+    name = graphene.String()
+    url = graphene.String()
+    is_footer = graphene.Boolean()
+    sequence = graphene.Int()
+    parent = graphene.Field(lambda: WebsiteMenu)
+    childs = graphene.List(graphene.NonNull(lambda: WebsiteMenu))
+
+    def resolve_parent(self, info):
+        return self.parent_id or None
+
+    def resolve_childs(self, info):
+        return self.child_id or None

@@ -15,3 +15,4 @@ from . import shop
 from . import payment
 from . import wishlist
 from . import mailing_list
+from . import website

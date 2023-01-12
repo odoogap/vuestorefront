@@ -6,10 +6,10 @@ import graphene
 
 from odoo.addons.graphql_base import OdooObjectType
 from odoo.addons.graphql_vuestorefront.schemas import (
-    country, category, product, order, invoice,
-    contact_us, user_profile, sign,
+    country, category, product, order,
+    invoice, contact_us, user_profile, sign,
     address, wishlist, shop, payment,
-    mailing_list,
+    mailing_list, website
 )
 
 
@@ -27,6 +27,7 @@ class Query(
     payment.PaymentQuery,
     mailing_list.MailingContactQuery,
     mailing_list.MailingListQuery,
+    website.WebsiteQuery,
 ):
     pass
 
