@@ -774,9 +774,27 @@ class WebsiteMenu(OdooObjectType):
     sequence = graphene.Int()
     parent = graphene.Field(lambda: WebsiteMenu)
     childs = graphene.List(graphene.NonNull(lambda: WebsiteMenu))
+    images = graphene.List(graphene.NonNull(lambda: WebsiteMenuImage))
 
     def resolve_parent(self, info):
         return self.parent_id or None
 
     def resolve_childs(self, info):
         return self.child_id or None
+
+    def resolve_images(self, info):
+        return self.menu_image_ids or None
+
+
+class WebsiteMenuImage(OdooObjectType):
+    image = graphene.String()
+    tag = graphene.String()
+    title = graphene.String()
+    subtitle = graphene.String()
+    sequence = graphene.Int()
+    text_color = graphene.String()
+    button_text = graphene.String()
+    button_url = graphene.String()
+
+    def resolve_image(self, info):
+        return '/web/image/website.menu.image/{}/image'.format(self.id)

@@ -29,6 +29,37 @@
             <xpath expr="//field[@name='url']" position="after">
                 <field name="is_footer"/>
             </xpath>
+            <xpath expr="//field[@name='child_id']" position="after">
+                <label for="menu_image_ids" string="Images"/>
+                <field name="menu_image_ids">
+                    <form>
+                        <group>
+                            <group>
+                                <field name="image" widget="image"/>
+                                <field name="tag"/>
+                                <field name="title"/>
+                                <field name="subtitle"/>
+                            </group>
+                            <group>
+                                <field name="sequence"/>
+                                <field name="text_color"/>
+                                <field name="button_text"/>
+                                <field name="button_url"/>
+                            </group>
+                        </group>
+                    </form>
+                    <tree>
+                        <field name="sequence" widget="handle"/>
+                        <field name="image"/>
+                        <field name="tag"/>
+                        <field name="title"/>
+                        <field name="subtitle"/>
+                        <field name="text_color"/>
+                        <field name="button_text"/>
+                        <field name="button_url"/>
+                    </tree>
+                </field>
+            </xpath>
         </field>
     </record>
 

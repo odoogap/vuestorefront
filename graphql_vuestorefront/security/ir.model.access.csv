@@ -1,2 +1,4 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
 graphql_vuestorefront.access_invalidate_cache,access_invalidate_cache,graphql_vuestorefront.model_invalidate_cache,base.group_user,1,1,1,1
+access_website_menu_image,access_website_menu_image,model_website_menu_image,,1,0,0,0
+access_website_menu_image_designer,access_website_menu_image_designer,graphql_vuestorefront.model_website_menu_image,website.group_website_designer,1,1,1,1

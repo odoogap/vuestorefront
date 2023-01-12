@@ -65,3 +65,23 @@ class WebsiteMenu(models.Model):
     _inherit = 'website.menu'
 
     is_footer = fields.Boolean('Is Footer', default=False)
+    menu_image_ids = fields.One2many('website.menu.image', 'menu_id', string='Menu Images')
+
+
+class WebsiteMenuImage(models.Model):
+    _name = 'website.menu.image'
+    _description = 'Website Menu Image'
+
+    def _default_sequence(self):
+        menu = self.search([], limit=1, order="sequence DESC")
+        return menu.sequence or 0
+
+    menu_id = fields.Many2one('website.menu', 'Website Menu', required=True)
+    sequence = fields.Integer(default=_default_sequence)
+    image = fields.Image(string='Image', required=True)
+    tag = fields.Char('Tag')
+    title = fields.Char('Title')
+    subtitle = fields.Char('Subtitle')
+    text_color = fields.Char('Text Color (Hex)', help='#111000')
+    button_text = fields.Char('Button Text')
+    button_url = fields.Char('Button URL')
