@@ -22,6 +22,7 @@ class WebsiteQuery(graphene.ObjectType):
         domain = [
             ('website_id', '=', website.id),
             ('is_visible', '=', True),
+            ('is_footer', '=', False),
         ]
 
         return env['website.menu'].search(domain)
