@@ -86,4 +86,25 @@
         </field>
     </record>
 
+    <menuitem name="Menu"
+              id="menu_website_menu_list"
+              action="website.action_website_menu"
+              parent="website.menu_website_global_configuration"
+              sequence="45"
+              groups="base.group_no_one"/>
+
+    <menuitem name="Mega Menu"
+              id="menu_website_mega_menu_list"
+              action="graphql_vuestorefront.action_website_mega_menu"
+              parent="website.menu_website_global_configuration"
+              sequence="46"
+              groups="base.group_no_one"/>
+
+    <menuitem name="Footer"
+              id="menu_website_footer_list"
+              action="graphql_vuestorefront.action_website_footer"
+              parent="website.menu_website_global_configuration"
+              sequence="47"
+              groups="base.group_no_one"/>
+
 </odoo>

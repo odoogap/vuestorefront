@@ -27,7 +27,19 @@
         <field name="inherit_id" ref="website.website_menus_form_view"/>
         <field name="arch" type="xml">
             <xpath expr="//field[@name='url']" position="after">
-                <field name="is_footer"/>
+                <field name="is_footer" invisible="1"/>
+            </xpath>
+            <xpath expr="//field[@name='page_id']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+            <xpath expr="//field[@name='is_mega_menu']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+            <xpath expr="//field[@name='group_ids']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+            <xpath expr="//field[@name='new_window']" position="attributes">
+                <attribute name="invisible">1</attribute>
             </xpath>
             <xpath expr="//field[@name='child_id']" position="after">
                 <label for="menu_image_ids" string="Images"/>
@@ -61,6 +73,43 @@
                 </field>
             </xpath>
         </field>
+    </record>
+
+    <record id="menu_tree" model="ir.ui.view">
+        <field name="name">website.menu.tree</field>
+        <field name="model">website.menu</field>
+        <field name="inherit_id" ref="website.menu_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='is_mega_menu']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+            <xpath expr="//field[@name='new_window']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+            <xpath expr="//field[@name='group_ids']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="action_website_footer" model="ir.actions.act_window">
+        <field name="name">Website Footer</field>
+        <field name="res_model">website.menu</field>
+        <field name="view_mode">tree,form</field>
+        <field name="context">{'default_is_footer': True, 'search_default_group_by_website_id': 1}</field>
+        <field name="domain">[('is_footer', '=', True)]</field>
+        <field name="view_id" ref="graphql_vuestorefront.menu_tree"/>
+        <field name="target">current</field>
+    </record>
+
+    <record id="action_website_mega_menu" model="ir.actions.act_window">
+        <field name="name">Website Mega Menu</field>
+        <field name="res_model">website.menu</field>
+        <field name="view_mode">tree,form</field>
+        <field name="context">{'default_is_mega_menu': True, 'search_default_group_by_website_id': 1}</field>
+        <field name="domain">[('is_mega_menu', '=', True)]</field>
+        <field name="view_id" ref="graphql_vuestorefront.menu_tree"/>
+        <field name="target">current</field>
     </record>
 
 </odoo>

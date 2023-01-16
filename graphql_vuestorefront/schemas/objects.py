@@ -771,6 +771,7 @@ class WebsiteMenu(OdooObjectType):
     name = graphene.String()
     url = graphene.String()
     is_footer = graphene.Boolean()
+    is_mega_menu = graphene.Boolean()
     sequence = graphene.Int()
     parent = graphene.Field(lambda: WebsiteMenu)
     childs = graphene.List(graphene.NonNull(lambda: WebsiteMenu))
