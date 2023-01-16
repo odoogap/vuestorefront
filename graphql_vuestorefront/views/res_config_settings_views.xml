@@ -87,7 +87,7 @@
     </record>
 
     <menuitem name="Menu"
-              id="menu_website_menu_list"
+              id="website.menu_website_menu_list"
               action="website.action_website_menu"
               parent="website.menu_website_global_configuration"
               sequence="45"
