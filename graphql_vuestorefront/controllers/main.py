@@ -4,6 +4,9 @@
 
 import os
 import json
+import logging
+import pprint
+
 from odoo import http
 from odoo.addons.web.controllers.main import Binary
 from odoo.addons.graphql_base import GraphQLControllerMixin
@@ -12,6 +15,8 @@ from odoo.tools.safe_eval import safe_eval
 from urllib.parse import urlparse
 
 from ..schema import schema
+
+_logger = logging.getLogger(__name__)
 
 
 class VSFBinary(Binary):
@@ -55,6 +60,35 @@ class VSFBinary(Binary):
 
 
 class GraphQLController(http.Controller, GraphQLControllerMixin):
+
+    def _process_request(self, schema, data):
+        # Set the vsf_debug_mode value that exist in the settings
+        ICP = http.request.env['ir.config_parameter'].sudo()
+        vsf_debug_mode = ICP.get_param('vsf_debug_mode', False)
+        if vsf_debug_mode:
+            try:
+                request = http.request.httprequest
+                _logger.info('# ------------------------------- GRAPHQL: DEBUG MODE -------------------------------- #')
+                _logger.info('')
+                _logger.info('# ------------------------------------------------------- #')
+                _logger.info('#                          HEADERS                        #')
+                _logger.info('# ------------------------------------------------------- #')
+                _logger.info('\n%s', pprint.pformat(request.headers.environ))
+                _logger.info('')
+                _logger.info('# ------------------------------------------------------- #')
+                _logger.info('#                     QUERY / MUTATION                    #')
+                _logger.info('# ------------------------------------------------------- #')
+                _logger.info('\n%s', data.get('query', None))
+                _logger.info('')
+                _logger.info('# ------------------------------------------------------- #')
+                _logger.info('#                         ARGUMENTS                       #')
+                _logger.info('# ------------------------------------------------------- #')
+                _logger.info('\n%s', request.args.get('variables', None))
+                _logger.info('')
+                _logger.info('# ------------------------------------------------------------------------------------ #')
+            except:
+                pass
+        return super(GraphQLController, self)._process_request(schema, data)
 
     def _set_website_context(self):
         """Set website context based on http_request_host header."""

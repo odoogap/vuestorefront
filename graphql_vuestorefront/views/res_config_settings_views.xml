@@ -14,6 +14,18 @@
             <xpath expr="//div[@id='seo_settings']" position="after">
                 <h2>Vue Storefront</h2>
                 <div class="row mt16 o_settings_container" id="vsf_settings">
+                     <div class="col-12 col-lg-6 o_setting_box" id="vsf_debug_mode_settings">
+                        <div class="o_setting_left_pane">
+                            <field name="vsf_debug_mode"/>
+                        </div>
+                        <div class="o_setting_right_pane">
+                            <label for="vsf_debug_mode"/>
+                            <div class="text-muted">
+                                Activate the Graphql Debug Mode, this will let us know the Headers, Queries, Mutations and Arguments that are being pass
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12 col-lg-6 o_setting_box"/>
                     <div class="col-12 col-lg-6 o_setting_box" id="vsf_payment_return_url_settings">
                         <div class="o_setting_right_pane">
                             <label for="vsf_payment_success_return_url"/>

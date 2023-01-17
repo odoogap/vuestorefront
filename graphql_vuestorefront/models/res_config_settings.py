@@ -11,6 +11,7 @@ from odoo.tools.safe_eval import safe_eval
 class ResConfigSettings(models.TransientModel):
     _inherit = 'res.config.settings'
 
+    vsf_debug_mode = fields.Boolean('Debug Mode')
     vsf_payment_success_return_url = fields.Char(
         'Payment Success Return Url', related='website_id.vsf_payment_success_return_url', readonly=False,
         required=True
@@ -34,6 +35,7 @@ class ResConfigSettings(models.TransientModel):
         res = super(ResConfigSettings, self).get_values()
         ICP = self.env['ir.config_parameter'].sudo()
         res.update(
+            vsf_debug_mode=ICP.get_param('vsf_debug_mode'),
             vsf_cache_invalidation_key=ICP.get_param('vsf_cache_invalidation_key'),
             vsf_cache_invalidation_url=ICP.get_param('vsf_cache_invalidation_url'),
             vsf_image_quality=int(ICP.get_param('vsf_image_quality', 100)),
@@ -52,6 +54,7 @@ class ResConfigSettings(models.TransientModel):
 
         super(ResConfigSettings, self).set_values()
         ICP = self.env['ir.config_parameter'].sudo()
+        ICP.set_param('vsf_debug_mode', self.vsf_debug_mode)
         ICP.set_param('vsf_cache_invalidation_key', self.vsf_cache_invalidation_key)
         ICP.set_param('vsf_cache_invalidation_url', self.vsf_cache_invalidation_url)
         ICP.set_param('vsf_image_quality', self.vsf_image_quality)
