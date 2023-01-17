@@ -66,6 +66,7 @@ class WebsiteMenu(models.Model):
 
     is_footer = fields.Boolean('Is Footer', default=False)
     menu_image_ids = fields.One2many('website.menu.image', 'menu_id', string='Menu Images')
+    is_mega_menu = fields.Boolean(store=True)
 
 
 class WebsiteMenuImage(models.Model):
