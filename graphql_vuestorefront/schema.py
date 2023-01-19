@@ -9,7 +9,8 @@ from odoo.addons.graphql_vuestorefront.schemas import (
     country, category, product, order,
     invoice, contact_us, user_profile, sign,
     address, wishlist, shop, payment,
-    mailing_list, website
+    mailing_list, website, website_blog, website_page,
+    website_cms,
 )
 
 
@@ -28,6 +29,13 @@ class Query(
     mailing_list.MailingContactQuery,
     mailing_list.MailingListQuery,
     website.WebsiteQuery,
+    website_blog.BlogBlogQuery,
+    website_blog.BlogPostQuery,
+    website_blog.BlogTagQuery,
+    website_blog.BlogTagCategoryQuery,
+    website_page.WebsitePageQuery,
+    website_cms.CmsCollectionQuery,
+    website_cms.CmsContentQuery,
 ):
     pass
 
@@ -53,5 +61,7 @@ schema = graphene.Schema(
     mutation=Mutation,
     types=[country.CountryList, category.CategoryList, product.ProductList, product.ProductVariantData, order.OrderList,
            invoice.InvoiceList, wishlist.WishlistData, shop.CartData, mailing_list.MailingContactList,
-           mailing_list.MailingListList]
+           mailing_list.MailingListList, website_blog.BlogBlogList, website_blog.BlogPostList,
+           website_blog.BlogTagList, website_blog.BlogTagCategoryList, website_page.WebsitePageList,
+           website_cms.CmsCollectionList, website_cms.CmsContentList]
 )

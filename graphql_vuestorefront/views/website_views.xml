@@ -105,6 +105,77 @@
         </field>
     </record>
 
+    <!-- ====== website.page views =========================================
+        ==================================================================== -->
+    <record id="website_pages_form_view" model="ir.ui.view">
+        <field name="name">website.page.form</field>
+        <field name="model">website.page</field>
+        <field name="inherit_id" ref="website.website_pages_form_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='view_id']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+            <xpath expr="//field[@name='track']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+            <xpath expr="//field[@name='website_indexed']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+            <xpath expr="//field[@name='cache_time']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+            <xpath expr="//field[@name='cache_key_expr']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+            <xpath expr="//label[@for='menu_ids']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+            <xpath expr="//field[@name='menu_ids']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+            <xpath expr="//field[@name='menu_ids']" position="after">
+                <notebook>
+                    <!-- Content Page -->
+                    <page name="content" string="Content">
+                        <group name="content_info">
+                            <field name="content" widget="markdown" options="{'placeholder': 'Type content here'}" nolabel="1"/>
+                        </group>
+                    </page>
+                </notebook>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="website_pages_tree_view" model="ir.ui.view">
+        <field name="name">website.page.list</field>
+        <field name="model">website.page</field>
+        <field name="inherit_id" ref="website.website_pages_tree_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='website_indexed']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+            <xpath expr="//field[@name='track']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="website_pages_view_search" model="ir.ui.view">
+        <field name="name">website.page.view.search</field>
+        <field name="model">website.page</field>
+        <field name="inherit_id" ref="website.website_pages_view_search"/>
+        <field name="arch" type="xml">
+            <xpath expr="//filter[@name='tracked']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+            <xpath expr="//filter[@name='not_tracked']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- ====== Actions ====================================================
+        ==================================================================== -->
     <record id="website.action_website_menu" model="ir.actions.act_window">
         <field name="name">Website Menu</field>
         <field name="res_model">website.menu</field>

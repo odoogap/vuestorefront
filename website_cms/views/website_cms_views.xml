@@ -1,0 +1,299 @@
+<?xml version="1.0"?>
+<!--
+    Copyright 2023 ODOOGAP/PROMPTEQUATION LDA
+    License LGPL-3.0 or later (http://www.gnu.org/licenses/lgpl).
+-->
+<odoo>
+
+    <!-- CMS Content tree view  -->
+    <record id="view_cms_content_tree" model="ir.ui.view">
+        <field name="name">cms.content.tree</field>
+        <field name="model">cms.content</field>
+        <field name="type">tree</field>
+        <field name="arch" type="xml">
+            <tree string="Contents" multi_edit="1" sample="1">
+                <field name="name" optional="show"/>
+                <field name="active" invisible="1"/>
+                <field name="author_id" optional="show"/>
+                <field name="collection_id" optional="show"/>
+                <field name="website_id" groups="website.group_multi_website" optional="show"/>
+                <field name="is_published" string="Is Published" optional="hide"/>
+                <field name="create_uid" invisible="1" optional="show"/>
+                <field name="write_uid" optional="show"/>
+                <field name="write_date" optional="show"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- CMS Content form view  -->
+    <record id="view_cms_content_form" model="ir.ui.view">
+        <field name="name">cms.content.form</field>
+        <field name="model">cms.content</field>
+        <field name="arch" type="xml">
+            <form string="Content">
+                <sheet>
+                    <div class="oe_button_box" name="button_box" attrs="{'invisible': [('active', '=', False)]}">
+                        <field name="publish_val" widget="website_redirect_button"/>
+                    </div>
+                    <widget name="web_ribbon" title="Archived" bg_color="bg-danger" attrs="{'invisible': [('active', '=', True)]}"/>
+                    <div class="oe_title">
+                        <label for="name" class="oe_edit_only" string="Title"/>
+                        <h1><field name="name" placeholder="Title"/></h1>
+                    </div>
+                    <group name="content_details">
+                        <field name="collection_id"/>
+                        <field name="active" invisible="1"/>
+                        <field name="subtitle" placeholder="Subtitle"/>
+                        <field name="website_id" groups="website.group_multi_website" attrs="{'readonly': [('collection_id', '!=', False)]}"/>
+                    </group>
+                    <group name="other_details" string="Other Details">
+                        <field name="is_published"/>
+                        <field name="author_id"/>
+                        <field name="create_date" groups="base.group_no_one"/>
+                        <field name="post_date"/>
+                        <field name="write_uid"/>
+                        <field name="write_date"/>
+                    </group>
+                    <group name="Website" string="Website Url">
+                        <field name="website_slug"/>
+                    </group>
+                    <notebook>
+                        <!-- Content Page -->
+                        <page name="content" string="Content">
+                            <group name="content_info">
+                                <field name="content" widget="markdown" options="{'placeholder': 'Type content here'}" nolabel="1"/>
+                            </group>
+                        </page>
+                        <!-- Images Page -->
+                        <page string="Images" name="images">
+                            <group name="images" string="Images">
+                                <field name="image_ids" class="o_website_sale_image_list" context="{'default_name': name}" mode="kanban" options="{'create_text':'Add a Image'}" nolabel="1"/>
+                            </group>
+                        </page>
+                        <!-- SEO Info Page -->
+                        <page name="seo" string="SEO">
+                            <group name="default_opengraph">
+                                <field name="website_meta_title" string="Meta Title"/>
+                                <field name="website_meta_description" string="Meta Description"/>
+                                <field name="website_meta_keywords" string="Meta Keywords" help="Separate every keyword with a comma"/>
+                                <field name="website_meta_og_img" string="Website Opengraph Image"/>
+                                <field name="seo_name" string="SEO Name"/>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids" groups="base.group_user"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <!-- CMS Content search view  -->
+    <record id="view_cms_content_search" model="ir.ui.view">
+        <field name="name">cms.content.search</field>
+        <field name="model">cms.content</field>
+        <field name="arch" type="xml">
+            <search string="Content">
+                <filter string="Archived" name="inactive" domain="[('active','=',False)]"/>
+                <field name="name" string="Content" filter_domain="['|', ('name','ilike',self), ('content','ilike',self)]"/>
+                <field name="write_uid"/>
+                <field name="collection_id"/>
+                <group expand="0" string="Group By">
+                    <filter string="Collection" name="group_by_collection" domain="[]" context="{'group_by': 'collection_id'}"/>
+                    <filter string="Author" name="group_by_author" domain="[]" context="{'group_by': 'create_uid'}"/>
+                    <filter string="Last Contributor" name="group_by_last_contributor" domain="[]" context="{'group_by': 'write_uid'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- CMS Content kanban view  -->
+    <record id="view_cms_content_kanban" model="ir.ui.view">
+        <field name="name">cms.content.kanban</field>
+        <field name="model">cms.content</field>
+        <field name="arch" type="xml">
+            <kanban class="o_kanban_mobile" sample="1">
+                <field name="name"/>
+                <field name="collection_id"/>
+                <field name="author_id"/>
+                <field name="post_date"/>
+                <templates>
+                    <t t-name="kanban-box">
+                        <div class="oe_kanban_global_click">
+                            <div class="row mb4">
+                                <strong class="col-8">
+                                    <span t-esc="record.name.value"/>
+                                </strong>
+                                <strong class="col-4 text-right">
+                                    <span t-esc="record.collection_id.value"/>
+                                </strong>
+                                <div class="col-8">
+                                    <i class="fa fa-clock-o" role="img" aria-label="Post date" title="Post date"/><span t-esc="record.post_date.value"/>
+                                </div>
+                                <div class="col-4 text-right">
+                                    <img t-if="record.author_id.raw_value"
+                                         t-att-title="record.author_id.value"
+                                         t-att-alt="record.author_id.value"
+                                         class="oe_kanban_avatar o_image_24_cover"
+                                         t-att-src="kanban_image('res.partner', 'avatar_128', record.author_id.raw_value)"/>
+                                </div>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <!-- CMS Content action -->
+    <record id="action_cms_content" model="ir.actions.act_window">
+        <field name="name">Contents</field>
+        <field name="res_model">cms.content</field>
+        <field name="view_mode">tree,form,kanban</field>
+        <field name="view_id" ref="view_cms_content_tree"/>
+        <field name="search_view_id" ref="view_cms_content_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create a new Content
+            </p>
+        </field>
+    </record>
+
+    <!-- CMS Image form view -->
+    <!-- This view should only be used from the CmsContent o2m because the required field content_id has to be automatically set. -->
+    <record id="view_cms_image_form" model="ir.ui.view">
+        <field name="name">cms.image.form</field>
+        <field name="model">cms.image</field>
+        <field name="arch" type="xml">
+            <form string="CMS Images">
+                <field name="sequence" invisible="1"/>
+                <div class="row o_website_sale_image_modal">
+                    <div class="col-md-6 col-xl-5">
+                        <label for="name" string="Image Name"/>
+                        <h2><field name="name" placeholder="Image Name"/></h2>
+                        <label for="image_url" string="Image Url"/><br/>
+                        <field name="image_url" readonly="1"/><br/>
+                    </div>
+                    <div class="col-md-6 col-xl-7 text-center o_website_sale_image_modal_container">
+                        <div class="row">
+                            <div class="col">
+                                <field name="image_1920" widget="image"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <!-- CMS Image kanban view -->
+    <record id="view_cms_image_kanban" model="ir.ui.view">
+        <field name="name">cms.image.kanban</field>
+        <field name="model">cms.image</field>
+        <field name="arch" type="xml">
+            <kanban string="CMS Images" default_order="sequence">
+                <field name="id"/>
+                <field name="name"/>
+                <field name="image_512"/>
+                <field name="sequence" widget="handle"/>
+                <templates>
+                    <t t-name="kanban-box">
+                        <div class="card oe_kanban_global_click p-0">
+                            <div class="o_squared_image">
+                                <img class="card-img-top" t-att-src="kanban_image('cms.image', 'image_512', record.id.raw_value)" t-att-alt="record.name.value"
+                                    />
+                            </div>
+                            <div class="card-body p-0">
+                                <h4 class="card-title p-2 m-0 bg-200">
+                                    <small><field name="name"/></small>
+                                </h4>
+                            </div>
+                            <!-- below 100 Kb: good -->
+                            <t t-if="record.image_512.raw_value.length &lt; 100*1000">
+                                <t t-set="size_status" t-value="'badge-success'"/>
+                                <t t-set="message">Acceptable file size</t>
+                            </t>
+                            <!-- below 1000 Kb: decent -->
+                            <t t-elif="record.image_512.raw_value.length &lt; 1000*1000">
+                                <t t-set="size_status" t-value="'badge-warning'" />
+                                <t t-set="message">Huge file size. The image should be optimized/reduced.</t>
+                            </t>
+                            <!-- above 1000 Kb: bad -->
+                            <t t-else="1">
+                                <t t-set="size_status" t-value="'badge-danger'"/>
+                                <t t-set="message">Optimization required! Reduce the image size or increase your compression settings.</t>
+                            </t>
+                            <span t-attf-class="badge #{size_status} o_product_image_size" t-esc="record.image_512.value" t-att-title="message"/>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <!-- CMS Collection tree -->
+    <record id="view_cms_collection_tree" model="ir.ui.view">
+        <field name="name">cms.collection.tree</field>
+        <field name="model">cms.collection</field>
+        <field name="arch" type="xml">
+            <tree string="Collections" sample="1">
+                <field name="name" optional="show"/>
+                <field name="content_count" optional="show"/>
+                <field name="website_id" groups="website.group_multi_website" optional="show"/>
+                <field name="active" invisible="1"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- CMS Collection form -->
+    <record id="view_cms_collection_form" model="ir.ui.view">
+        <field name="name">cms.collection.form</field>
+        <field name="model">cms.collection</field>
+        <field name="arch" type="xml">
+            <form string="Collection">
+                <sheet>
+                    <widget name="web_ribbon" title="Archived" bg_color="bg-danger" attrs="{'invisible': [('active', '=', True)]}"/>
+                    <group>
+                        <field name="active" invisible="1"/>
+                        <field name="name"/>
+                        <field name="subtitle"/><field name="website_id" options="{'no_create': True}" groups="website.group_multi_website"/>
+                        <field name="website_slug"/>
+                    </group>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids" groups="base.group_user"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <!-- CMS Collection search -->
+    <record id="view_cms_collection_search" model="ir.ui.view">
+        <field name="name">cms.collection.search</field>
+        <field name="model">cms.collection</field>
+        <field name="arch" type="xml">
+            <search string="Collection">
+                <field name="name"/>
+                <filter string="Archived" name="inactive" domain="[('active','=',False)]"/>
+            </search>
+        </field>
+    </record>
+
+    <!-- CMS Collection action -->
+    <record id="action_cms_collection" model="ir.actions.act_window">
+        <field name="name">Collections</field>
+        <field name="res_model">cms.collection</field>
+        <field name="view_mode">tree,form</field>
+        <field name="view_id" ref="view_cms_collection_tree"/>
+        <field name="search_view_id" ref="view_cms_collection_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create a new Collection
+            </p>
+        </field>
+    </record>
+
+</odoo>

@@ -13,6 +13,9 @@
     'website': 'https://www.odoogap.com/',
     'depends': [
         'graphql_base',
+        'web_widget_markdown',
+        'website_blog',
+        'website_cms',
         'website_sale_wishlist',
         'website_sale_delivery',
         'website_mass_mailing',
@@ -32,6 +35,7 @@
         'data/ir_cron_data.xml',
         'views/product_views.xml',
         'views/website_views.xml',
+        'views/website_blog_views.xml',
         'views/res_config_settings_views.xml',
     ],
     'demo': [

@@ -767,6 +767,11 @@ class MailingContact(OdooObjectType):
         return self.subscription_list_ids or None
 
 
+class Website(OdooObjectType):
+    id = graphene.Int()
+    name = graphene.String()
+
+
 class WebsiteMenu(OdooObjectType):
     name = graphene.String()
     url = graphene.String()
@@ -799,3 +804,244 @@ class WebsiteMenuImage(OdooObjectType):
 
     def resolve_image(self, info):
         return '/web/image/website.menu.image/{}/image'.format(self.id)
+
+
+# ----------------------------- #
+#         Website Page          #
+# ----------------------------- #
+
+class WebsitePage(OdooObjectType):
+    id = graphene.Int()
+    name = graphene.String()
+    website_url = graphene.String()
+    is_published = graphene.Boolean()
+    publishing_date = graphene.String()
+    website = graphene.Field(lambda: Website)
+    content = graphene.String()
+
+    def resolve_website_url(self, info):
+        return self.url or None
+
+    def resolve_publishing_date(self, info):
+        return self.date_publish or None
+
+    def resolve_website(self, info):
+        return self.website_id or None
+
+
+# ----------------------------- #
+#         Website Blog          #
+# ----------------------------- #
+
+class BlogBlog(OdooObjectType):
+    id = graphene.Int(required=True)
+    name = graphene.String()
+    subtitle = graphene.String()
+    content = graphene.String()
+    blog_posts = graphene.List(graphene.NonNull(lambda: BlogPost))
+    blog_post_count = graphene.Int()
+    website = graphene.Field(lambda: Website)
+    website_slug = graphene.String()
+
+    def resolve_content(self, info):
+        return self.content or None
+
+    def resolve_blog_posts(self, info):
+        return self.blog_post_ids or None
+
+    def resolve_website(self, info):
+        return self.website_id or None
+
+
+class BlogTagCategory(OdooObjectType):
+    id = graphene.Int(required=True)
+    name = graphene.String()
+    tags = graphene.List(graphene.NonNull(lambda: BlogTag))
+
+    def resolve_tags(self, info):
+        return self.tag_ids or None
+
+
+class BlogTag(OdooObjectType):
+    id = graphene.Int(required=True)
+    name = graphene.String()
+    category = graphene.Field(lambda: BlogTagCategory)
+    posts = graphene.List(graphene.NonNull(lambda: BlogPost))
+
+    def resolve_category(self, info):
+        return self.category_id or None
+
+    def resolve_posts(self, info):
+        return self.post_ids or None
+
+
+class BlogImage(OdooObjectType):
+    id = graphene.Int(required=True)
+    name = graphene.String()
+    sequence = graphene.Int()
+    image = graphene.String()
+    post = graphene.Field(lambda: BlogPost)
+
+    def resolve_image(self, info):
+        return self.image_url or None
+
+    def resolve_post(self, info):
+        return self.post_id or None
+
+
+class BlogPost(OdooObjectType):
+    id = graphene.Int(required=True)
+    name = graphene.String()
+    subtitle = graphene.String()
+    tags = graphene.List(graphene.NonNull(lambda: BlogTag))
+    author = graphene.Field(lambda: Partner)
+    author_image = graphene.String()
+    author_name = graphene.String()
+    is_published = graphene.Boolean()
+    content = graphene.String()
+    teaser = graphene.String()
+    teaser_manual = graphene.String()
+    blog = graphene.Field(lambda: BlogBlog)
+    website = graphene.Field(lambda: Website)
+    images = graphene.List(graphene.NonNull(lambda: BlogImage))
+    website_slug = graphene.String()
+    # Creation / Update Stuff
+    create_date = graphene.String()
+    published_date = graphene.String()
+    publishing_date = graphene.String()
+    created_by = graphene.Field(lambda: User)
+    last_update_on = graphene.String()
+    last_contributor = graphene.Field(lambda: User)
+    # SEO Website
+    is_seo_optimized = graphene.Boolean()
+    website_meta_title = graphene.String()
+    website_meta_description = graphene.String()
+    website_meta_keywords = graphene.String()
+    website_meta_og_img = graphene.String()
+    seo_name = graphene.String()
+
+    def resolve_tags(self, info):
+        return self.tag_ids or None
+
+    def resolve_author(self, info):
+        return self.author_id or None
+
+    def resolve_author_image(self, info):
+        return '/web/image/res.partner/{}/image_128'.format(self.author_id.id)
+
+    def resolve_blog(self, info):
+        return self.blog_id or None
+
+    def resolve_website(self, info):
+        return self.website_id or None
+
+    def resolve_images(self, info):
+        return self.image_ids or None
+
+    def resolve_publishing_date(self, info):
+        return self.post_date or None
+
+    def resolve_created_by(self, info):
+        return self.create_uid or None
+
+    def resolve_last_update_on(self, info):
+        return self.write_date or None
+
+    def resolve_last_contributor(self, info):
+        return self.write_uid or None
+
+
+# ----------------------------- #
+#          Website CMS          #
+# ----------------------------- #
+
+class CmsCollection(OdooObjectType):
+    id = graphene.Int(required=True)
+    name = graphene.String()
+    subtitle = graphene.String()
+    content = graphene.String()
+    contents = graphene.List(graphene.NonNull(lambda: CmsContent))
+    content_count = graphene.Int()
+    website = graphene.Field(lambda: Website)
+    website_slug = graphene.String()
+
+    def resolve_content(self, info):
+        return self.content or None
+
+    def resolve_contents(self, info):
+        return self.content_ids or None
+
+    def resolve_website(self, info):
+        return self.website_id or None
+
+
+class CmsImage(OdooObjectType):
+    id = graphene.Int(required=True)
+    name = graphene.String()
+    sequence = graphene.Int()
+    image = graphene.String()
+    content = graphene.Field(lambda: CmsContent)
+
+    def resolve_image(self, info):
+        return self.image_url or None
+
+    def resolve_content(self, info):
+        return self.content_id or None
+
+
+class CmsContent(OdooObjectType):
+    id = graphene.Int(required=True)
+    name = graphene.String()
+    subtitle = graphene.String()
+    author = graphene.Field(lambda: Partner)
+    author_image = graphene.String()
+    author_name = graphene.String()
+    is_published = graphene.Boolean()
+    content = graphene.String()
+    teaser = graphene.String()
+    teaser_manual = graphene.String()
+    collection = graphene.Field(lambda: CmsCollection)
+    website = graphene.Field(lambda: Website)
+    images = graphene.List(graphene.NonNull(lambda: CmsImage))
+    website_slug = graphene.String()
+    # Creation / Update Stuff
+    create_date = graphene.String()
+    published_date = graphene.String()
+    publishing_date = graphene.String()
+    created_by = graphene.Field(lambda: User)
+    last_update_on = graphene.String()
+    last_contributor = graphene.Field(lambda: User)
+    # SEO Website
+    is_seo_optimized = graphene.Boolean()
+    website_meta_title = graphene.String()
+    website_meta_description = graphene.String()
+    website_meta_keywords = graphene.String()
+    website_meta_og_img = graphene.String()
+    seo_name = graphene.String()
+
+    def resolve_author(self, info):
+        return self.author_id or None
+
+    def resolve_author_image(self, info):
+        return '/web/image/res.partner/{}/image_128'.format(self.author_id.id)
+
+    def resolve_collection(self, info):
+        return self.collection_id or None
+
+    def resolve_website(self, info):
+        return self.website_id or None
+
+    def resolve_images(self, info):
+        return self.image_ids or None
+
+    def resolve_publishing_date(self, info):
+        return self.post_date or None
+
+    def resolve_created_by(self, info):
+        return self.create_uid or None
+
+    def resolve_last_update_on(self, info):
+        return self.write_date or None
+
+    def resolve_last_contributor(self, info):
+        return self.write_uid or None

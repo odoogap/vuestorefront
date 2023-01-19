@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Copyright 2023 ODOOGAP/PROMPTEQUATION LDA
+    License LGPL-3.0 or later (http://www.gnu.org/licenses/lgpl).
+-->
+<odoo>
+    <data>
+
+        <!-- Blog Post form view -->
+        <record id="view_blog_blog_form" model="ir.ui.view">
+            <field name="name">blog.blog.form</field>
+            <field name="model">blog.blog</field>
+            <field name="inherit_id" ref="website_blog.view_blog_blog_form"/>
+            <field name="arch" type="xml">
+                <field name="website_id" position="after">
+                    <field name="website_slug"/>
+                </field>
+            </field>
+        </record>
+
+        <!-- Blog Image form view  -->
+        <!-- This view should only be used from the BlogPost o2m because the required field post_id has to be automatically set. -->
+        <record id="view_blog_image_form" model="ir.ui.view">
+            <field name="name">blog.image.form</field>
+            <field name="model">blog.image</field>
+            <field name="arch" type="xml">
+                <form string="Blog Images">
+                    <field name="sequence" invisible="1"/>
+                    <div class="row o_website_sale_image_modal">
+                        <div class="col-md-6 col-xl-5">
+                            <label for="name" string="Image Name"/>
+                            <h2><field name="name" placeholder="Image Name"/></h2>
+                            <label for="image_url" string="Image Url"/><br/>
+                            <field name="image_url" readonly="1"/><br/>
+                        </div>
+                        <div class="col-md-6 col-xl-7 text-center o_website_sale_image_modal_container">
+                            <div class="row">
+                                <div class="col">
+                                    <field name="image_1920" widget="image"/>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </field>
+        </record>
+
+        <!-- Blog Image kanban view -->
+        <record id="view_blog_image_kanban" model="ir.ui.view">
+            <field name="name">blog.image.kanban</field>
+            <field name="model">blog.image</field>
+            <field name="arch" type="xml">
+                <kanban string="Blog Images" default_order="sequence">
+                    <field name="id"/>
+                    <field name="name"/>
+                    <field name="image_512"/>
+                    <field name="sequence" widget="handle"/>
+                    <templates>
+                        <t t-name="kanban-box">
+                            <div class="card oe_kanban_global_click p-0">
+                                <div class="o_squared_image">
+                                    <img class="card-img-top" t-att-src="kanban_image('blog.image', 'image_512', record.id.raw_value)" t-att-alt="record.name.value"
+                                        />
+                                </div>
+                                <div class="card-body p-0">
+                                    <h4 class="card-title p-2 m-0 bg-200">
+                                        <small><field name="name"/></small>
+                                    </h4>
+                                </div>
+                                <!-- below 100 Kb: good -->
+                                <t t-if="record.image_512.raw_value.length &lt; 100*1000">
+                                    <t t-set="size_status" t-value="'badge-success'"/>
+                                    <t t-set="message">Acceptable file size</t>
+                                </t>
+                                <!-- below 1000 Kb: decent -->
+                                <t t-elif="record.image_512.raw_value.length &lt; 1000*1000">
+                                    <t t-set="size_status" t-value="'badge-warning'" />
+                                    <t t-set="message">Huge file size. The image should be optimized/reduced.</t>
+                                </t>
+                                <!-- above 1000 Kb: bad -->
+                                <t t-else="1">
+                                    <t t-set="size_status" t-value="'badge-danger'"/>
+                                    <t t-set="message">Optimization required! Reduce the image size or increase your compression settings.</t>
+                                </t>
+                                <span t-attf-class="badge #{size_status} o_product_image_size" t-esc="record.image_512.value" t-att-title="message"/>
+                            </div>
+                        </t>
+                    </templates>
+                </kanban>
+            </field>
+        </record>
+
+        <!-- Blog Post list view -->
+        <record id="view_blog_post_list" model="ir.ui.view">
+            <field name="name">blog.post.list</field>
+            <field name="model">blog.post</field>
+            <field name="inherit_id" ref="website_blog.view_blog_post_list"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='visits']" position="attributes">
+                    <attribute name="invisible">1</attribute>
+                </xpath>
+            </field>
+        </record>
+
+        <!-- Blog Post form view -->
+        <record id="view_blog_post_form" model="ir.ui.view">
+            <field name="name">blog.post.form</field>
+            <field name="model">blog.post</field>
+            <field name="inherit_id" ref="website_blog.view_blog_post_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//div[@name='button_box']" position="replace">
+                    <div class="oe_button_box" name="button_box" attrs="{'invisible': [('active', '=', False)]}">
+                        <field name="publish_val" widget="website_redirect_button"/>
+                    </div>
+                </xpath>
+                <field name="author_id" position="before">
+                    <field name="is_published"/>
+                </field>
+                <xpath expr="//group[@name='publishing_details']" position="after">
+                    <group name="Website" string="Website Slug">
+                        <field name="website_slug"/>
+                    </group>
+                </xpath>
+                <xpath expr="//page[@name='seo']" position="replace">
+                    <!-- Content Page -->
+                    <page name="content" string="Content">
+                        <group name="content_info">
+                            <field name="content" widget="markdown" options="{'placeholder': 'Type content here'}" nolabel="1"/>
+                        </group>
+                    </page>
+                    <!-- Images Page -->
+                    <page string="Images" name="Images">
+                        <group name="blog_images">
+                            <field name="image_ids" class="o_website_sale_image_list" context="{'default_name': name}" mode="kanban" options="{'create_text':'Add a Image'}" nolabel="1"/>
+                        </group>
+                    </page>
+                    <!-- SEO Info Page -->
+                    <page name="seo" string="SEO">
+                        <group name="default_opengraph">
+                            <field name="website_meta_title" string="Meta Title"/>
+                            <field name="website_meta_description" string="Meta Description"/>
+                            <field name="website_meta_keywords" string="Meta Keywords" help="Separate every keyword with a comma"/>
+                            <field name="website_meta_og_img" string="Website Opengraph Image"/>
+                            <field name="seo_name" string="SEO Name"/>
+                        </group>
+                    </page>
+                </xpath>
+            </field>
+        </record>
+
+    </data>
+</odoo>

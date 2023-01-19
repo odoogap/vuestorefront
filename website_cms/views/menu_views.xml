@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Copyright 2023 ODOOGAP/PROMPTEQUATION LDA
+    License LGPL-3.0 or later (http://www.gnu.org/licenses/lgpl).
+-->
+<odoo>
+
+    <!-- Menu: CMS -->
+    <menuitem id="menu_website_cms"
+              name="CMS"
+              parent="website.menu_website_global_configuration"
+              groups="website.group_website_designer"
+              sequence="150"
+    />
+
+    <!-- Submenus -->
+
+    <!-- Menu: CMS Collection -->
+    <menuitem id="menu_website_cms_collection"
+              name="Collections"
+              parent="menu_website_cms"
+              groups="website.group_website_designer"
+              action="website_cms.action_cms_collection"
+              sequence="131"
+    />
+
+    <!-- Menu: CMS Content -->
+    <menuitem id="menu_website_cms_content"
+              name="Contents"
+              parent="menu_website_cms"
+              groups="website.group_website_designer"
+              action="website_cms.action_cms_content"
+              sequence="132"
+    />
+
+</odoo>

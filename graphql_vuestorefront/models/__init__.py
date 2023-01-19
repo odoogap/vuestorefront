@@ -9,3 +9,5 @@ from . import product
 from . import res_config_settings
 from . import res_users
 from . import payment_transaction
+from . import website_page
+from . import website_blog
