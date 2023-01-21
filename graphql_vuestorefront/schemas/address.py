@@ -159,7 +159,11 @@ class AddAddress(graphene.Mutation):
             values['type'] = 'contact'
             partner_id = ResPartner.create(values).id
             order.partner_id = partner_id
-            order.with_context(not_self_saleperson=True).onchange_partner_id()
+            order = order.with_context(not_self_saleperson=True)
+            order._compute_fiscal_position_id()
+            order._compute_payment_term_id()
+            order._compute_pricelist_id()
+            order._compute_user_id()
 
         values['type'] = type.value
         values['parent_id'] = partner_id
@@ -174,8 +178,8 @@ class AddAddress(graphene.Mutation):
             order.partner_shipping_id = partner.id
 
         # Trigger the change of fiscal position when the shipping address is modified
-        order.onchange_partner_shipping_id()
-        order._compute_tax_id()
+        order. _compute_fiscal_position_id()
+        order.action_update_taxes()
 
         return partner
 

@@ -69,8 +69,6 @@ class CartUpdateItem(graphene.Mutation):
         request.website = website
         order = website.sale_get_order(force_create=1)
         line = order.order_line.filtered(lambda rec: rec.id == line_id)
-        # Reset Warning Stock Message always before a new update
-        line.warning_stock = ""
         order._cart_update(product_id=line.product_id.id, line_id=line.id, set_qty=quantity)
         return CartData(order=order)
 
@@ -174,8 +172,6 @@ class CartUpdateMultipleItems(graphene.Mutation):
             line_id = line['id']
             quantity = line['quantity']
             line = order.order_line.filtered(lambda rec: rec.id == line_id)
-            # Reset Warning Stock Message always before a new update
-            line.warning_stock = ""
             order._cart_update(product_id=line.product_id.id, line_id=line.id, set_qty=quantity)
         return CartData(order=order)
 

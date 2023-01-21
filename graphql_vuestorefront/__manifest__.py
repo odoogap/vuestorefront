@@ -12,12 +12,10 @@
     'author': 'OdooGap',
     'website': 'https://www.odoogap.com/',
     'depends': [
-        'graphql_base',
+        # 'graphql_base',
         'website_sale_wishlist',
         'website_sale_delivery',
         'website_mass_mailing',
-        'website_sale_coupon',
-        'website_sale_gift_card',
         'auth_signup',
         'contacts',
         'crm',
@@ -32,7 +30,7 @@
         'data/ir_cron_data.xml',
         'views/product_views.xml',
         'views/res_config_settings_views.xml',
-        'views/website_views.xml',
+        #  'views/website_views.xml',
     ],
     'demo': [
         'data/demo_product_attribute.xml',
