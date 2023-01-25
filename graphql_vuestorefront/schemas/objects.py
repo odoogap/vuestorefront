@@ -203,6 +203,7 @@ class Category(OdooObjectType):
     childs = graphene.List(graphene.NonNull(lambda: Category))
     slug = graphene.String()
     products = graphene.List(graphene.NonNull(lambda: Product))
+    json_ld = generic.GenericScalar()
 
     def resolve_parent(self, info):
         return self.parent_id or None
@@ -215,6 +216,9 @@ class Category(OdooObjectType):
 
     def resolve_products(self, info):
         return self.product_tmpl_ids or None
+
+    def resolve_json_ld(self, info):
+        return self.get_json_ld()
 
 
 class AttributeValue(OdooObjectType):

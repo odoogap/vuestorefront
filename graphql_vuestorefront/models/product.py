@@ -214,6 +214,7 @@ class ProductPublicCategory(models.Model):
                 raise ValidationError(_('Slug is already in use: {}'.format(category.website_slug)))
 
     website_slug = fields.Char('Website Slug', translate=True, copy=False)
+    json_ld = fields.Char('JSON-LD')
 
     @api.model
     def create(self, vals):
@@ -236,3 +237,19 @@ class ProductPublicCategory(models.Model):
     def unlink(self):
         self.env['invalidate.cache'].create_invalidate_cache(self._name, self.ids)
         return super(ProductPublicCategory, self).unlink()
+
+    def get_json_ld(self):
+        self.ensure_one()
+        if self.json_ld:
+            return self.json_ld
+
+        base_url = self.env['ir.config_parameter'].sudo().get_param('web.base.url', '')
+
+        json_ld = {
+            "@context": "https://schema.org",
+            "@type": "CollectionPage",
+            "url": '{}{}'.format(base_url, self.website_slug or ''),
+            "name": self.display_name,
+        }
+
+        return json.dumps(json_ld)
