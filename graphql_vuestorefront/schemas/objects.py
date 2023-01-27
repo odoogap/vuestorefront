@@ -143,6 +143,12 @@ class Company(OdooObjectType):
     mobile = graphene.String()
     image = graphene.String()
     vat = graphene.String()
+    social_twitter = graphene.String()
+    social_facebook = graphene.String()
+    social_github = graphene.String()
+    social_linkedin = graphene.String()
+    social_youtube = graphene.String()
+    social_instagram = graphene.String()
 
     def resolve_country(self, info):
         return self.country_id or None
