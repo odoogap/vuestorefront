@@ -129,6 +129,31 @@ class Country(OdooObjectType):
         return self.state_ids or None
 
 
+class Company(OdooObjectType):
+    id = graphene.Int(required=True)
+    name = graphene.String()
+    street = graphene.String()
+    street2 = graphene.String()
+    city = graphene.String()
+    country = graphene.Field(lambda: Country)
+    state = graphene.Field(lambda: State)
+    zip = graphene.String()
+    email = graphene.String()
+    phone = graphene.String()
+    mobile = graphene.String()
+    image = graphene.String()
+    vat = graphene.String()
+
+    def resolve_country(self, info):
+        return self.country_id or None
+
+    def resolve_state(self, info):
+        return self.state_id or None
+
+    def resolve_image(self, info):
+        return '/web/image/res.company/{}/image_1920'.format(self.id)
+
+
 class Partner(OdooObjectType):
     id = graphene.Int(required=True)
     name = graphene.String()
@@ -150,6 +175,7 @@ class Partner(OdooObjectType):
     signup_valid = graphene.String()
     parent_id = graphene.Field(lambda: Partner)
     image = graphene.String()
+    vat = graphene.String()
 
     def resolve_country(self, info):
         return self.country_id or None
@@ -774,6 +800,10 @@ class MailingContact(OdooObjectType):
 class Website(OdooObjectType):
     id = graphene.Int()
     name = graphene.String()
+    company = graphene.Field(lambda: Company)
+
+    def resolve_company(self, info):
+        return self.company_id or None
 
 
 class WebsiteMenu(OdooObjectType):
