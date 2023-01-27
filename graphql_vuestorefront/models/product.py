@@ -120,14 +120,13 @@ class ProductTemplate(models.Model):
         if self.json_ld:
             return self.json_ld
 
-        base_url = self.env['ir.config_parameter'].sudo().get_param('web.base.url', '')
+        website = self.env['website'].get_current_website()
+        base_url = website.domain or ''
 
         # Get list of images
         images = list()
         if self.image_1920:
             images.append('%s/web/image/product.product/%s/image' % (base_url, self.id))
-
-        website = self.env['website'].get_current_website()
 
         json_ld = {
             "@context": "https://schema.org/",
@@ -165,14 +164,13 @@ class ProductProduct(models.Model):
         if self.json_ld:
             return self.json_ld
 
-        base_url = self.env['ir.config_parameter'].sudo().get_param('web.base.url', '')
+        website = self.env['website'].get_current_website()
+        base_url = website.domain or ''
 
         # Get list of images
         images = list()
         if self.image_1920:
             images.append('%s/web/image/product.product/%s/image' % (base_url, self.id))
-
-        website = self.env['website'].get_current_website()
 
         json_ld = {
             "@context": "https://schema.org/",
@@ -243,7 +241,8 @@ class ProductPublicCategory(models.Model):
         if self.json_ld:
             return self.json_ld
 
-        base_url = self.env['ir.config_parameter'].sudo().get_param('web.base.url', '')
+        website = self.env['website'].get_current_website()
+        base_url = website.domain or ''
 
         json_ld = {
             "@context": "https://schema.org",
