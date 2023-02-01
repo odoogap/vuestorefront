@@ -33,7 +33,7 @@ class ResUsers(models.Model):
         assert template._name == 'mail.template'
 
         website = request.env['website'].get_current_website()
-        domain = website.domain
+        domain = website.domain or ''
         if domain and domain[-1] == '/':
             domain = domain[:-1]
 

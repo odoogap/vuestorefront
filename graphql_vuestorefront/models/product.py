@@ -120,8 +120,11 @@ class ProductTemplate(models.Model):
         if self.json_ld:
             return self.json_ld
 
-        website = self.env['website'].get_current_website()
-        base_url = website.domain or ''
+        env = self.env
+        website = env['website'].get_current_website()
+        base_url = env['ir.config_parameter'].sudo().get_param('web.base.url', '')
+        if base_url and base_url[-1:] == '/':
+            base_url = base_url[:-1]
 
         # Get list of images
         images = list()
@@ -135,7 +138,7 @@ class ProductTemplate(models.Model):
             "image": images,
             "offers": {
                 "@type": "Offer",
-                "url": "%s/product/%s" % (base_url, slug(self)),
+                "url": "%s/product/%s" % (website.domain or '', slug(self)),
                 "priceCurrency": self.currency_id.name,
                 "price": self.list_price,
                 "itemCondition": "https://schema.org/NewCondition",
@@ -164,8 +167,11 @@ class ProductProduct(models.Model):
         if self.json_ld:
             return self.json_ld
 
-        website = self.env['website'].get_current_website()
-        base_url = website.domain or ''
+        env = self.env
+        website = env['website'].get_current_website()
+        base_url = env['ir.config_parameter'].sudo().get_param('web.base.url', '')
+        if base_url and base_url[-1:] == '/':
+            base_url = base_url[:-1]
 
         # Get list of images
         images = list()
@@ -179,7 +185,7 @@ class ProductProduct(models.Model):
             "image": images,
             "offers": {
                 "@type": "Offer",
-                "url": "%s/product/%s" % (base_url, slug(self)),
+                "url": "%s/product/%s" % (website.domain or '', slug(self)),
                 "priceCurrency": self.currency_id.name,
                 "price": self.list_price,
                 "itemCondition": "https://schema.org/NewCondition",
@@ -243,6 +249,8 @@ class ProductPublicCategory(models.Model):
 
         website = self.env['website'].get_current_website()
         base_url = website.domain or ''
+        if domain and domain[-1] == '/':
+            domain = domain[:-1]
 
         json_ld = {
             "@context": "https://schema.org",

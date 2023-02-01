@@ -7,7 +7,7 @@ class ProductProduct(models.Model):
     _inherit = 'product.product'
 
     def get_google_feed_xml(self, website):
-        domain = website.domain
+        domain = website.domain or ''
         if domain and domain[-1] == '/':
             domain = domain[:-1]
 
