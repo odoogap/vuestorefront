@@ -48,6 +48,10 @@ def get_search_domain(env, search, **kwargs):
     if kwargs.get('category_slug', False):
         domains.append([('public_categ_slug_ids.website_slug', '=', kwargs['category_slug'])])
 
+    # Filter With Barcode
+    if kwargs.get('barcode', False):
+        domains.append([('barcode', 'ilike', kwargs['barcode'])])
+
     # Filter With Name
     if kwargs.get('name', False):
         name = kwargs['name']
@@ -57,7 +61,8 @@ def get_search_domain(env, search, **kwargs):
     if search:
         for srch in search.split(" "):
             domains.append([
-                '|', '|', ('name', 'ilike', srch), ('description_sale', 'like', srch), ('default_code', 'like', srch)])
+                '|', '|', '|', ('name', 'ilike', srch), ('description_sale', 'like', srch),
+                ('default_code', 'like', srch), ('barcode', 'ilike', srch)])
 
     partial_domain = domains.copy()
 
@@ -136,6 +141,7 @@ class ProductList(graphene.ObjectType):
 
 class ProductFilterInput(graphene.InputObjectType):
     ids = graphene.List(graphene.Int)
+    barcode = graphene.String()
     category_id = graphene.List(graphene.Int)
     category_slug = graphene.String()
     # Deprecated
@@ -220,7 +226,7 @@ class ProductQuery(graphene.ObjectType):
     @staticmethod
     def resolve_products(self, info, filter, current_page, page_size, search, sort):
         env = info.context["env"]
-        products, total_count, attribute_values,min_price, max_price = get_product_list(
+        products, total_count, attribute_values, min_price, max_price = get_product_list(
             env, current_page, page_size, search, sort, **filter)
         return ProductList(products=products, total_count=total_count, attribute_values=attribute_values,
                            min_price=min_price, max_price=max_price)
