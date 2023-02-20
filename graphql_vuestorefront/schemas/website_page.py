@@ -4,6 +4,7 @@
 
 import graphene
 
+from odoo.http import request
 from odoo.addons.graphql_vuestorefront.schemas.objects import (
     SortEnum,
     WebsitePage,
@@ -60,7 +61,7 @@ class WebsitePageQuery(graphene.ObjectType):
     @staticmethod
     def resolve_website_page(self, info, id=None, website_url=None):
         env = info.context['env']
-        WebsitePage = env['website.page'].sudo()
+        WebsitePage = env['vsf.website.page'].sudo()
         domain = env['website'].get_current_website().website_domain()
 
         if id:
@@ -77,9 +78,10 @@ class WebsitePageQuery(graphene.ObjectType):
     @staticmethod
     def resolve_website_pages(self, info, filter, current_page, page_size, search, sort):
         env = info.context["env"]
+        website = env['website'].get_current_website()
+        request.website = website
         order = get_search_order(sort)
-        domain = env['website'].get_current_website().website_domain()
-        domain += [('is_published', '=', True)]
+        domain = [('website_id', '=', website.id), ('is_published', '=', True)]
 
         if search:
             for srch in search.split(" "):
@@ -97,7 +99,7 @@ class WebsitePageQuery(graphene.ObjectType):
         else:
             offset = 0
 
-        WebsitePage = env['website.page'].sudo()
+        WebsitePage = env['vsf.website.page'].sudo()
         total_count = WebsitePage.search_count(domain)
         website_pages = WebsitePage.search(domain, limit=page_size, offset=offset, order=order)
         return WebsitePageList(website_pages=website_pages, total_count=total_count)

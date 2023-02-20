@@ -35,6 +35,7 @@
         'data/ir_cron_data.xml',
         'views/product_views.xml',
         'views/website_views.xml',
+        'views/vsf_website_page_views.xml',
         'views/website_blog_views.xml',
         'views/res_config_settings_views.xml',
     ],

@@ -5,12 +5,20 @@
 from odoo import models, fields, api, _
 
 
-class WebsitePage(models.Model):
-    _inherit = 'website.page'
+class VsfWebsitePage(models.Model):
+    _name = 'vsf.website.page'
+    _inherit = [
+        'website.published.multi.mixin',
+        'website.searchable.mixin',
+    ]
+    _description = 'VSF Website Page'
+    _order = 'website_id'
 
     def _default_content(self):
         return '<p class="o_default_snippet_text">' + _("Start writing here...") + '</p>'
 
+    name = fields.Char(string='Page Name', translate=True, required=True)
     url = fields.Char(string='Page URL', translate=True)
     website_id = fields.Many2one('website', string="Website")
+    date_publish = fields.Datetime('Publishing Date')
     content = fields.Text(string='Content', default=_default_content, translate=True)

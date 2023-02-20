@@ -29,7 +29,6 @@ class Query(
     mailing_list.MailingContactQuery,
     mailing_list.MailingListQuery,
     website.WebsiteQuery,
-    website_blog.BlogBlogQuery,
     website_blog.BlogPostQuery,
     website_blog.BlogTagQuery,
     website_blog.BlogTagCategoryQuery,
@@ -61,7 +60,7 @@ schema = graphene.Schema(
     mutation=Mutation,
     types=[country.CountryList, category.CategoryList, product.ProductList, product.ProductVariantData, order.OrderList,
            invoice.InvoiceList, wishlist.WishlistData, shop.CartData, mailing_list.MailingContactList,
-           mailing_list.MailingListList, website_blog.BlogBlogList, website_blog.BlogPostList,
-           website_blog.BlogTagList, website_blog.BlogTagCategoryList, website_page.WebsitePageList,
-           website_cms.CmsCollectionList, website_cms.CmsContentList]
+           mailing_list.MailingListList, website_blog.BlogPostList, website_blog.BlogTagList,
+           website_blog.BlogTagCategoryList, website_page.WebsitePageList, website_cms.CmsCollectionList,
+           website_cms.CmsContentList]
 )

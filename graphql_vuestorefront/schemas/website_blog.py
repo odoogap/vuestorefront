@@ -4,6 +4,7 @@
 
 import graphene
 
+from odoo.http import request
 from odoo.addons.graphql_vuestorefront.schemas.objects import (
     SortEnum,
     BlogBlog,
@@ -24,89 +25,6 @@ def get_search_order(sort):
         sorting = 'id ASC'
 
     return sorting
-
-
-# ----------------------------- #
-#           Blog Blog           #
-# ----------------------------- #
-
-class BlogBlogFilterInput(graphene.InputObjectType):
-    id = graphene.List(graphene.Int)
-    website_slug = graphene.String()
-
-
-class BlogBlogSortInput(graphene.InputObjectType):
-    id = SortEnum()
-
-
-class BlogBlogs(graphene.Interface):
-    blog_blogs = graphene.List(BlogBlog)
-    total_count = graphene.Int(required=True)
-
-
-class BlogBlogList(graphene.ObjectType):
-    class Meta:
-        interfaces = (BlogBlogs,)
-
-
-class BlogBlogQuery(graphene.ObjectType):
-    blog_blog = graphene.Field(
-        BlogBlog,
-        id=graphene.Int(),
-        website_slug=graphene.String(default_value=None),
-    )
-    blog_blogs = graphene.Field(
-        BlogBlogs,
-        filter=graphene.Argument(BlogBlogFilterInput, default_value={}),
-        current_page=graphene.Int(default_value=1),
-        page_size=graphene.Int(default_value=20),
-        search=graphene.String(default_value=False),
-        sort=graphene.Argument(BlogBlogSortInput, default_value={})
-    )
-
-    @staticmethod
-    def resolve_blog_blog(self, info, id=None, website_slug=None):
-        env = info.context['env']
-        BlogBlog = env['blog.blog'].sudo()
-        domain = env['website'].get_current_website().website_domain()
-
-        if id:
-            domain += [('id', '=', id)]
-            blog_blog = BlogBlog.search(domain, limit=1)
-        elif website_slug:
-            domain += [('website_slug', '=', website_slug)]
-            blog_blog = BlogBlog.search(domain, limit=1)
-        else:
-            blog_blog = BlogBlog
-
-        return blog_blog
-
-    @staticmethod
-    def resolve_blog_blogs(self, info, filter, current_page, page_size, search, sort):
-        env = info.context["env"]
-        order = get_search_order(sort)
-        domain = env['website'].get_current_website().website_domain()
-
-        if search:
-            for srch in search.split(" "):
-                domain += ['|', ('name', 'ilike', srch), ('subtitle', 'ilike', srch)]
-
-        if filter.get('id'):
-            domain += [('id', 'in', filter['id'])]
-
-        if filter.get('website_slug'):
-            domain += [('website_slug', '=', filter['website_slug'])]
-
-        # First offset is 0 but first page is 1
-        if current_page > 1:
-            offset = (current_page - 1) * page_size
-        else:
-            offset = 0
-
-        BlogBlog = env['blog.blog'].sudo()
-        total_count = BlogBlog.search_count(domain)
-        blog_blogs = BlogBlog.search(domain, limit=page_size, offset=offset, order=order)
-        return BlogBlogList(blog_blogs=blog_blogs, total_count=total_count)
 
 
 # ----------------------------- #
@@ -167,9 +85,13 @@ class BlogPostQuery(graphene.ObjectType):
     @staticmethod
     def resolve_blog_posts(self, info, filter, current_page, page_size, search, sort):
         env = info.context["env"]
+        website = env['website'].get_current_website()
+        request.website = website
         order = get_search_order(sort)
-        domain = env['website'].get_current_website().website_domain()
-        domain += [('is_published', '=', True)]
+        vsf_blog_blog_id = website.vsf_blog_blog_id
+        domain = [
+            ('is_published', '=', True), '|', ('blog_id', '=', vsf_blog_blog_id.id), ('website_id', '=', website.id)
+        ]
 
         if search:
             for srch in search.split(" "):
@@ -247,8 +169,11 @@ class BlogTagQuery(graphene.ObjectType):
     @staticmethod
     def resolve_blog_tags(self, info, filter, current_page, page_size, search, sort):
         env = info.context["env"]
+        website = env['website'].get_current_website()
+        request.website = website
         order = get_search_order(sort)
-        domain = []
+        vsf_blog_blog_id = website.vsf_blog_blog_id
+        domain = ['|', ('post_ids.blog_id', '=', vsf_blog_blog_id.id), ('post_ids.website_id', '=', website.id)]
 
         if search:
             for srch in search.split(" "):
