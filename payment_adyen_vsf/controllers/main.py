@@ -223,24 +223,8 @@ class AdyenControllerInherit(AdyenController):
 
                 # Case the transaction was created on vsf (Success flow)
                 if event_code == 'AUTHORISATION' and success and payment_transaction.created_on_vsf:
-                    # Check the Order and respective website related with the transaction
-                    # Check the payment_return url for the success and error pages
-                    sale_order_ids = payment_transaction.sale_order_ids.ids
-                    sale_order = request.env['sale.order'].sudo().search([
-                        ('id', 'in', sale_order_ids), ('website_id', '!=', False)
-                    ], limit=1)
-
-                    # Get Website
-                    website = sale_order.website_id
-                    # Redirect to VSF
-                    vsf_payment_success_return_url = website.vsf_payment_success_return_url
-
-                    request.session["__payment_monitored_tx_ids__"] = [payment_transaction.id]
-
                     # Confirm sale order
                     PaymentPostProcessing().poll_status()
-
-                    return werkzeug.utils.redirect(vsf_payment_success_return_url)
 
             except ValidationError:  # Acknowledge the notification to avoid getting spammed
                 _logger.exception("unable to handle the notification data; skipping to acknowledge")
