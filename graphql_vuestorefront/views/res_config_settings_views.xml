@@ -11,7 +11,7 @@
         <field name="priority" eval="99"/>
         <field name="inherit_id" ref="website.res_config_settings_view_form"/>
         <field name="arch" type="xml">
-            <xpath expr="//div[@id='seo_settings']" position="after">
+            <xpath expr="//div[@id='website_settings'][2]" position="after">
                 <h2>Vue Storefront</h2>
                 <div class="row mt16 o_settings_container" id="vsf_settings">
                      <div class="col-12 col-lg-6 o_setting_box" id="vsf_debug_mode_settings">
@@ -63,14 +63,6 @@
                             <label for="vsf_mailing_list_id"/>
                             <div class="content-group">
                                 <field name="vsf_mailing_list_id"/>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-12 col-lg-6 o_setting_box" id="vsf_blog_blog_id_settings">
-                        <div class="o_setting_right_pane">
-                            <label for="vsf_blog_blog_id"/>
-                            <div class="content-group">
-                                <field name="vsf_blog_blog_id"/>
                             </div>
                         </div>
                     </div>

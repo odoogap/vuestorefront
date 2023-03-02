@@ -1,4 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" ?>
+<!--
+    Copyright 2023 ODOOGAP/PROMPTEQUATION LDA
+    License LGPL-3.0 or later (http://www.gnu.org/licenses/lgpl).
+-->
 <odoo>
 
     <template id="feed_xml">&lt;?xml version="1.0"?&gt;

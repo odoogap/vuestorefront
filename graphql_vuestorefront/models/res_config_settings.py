@@ -24,7 +24,6 @@ class ResConfigSettings(models.TransientModel):
     vsf_cache_invalidation_url = fields.Char('Cache Invalidation Url', required=True)
     vsf_mailing_list_id = fields.Many2one('mailing.list', 'Newsletter', domain=[('is_public', '=', True)],
                                           related='website_id.vsf_mailing_list_id', readonly=False, required=True)
-    vsf_blog_blog_id = fields.Many2one('blog.blog', 'Blog', related='website_id.vsf_blog_blog_id', readonly=False)
 
     # VSF Images
     vsf_image_quality = fields.Integer('Quality', required=True)

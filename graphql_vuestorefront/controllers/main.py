@@ -8,7 +8,7 @@ import logging
 import pprint
 
 from odoo import http
-from odoo.addons.web.controllers.main import Binary
+from odoo.addons.web.controllers.binary import Binary
 from odoo.addons.graphql_base import GraphQLControllerMixin
 from odoo.http import request, Response
 from odoo.tools.safe_eval import safe_eval
@@ -117,12 +117,6 @@ class GraphQLController(http.Controller, GraphQLControllerMixin):
     def graphiql(self, **kwargs):
         self._set_website_context()
         return self._handle_graphiql_request(schema.graphql_schema)
-
-    # Optional monkey patch, needed to accept application/json GraphQL
-    # requests. If you only need to accept GET requests or POST
-    # with application/x-www-form-urlencoded content,
-    # this is not necessary.
-    GraphQLControllerMixin.patch_for_json("^/graphql/vsf/?$")
 
     # The graphql route, for applications.
     # Note csrf=False: you may want to apply extra security

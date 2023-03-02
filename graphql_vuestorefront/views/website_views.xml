@@ -10,15 +10,12 @@
         <field name="model">website</field>
         <field name="inherit_id" ref="website.view_website_form"/>
         <field name="arch" type="xml">
-            <xpath expr="//div[@name='other']" position="after">
-                <div name="vsf_info">
-                    <group name="vsf_info">
-                        <field name="vsf_blog_blog_id"/>
-                        <field name="vsf_mailing_list_id"/>
-                        <field name="vsf_payment_success_return_url"/>
-                        <field name="vsf_payment_error_return_url"/>
-                    </group>
-                </div>
+            <xpath expr="//group[@name='domain']" position="after">
+                <group class="mt-5" name="vsf_info">
+                    <field name="vsf_mailing_list_id"/>
+                    <field name="vsf_payment_success_return_url"/>
+                    <field name="vsf_payment_error_return_url"/>
+                </group>
             </xpath>
         </field>
     </record>
@@ -32,9 +29,6 @@
                 <field name="is_footer"/>
             </xpath>
             <xpath expr="//field[@name='page_id']" position="attributes">
-                <attribute name="invisible">1</attribute>
-            </xpath>
-            <xpath expr="//field[@name='group_ids']" position="attributes">
                 <attribute name="invisible">1</attribute>
             </xpath>
             <xpath expr="//field[@name='new_window']" position="attributes">
@@ -83,9 +77,6 @@
                 <attribute name="invisible">1</attribute>
             </xpath>
             <xpath expr="//field[@name='new_window']" position="attributes">
-                <attribute name="invisible">1</attribute>
-            </xpath>
-            <xpath expr="//field[@name='group_ids']" position="attributes">
                 <attribute name="invisible">1</attribute>
             </xpath>
         </field>
