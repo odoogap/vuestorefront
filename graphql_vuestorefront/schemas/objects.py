@@ -525,8 +525,8 @@ class PaymentTransaction(OdooObjectType):
     payment = graphene.Field(lambda: Payment)
     amount = graphene.Float()
     currency = graphene.Field(lambda: Currency)
-    acquirer = graphene.String()
-    acquirer_reference = graphene.String()
+    provider = graphene.String()
+    provider_reference = graphene.String()
     company = graphene.Field(lambda: Partner)
     customer = graphene.Field(lambda: Partner)
     state = PaymentTransactionState()
@@ -537,8 +537,8 @@ class PaymentTransaction(OdooObjectType):
     def resolve_currency(self, info):
         return self.currency_id or None
 
-    def resolve_acquirer(self, info):
-        return self.acquirer_id.name or None
+    def resolve_provider(self, info):
+        return self.provider_id.name or None
 
     def resolve_company(self, info):
         return self.company_id or None
@@ -556,7 +556,7 @@ class OrderLine(OdooObjectType):
     price_subtotal = graphene.Float()
     price_total = graphene.Float()
     price_tax = graphene.Float()
-    warning_stock = graphene.String()
+    shop_warning = graphene.String()
     gift_card = graphene.Field(lambda: GiftCard)
     coupon = graphene.Field(lambda: Coupon)
 
@@ -567,12 +567,16 @@ class OrderLine(OdooObjectType):
         return self.product_uom_qty or None
 
     def resolve_gift_card(self, info):
-        return self.gift_card_id or None
+        gift_card = None
+        if self.coupon_id and self.coupon_id.program_type and self.coupon_id.program_type == 'gift_card':
+            gift_card = self.coupon_id
+        return gift_card
 
     def resolve_coupon(self, info):
-        coupons = self.order_id.applied_coupon_ids.filtered(
-            lambda c: self.product_id and c.discount_line_product_id and c.discount_line_product_id.id == self.product_id.id)
-        return coupons and coupons[0] or None
+        coupon = None
+        if self.coupon_id and self.coupon_id.program_type and self.coupon_id.program_type == 'coupons':
+            coupon = self.coupon_id
+        return coupon
 
 
 class Coupon(OdooObjectType):
@@ -604,7 +608,7 @@ class Order(OdooObjectType):
     partner_shipping = graphene.Field(lambda: Partner)
     partner_invoice = graphene.Field(lambda: Partner)
     date_order = graphene.String()
-    totals_json = generic.GenericScalar()
+    tax_totals = generic.GenericScalar()
     amount_untaxed = graphene.Float()
     amount_tax = graphene.Float()
     amount_total = graphene.Float()
@@ -625,6 +629,7 @@ class Order(OdooObjectType):
     invoice_status = InvoiceStatus()
     invoice_count = graphene.Int()
     coupons = graphene.List(graphene.NonNull(lambda: Coupon))
+    gift_cards = graphene.List(graphene.NonNull(lambda: GiftCard))
 
     def resolve_partner(self, info):
         return self.partner_id or None
@@ -638,8 +643,8 @@ class Order(OdooObjectType):
     def resolve_date_order(self, info):
         return self.date_order or None
 
-    def resolve_totals_json(self, info):
-        return self.tax_totals_json or None
+    def resolve_tax_totals(self, info):
+        return self.tax_totals or None
 
     def resolve_shipping_method(self, info):
         return self.carrier_id or None
@@ -649,6 +654,9 @@ class Order(OdooObjectType):
 
     def resolve_order_lines(self, info):
         return self.order_line or None
+
+    def resolve_website_order_line(self, info):
+        return self.website_order_line or None
 
     def resolve_stage(self, info):
         return self.state or None
@@ -664,18 +672,23 @@ class Order(OdooObjectType):
             return self.transaction_ids.sorted(key=lambda r: r.create_date, reverse=True)[0]
         return None
 
-    def resolve_coupons(self, info):
-        return self.applied_coupon_ids or None
-
     def resolve_amount_subtotal(self, info):
-        subtotal_lines = self.order_line.filtered(lambda l: not l.gift_card_id and not l.is_reward_line)
+        subtotal_lines = self.order_line.filtered(lambda l: not l.is_reward_line)
         return sum(subtotal_lines.mapped('price_total')) - self.amount_delivery
 
     def resolve_amount_discounts(self, info):
-        return sum(self._get_reward_lines().mapped('price_total'))
+        return self.reward_amount
 
     def resolve_amount_gift_cards(self, info):
-        return sum(self.order_line.filtered(lambda l: l.gift_card_id).mapped('price_total'))
+        return sum(self.order_line.filtered(
+            lambda l: l.coupon_id and l.coupon_id.program_type and
+                      l.coupon_id.program_type == 'gift_card').mapped('price_total'))
+
+    def resolve_coupons(self, info):
+        return self.applied_coupon_ids.filtered(lambda c: c.program_type == 'coupons') or None
+
+    def resolve_gift_cards(self, info):
+        return self.applied_coupon_ids.filtered(lambda c: c.program_type == 'gift_card') or None
 
 
 class InvoiceLine(OdooObjectType):
@@ -698,7 +711,7 @@ class Invoice(OdooObjectType):
     partner_shipping = graphene.Field(lambda: Partner)
     invoice_date = graphene.String()
     invoice_date_due = graphene.String()
-    totals_json = generic.GenericScalar()
+    tax_totals = generic.GenericScalar()
     amount_untaxed = graphene.Float()
     amount_tax = graphene.Float()
     amount_total = graphene.Float()
@@ -721,8 +734,8 @@ class Invoice(OdooObjectType):
     def resolve_invoice_date_due(self, info):
         return self.invoice_date_due or None
 
-    def resolve_totals_json(self, info):
-        return self.tax_totals_json or None
+    def resolve_tax_totals(self, info):
+        return self.tax_totals or None
 
     def resolve_currency(self, info):
         return self.currency_id or None
@@ -753,7 +766,7 @@ class WishlistItem(OdooObjectType):
 
 
 class PaymentIcon(OdooObjectType):
-    id = graphene.ID()
+    id = graphene.Int()
     name = graphene.String(required=True)
     image = graphene.String()
 
@@ -761,11 +774,11 @@ class PaymentIcon(OdooObjectType):
         return '/web/image/payment.icon/{}/image'.format(self.id)
 
 
-class PaymentAcquirer(OdooObjectType):
+class PaymentProvider(OdooObjectType):
     id = graphene.Int(required=True)
     name = graphene.String()
     display_as = graphene.String()
-    provider = graphene.String()
+    code = graphene.String()
     payment_icons = graphene.List(graphene.NonNull(lambda: PaymentIcon))
 
     def resolve_payment_icons(self, info):
@@ -813,6 +826,7 @@ class Website(OdooObjectType):
 
 
 class WebsiteMenu(OdooObjectType):
+    id = graphene.Int(required=True)
     name = graphene.String()
     url = graphene.String()
     is_footer = graphene.Boolean()
@@ -833,6 +847,7 @@ class WebsiteMenu(OdooObjectType):
 
 
 class WebsiteMenuImage(OdooObjectType):
+    id = graphene.Int(required=True)
     image = graphene.String()
     tag = graphene.String()
     title = graphene.String()

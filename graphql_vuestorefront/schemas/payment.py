@@ -11,7 +11,7 @@ from odoo.osv import expression
 
 from odoo.addons.payment import utils as payment_utils
 from odoo.addons.payment_adyen_vsf.const import CURRENCY_DECIMALS
-from odoo.addons.graphql_vuestorefront.schemas.objects import PaymentAcquirer, PaymentTransaction
+from odoo.addons.graphql_vuestorefront.schemas.objects import PaymentProvider, PaymentTransaction
 from odoo.addons.graphql_vuestorefront.schemas.shop import Cart, CartData
 from odoo.addons.website_sale.controllers.main import PaymentPortal
 from odoo.addons.payment_adyen.controllers.main import AdyenController
@@ -19,13 +19,13 @@ from odoo.addons.payment_adyen_vsf.controllers.main import AdyenControllerInheri
 
 
 class PaymentQuery(graphene.ObjectType):
-    payment_acquirer = graphene.Field(
-        PaymentAcquirer,
+    payment_provider = graphene.Field(
+        PaymentProvider,
         required=True,
         id=graphene.Int(),
     )
-    payment_acquirers = graphene.List(
-        graphene.NonNull(PaymentAcquirer),
+    payment_providers = graphene.List(
+        graphene.NonNull(PaymentProvider),
     )
     payment_transaction = graphene.Field(
         PaymentTransaction,
@@ -38,9 +38,9 @@ class PaymentQuery(graphene.ObjectType):
     )
 
     @staticmethod
-    def resolve_payment_acquirer(self, info, id):
+    def resolve_payment_provider(self, info, id):
         env = info.context["env"]
-        PaymentAcquirer = env['payment.acquirer'].sudo()
+        PaymentProvider = env['payment.provider'].sudo()
         website = env['website'].get_current_website()
         request.website = website
         domain = [
@@ -48,13 +48,13 @@ class PaymentQuery(graphene.ObjectType):
             ('state', 'in', ['enabled', 'test']),
         ]
 
-        payment_acquirer = PaymentAcquirer.search(domain, limit=1)
-        if not payment_acquirer:
-            raise GraphQLError(_('Payment acquirer does not exist.'))
-        return payment_acquirer
+        payment_provider = PaymentProvider.search(domain, limit=1)
+        if not payment_provider:
+            raise GraphQLError(_('Payment provider does not exist.'))
+        return payment_provider
 
     @staticmethod
-    def resolve_payment_acquirers(self, info):
+    def resolve_payment_providers(self, info):
         env = info.context["env"]
 
         website = env['website'].get_current_website()
@@ -64,9 +64,9 @@ class PaymentQuery(graphene.ObjectType):
         domain = expression.AND([
             ['&', ('state', 'in', ['enabled', 'test']), ('company_id', '=', order.company_id.id)],
             ['|', ('website_id', '=', False), ('website_id', '=', website.id)],
-            ['|', ('country_ids', '=', False), ('country_ids', 'in', [order.partner_id.country_id.id])]
+            ['|', ('available_country_ids', '=', False), ('available_country_ids', 'in', [order.partner_id.country_id.id])]
         ])
-        return env['payment.acquirer'].sudo().search(domain)
+        return env['payment.provider'].sudo().search(domain)
 
     @staticmethod
     def resolve_payment_transaction(self, info, id, reference):

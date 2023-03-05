@@ -23,7 +23,7 @@ def get_search_order(sort):
         else:
             sorting += '%s %s' % (field, val.value)
 
-    # Add id as last factor so we can consistently get the same results
+    # Add id as last factor, so we can consistently get the same results
     if sorting:
         sorting += ', id ASC'
     else:

@@ -115,7 +115,7 @@ class ChangePassword(graphene.Mutation):
         ResUsers = env['res.users'].sudo()
 
         try:
-            db, login, password = ResUsers.signup(data, token)
+            login, password = ResUsers.signup(data, token)
             return ResUsers.search([('login', '=', login)], limit=1)
         except UserError as e:
             raise GraphQLError(e.args[0])

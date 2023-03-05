@@ -19,7 +19,7 @@ def get_search_order(sort):
             sorting += ', '
         sorting += '%s %s' % (field, val.value)
 
-    # Add id as last factor so we can consistently get the same results
+    # Add id as last factor, so we can consistently get the same results
     if sorting:
         sorting += ', id ASC'
     else:
@@ -164,7 +164,7 @@ class NewsletterSubscribe(graphene.Mutation):
         website = env['website'].get_current_website()
 
         if website.vsf_mailing_list_id:
-            MassMailController().subscribe(website.vsf_mailing_list_id.id, email)
+            MassMailController().subscribe(website.vsf_mailing_list_id.id, email, 'email')
             return NewsletterSubscribe(subscribed=True)
 
         return NewsletterSubscribe(subscribed=False)

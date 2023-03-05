@@ -21,7 +21,7 @@ def get_search_order(sort):
             sorting += ', '
         sorting += '%s %s' % (field, val.value)
 
-    # Add id as last factor so we can consistently get the same results
+    # Add id as last factor, so we can consistently get the same results
     if sorting:
         sorting += ', id ASC'
     else:
@@ -135,9 +135,16 @@ class ApplyCoupon(graphene.Mutation):
         request.website = website
         order = website.sale_get_order(force_create=1)
 
-        coupon_status = env['sale.coupon.apply.code'].sudo().apply_coupon(order, promo)
+        coupon_status = order._try_apply_code(promo)
+        if 'error' in coupon_status:
+            raise GraphQLError(coupon_status['error'])
 
-        return ApplyCoupon(error=coupon_status.get('not_found') or coupon_status.get('error'))
+        # Apply Coupon
+        order._update_programs_and_rewards()
+        order._auto_apply_rewards()
+        order.action_open_reward_wizard()
+
+        return ApplyCoupon(error=coupon_status.get('error') or coupon_status.get('not_found'))
 
 
 class ApplyGiftCard(graphene.Mutation):
@@ -153,10 +160,16 @@ class ApplyGiftCard(graphene.Mutation):
         request.website = website
         order = website.sale_get_order(force_create=1)
 
-        gift_card = env["gift.card"].sudo().search([('code', '=', promo)], limit=1)
-        gift_card_status = order._pay_with_gift_card(gift_card)
+        gift_card_status = order._try_apply_code(promo)
+        if 'error' in gift_card_status:
+            raise GraphQLError(gift_card_status['error'])
 
-        return ApplyGiftCard(error=gift_card_status)
+        # Apply Coupon
+        order._update_programs_and_rewards()
+        order._auto_apply_rewards()
+        order.action_open_reward_wizard()
+
+        return ApplyCoupon(error=gift_card_status.get('error') or gift_card_status.get('not_found'))
 
 
 class OrderMutation(graphene.ObjectType):

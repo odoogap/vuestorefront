@@ -113,7 +113,7 @@ class GraphQLController(http.Controller, GraphQLControllerMixin):
             pass
 
     # The GraphiQL route, providing an IDE for developers
-    @http.route("/graphiql/vsf", auth="user")
+    @http.route("/graphiql/vsf", auth="public")
     def graphiql(self, **kwargs):
         self._set_website_context()
         return self._handle_graphiql_request(schema.graphql_schema)

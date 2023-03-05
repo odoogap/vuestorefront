@@ -154,12 +154,11 @@ class AddAddress(graphene.Mutation):
         partner_id = order.partner_id.id
 
         # Check public user
-        if partner_id == website.user_id.partner_id.id:
+        if partner_id == website.user_id.sudo().partner_id.id:
             # Create main contact
             values['type'] = 'contact'
             partner_id = ResPartner.create(values).id
             order.partner_id = partner_id
-            order.with_context(not_self_saleperson=True).onchange_partner_id()
 
         values['type'] = type.value
         values['parent_id'] = partner_id
@@ -174,8 +173,7 @@ class AddAddress(graphene.Mutation):
             order.partner_shipping_id = partner.id
 
         # Trigger the change of fiscal position when the shipping address is modified
-        order.onchange_partner_shipping_id()
-        order._compute_tax_id()
+        order._compute_fiscal_position_id()
 
         return partner
 
@@ -214,8 +212,7 @@ class UpdateAddress(graphene.Mutation):
             values.update({'country_id': address['country_id']})
 
             # Trigger the change of fiscal position when the shipping address is modified
-            order.onchange_partner_shipping_id()
-            order._compute_tax_id()
+            order._compute_fiscal_position_id()
 
         if address.get('email'):
             values.update({'email': address['email']})
@@ -254,8 +251,7 @@ class DeleteAddress(graphene.Mutation):
         partner.active = False
 
         # Trigger the change of fiscal position when the shipping address is modified
-        order.onchange_partner_shipping_id()
-        order._compute_tax_id()
+        order._compute_fiscal_position_id()
 
         return DeleteAddress(result=True)
 
@@ -283,8 +279,7 @@ class SelectAddress(graphene.Mutation):
             order.partner_shipping_id = partner.id
 
         # Trigger the change of fiscal position when the shipping address is modified
-        order.onchange_partner_shipping_id()
-        order._compute_tax_id()
+        order._compute_fiscal_position_id()
 
         return partner
 
