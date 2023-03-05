@@ -22,12 +22,10 @@
     ],
 
     # Views
-    'data': [
-        'data/mail_channel_data.xml'
-    ],
+    'data': [],
 
     # Technical
-    'installable': False,
+    'installable': True,
     'application': False,
     'auto_install': False,
 }

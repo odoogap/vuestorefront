@@ -8,8 +8,6 @@ from odoo.addons.payment_adyen.const import API_ENDPOINT_VERSIONS, CURRENCY_DECI
 # See https://docs.adyen.com/api-explorer/#/CheckoutService/v67/overview for Checkout API
 # See https://docs.adyen.com/api-explorer/#/Recurring/v49/overview for Recurring API
 API_ENDPOINT_VERSIONS.update({
-    '/payments/{}/captures': 67,    # Checkout API
-    '/payments/{}/cancels': 67,     # Checkout API
     '/payments/{}/reversals': 67,   # Checkout API
 })
 

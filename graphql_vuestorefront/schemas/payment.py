@@ -133,8 +133,8 @@ class PaymentMutation(graphene.ObjectType):
 #           Adyen Payment          #
 # -------------------------------- #
 
-class AdyenAcquirerInfoResult(graphene.ObjectType):
-    adyen_acquirer_info = generic.GenericScalar()
+class AdyenProviderInfoResult(graphene.ObjectType):
+    adyen_provider_info = generic.GenericScalar()
 
 
 class AdyenPaymentMethodsResult(graphene.ObjectType):
@@ -153,64 +153,64 @@ class AdyenPaymentDetailsResult(graphene.ObjectType):
     adyen_payment_details = generic.GenericScalar()
 
 
-class AdyenAcquirerInfo(graphene.Mutation):
+class AdyenProviderInfo(graphene.Mutation):
     class Arguments:
-        acquirer_id = graphene.Int(required=True)
+        provider_id = graphene.Int(required=True)
 
-    Output = AdyenAcquirerInfoResult
+    Output = AdyenProviderInfoResult
 
     @staticmethod
-    def mutate(self, info, acquirer_id):
+    def mutate(self, info, provider_id):
         env = info.context["env"]
-        PaymentAcquirer = env['payment.acquirer'].sudo()
+        PaymentProvider = env['payment.provider'].sudo()
         website = env['website'].get_current_website()
         request.website = website
         domain = [
-            ('id', '=', acquirer_id),
+            ('id', '=', provider_id),
             ('state', 'in', ['enabled', 'test']),
         ]
 
-        payment_acquirer_id = PaymentAcquirer.search(domain, limit=1)
-        if not payment_acquirer_id:
-            raise GraphQLError(_('Payment acquirer does not exist.'))
+        payment_provider_id = PaymentProvider.search(domain, limit=1)
+        if not payment_provider_id:
+            raise GraphQLError(_('Payment Provider does not exist.'))
 
-        if not payment_acquirer_id.provider == 'adyen':
-            raise GraphQLError(_('Payment acquirer with "adyen" Provider does not exist.'))
+        if not payment_provider_id.code == 'adyen':
+            raise GraphQLError(_('Payment Provider "Adyen" does not exist.'))
 
-        adyen_acquirer_info = AdyenController().adyen_acquirer_info(
-            acquirer_id=payment_acquirer_id.id
+        adyen_provider_info = AdyenController().adyen_provider_info(
+            provider_id=payment_provider_id.id
         )
 
-        return AdyenAcquirerInfoResult(adyen_acquirer_info=adyen_acquirer_info)
+        return AdyenProviderInfoResult(adyen_provider_info=adyen_provider_info)
 
 
 class AdyenPaymentMethods(graphene.Mutation):
     class Arguments:
-        acquirer_id = graphene.Int(required=True)
+        provider_id = graphene.Int(required=True)
 
     Output = AdyenPaymentMethodsResult
 
     @staticmethod
-    def mutate(self, info, acquirer_id):
+    def mutate(self, info, provider_id):
         env = info.context["env"]
-        PaymentAcquirer = env['payment.acquirer'].sudo()
+        PaymentProvider = env['payment.provider'].sudo()
         website = env['website'].get_current_website()
         request.website = website
         order = website.sale_get_order()
         domain = [
-            ('id', '=', acquirer_id),
+            ('id', '=', provider_id),
             ('state', 'in', ['enabled', 'test']),
         ]
 
-        payment_acquirer_id = PaymentAcquirer.search(domain, limit=1)
-        if not payment_acquirer_id:
-            raise GraphQLError(_('Payment acquirer does not exist.'))
+        payment_provider_id = PaymentProvider.search(domain, limit=1)
+        if not payment_provider_id:
+            raise GraphQLError(_('Payment Provider does not exist.'))
 
-        if not payment_acquirer_id.provider == 'adyen':
-            raise GraphQLError(_('Payment acquirer with "adyen" Provider does not exist.'))
+        if not payment_provider_id.code == 'adyen':
+            raise GraphQLError(_('Payment Provider "Adyen" does not exist.'))
 
         adyen_payment_methods = AdyenController().adyen_payment_methods(
-            acquirer_id=payment_acquirer_id.id,
+            provider_id=payment_provider_id.id,
             amount=order.amount_total,
             currency_id=order.currency_id.id,
             partner_id=order.partner_id.id
@@ -221,34 +221,34 @@ class AdyenPaymentMethods(graphene.Mutation):
 
 class AdyenTransaction(graphene.Mutation):
     class Arguments:
-        acquirer_id = graphene.Int(required=True)
+        provider_id = graphene.Int(required=True)
 
     Output = AdyenTransactionResult
 
     @staticmethod
-    def mutate(self, info, acquirer_id):
+    def mutate(self, info, provider_id):
         env = info.context["env"]
-        PaymentAcquirer = env['payment.acquirer'].sudo()
+        PaymentProvider = env['payment.provider'].sudo()
         PaymentTransaction = env['payment.transaction'].sudo()
         website = env['website'].get_current_website()
         request.website = website
         order = website.sale_get_order()
         domain = [
-            ('id', '=', acquirer_id),
+            ('id', '=', provider_id),
             ('state', 'in', ['enabled', 'test']),
         ]
 
-        payment_acquirer_id = PaymentAcquirer.search(domain, limit=1)
-        if not payment_acquirer_id:
-            raise GraphQLError(_('Payment acquirer does not exist.'))
+        payment_provider_id = PaymentProvider.search(domain, limit=1)
+        if not payment_provider_id:
+            raise GraphQLError(_('Payment Provider does not exist.'))
 
-        if not payment_acquirer_id.provider == 'adyen':
-            raise GraphQLError(_('Payment acquirer with "adyen" Provider does not exist.'))
+        if not payment_provider_id.code == 'adyen':
+            raise GraphQLError(_('Payment Provider "Adyen" does not exist.'))
 
         transaction = PaymentPortal().shop_payment_transaction(
             order_id=order.id,
             access_token=order.access_token,
-            payment_option_id=acquirer_id,
+            payment_option_id=provider_id,
             amount=order.amount_total,
             currency_id=order.currency_id.id,
             partner_id=order.partner_id.id,
@@ -267,7 +267,7 @@ class AdyenTransaction(graphene.Mutation):
 
 class AdyenPayments(graphene.Mutation):
     class Arguments:
-        acquirer_id = graphene.Int(required=True)
+        provider_id = graphene.Int(required=True)
         transaction_reference = graphene.String(required=True)
         access_token = graphene.String(required=True)
         payment_method = generic.GenericScalar(required=True, description='Return state.data.paymentMethod')
@@ -276,23 +276,23 @@ class AdyenPayments(graphene.Mutation):
     Output = AdyenPaymentsResult
 
     @staticmethod
-    def mutate(self, info, acquirer_id, transaction_reference, access_token, payment_method, browser_info):
+    def mutate(self, info, provider_id, transaction_reference, access_token, payment_method, browser_info):
         env = info.context["env"]
-        PaymentAcquirer = env['payment.acquirer'].sudo()
+        PaymentProvider = env['payment.provider'].sudo()
         PaymentTransaction = env['payment.transaction'].sudo()
         website = env['website'].get_current_website()
         request.website = website
         domain = [
-            ('id', '=', acquirer_id),
+            ('id', '=', provider_id),
             ('state', 'in', ['enabled', 'test']),
         ]
 
-        payment_acquirer_id = PaymentAcquirer.search(domain, limit=1)
-        if not payment_acquirer_id:
-            raise GraphQLError(_('Payment acquirer does not exist.'))
+        payment_provider_id = PaymentProvider.search(domain, limit=1)
+        if not payment_provider_id:
+            raise GraphQLError(_('Payment Provider does not exist.'))
 
-        if not payment_acquirer_id.provider == 'adyen':
-            raise GraphQLError(_('Payment acquirer with "adyen" Provider does not exist.'))
+        if not payment_provider_id.code == 'adyen':
+            raise GraphQLError(_('Payment Provider "Adyen" does not exist.'))
 
         transaction = PaymentTransaction.search([('reference', '=', transaction_reference)], limit=1)
         if not transaction:
@@ -306,7 +306,7 @@ class AdyenPayments(graphene.Mutation):
 
         # Create Payment
         adyen_payment = AdyenControllerInherit().adyen_payments(
-            acquirer_id=payment_acquirer_id.id,
+            provider_id=payment_provider_id.id,
             reference=transaction.reference,
             converted_amount=converted_amount,
             currency_id=transaction.currency_id.id,
@@ -321,30 +321,30 @@ class AdyenPayments(graphene.Mutation):
 
 class AdyenPaymentDetails(graphene.Mutation):
     class Arguments:
-        acquirer_id = graphene.Int(required=True)
+        provider_id = graphene.Int(required=True)
         transaction_reference = graphene.String(required=True)
         payment_details = generic.GenericScalar(required=True, description='Return state.data')
 
     Output = AdyenPaymentDetailsResult
 
     @staticmethod
-    def mutate(self, info, acquirer_id, transaction_reference, payment_details):
+    def mutate(self, info, provider_id, transaction_reference, payment_details):
         env = info.context["env"]
-        PaymentAcquirer = env['payment.acquirer'].sudo()
+        PaymentProvider = env['payment.provider'].sudo()
         PaymentTransaction = env['payment.transaction'].sudo()
         website = env['website'].get_current_website()
         request.website = website
         domain = [
-            ('id', '=', acquirer_id),
+            ('id', '=', provider_id),
             ('state', 'in', ['enabled', 'test']),
         ]
 
-        payment_acquirer_id = PaymentAcquirer.search(domain, limit=1)
-        if not payment_acquirer_id:
-            raise GraphQLError(_('Payment acquirer does not exist.'))
+        payment_provider_id = PaymentProvider.search(domain, limit=1)
+        if not payment_provider_id:
+            raise GraphQLError(_('Payment Provider does not exist.'))
 
-        if not payment_acquirer_id.provider == 'adyen':
-            raise GraphQLError(_('Payment acquirer with "adyen" Provider does not exist.'))
+        if not payment_provider_id.code == 'adyen':
+            raise GraphQLError(_('Payment Provider "Adyen" does not exist.'))
 
         transaction = PaymentTransaction.search([('reference', '=', transaction_reference)], limit=1)
         if not transaction:
@@ -352,7 +352,7 @@ class AdyenPaymentDetails(graphene.Mutation):
 
         # Submit the details
         adyen_payment_details = AdyenController().adyen_payment_details(
-            acquirer_id=payment_acquirer_id.id,
+            provider_id=payment_provider_id.id,
             reference=transaction.reference,
             payment_details=payment_details
         )
@@ -361,7 +361,7 @@ class AdyenPaymentDetails(graphene.Mutation):
 
 
 class AdyenPaymentMutation(graphene.ObjectType):
-    adyen_acquirer_info = AdyenAcquirerInfo.Field(description='Get Adyen Acquirer Info.')
+    adyen_provider_info = AdyenProviderInfo.Field(description='Get Adyen Provider Info.')
     adyen_payment_methods = AdyenPaymentMethods.Field(description='Get Adyen Payment Methods.')
     adyen_transaction = AdyenTransaction.Field(description='Create Adyen Transaction')
     adyen_payments = AdyenPayments.Field(description='Make Adyen Payment request.')

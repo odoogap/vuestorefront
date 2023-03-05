@@ -21,8 +21,7 @@
         'contacts',
         'crm',
         'theme_default',
-        # Todo: Missing to migrate
-        # 'payment_adyen_vsf',
+        'payment_adyen_vsf',
     ],
     'data': [
         'security/ir.model.access.csv',
