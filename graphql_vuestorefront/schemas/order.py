@@ -169,7 +169,7 @@ class ApplyGiftCard(graphene.Mutation):
         order._auto_apply_rewards()
         order.action_open_reward_wizard()
 
-        return ApplyCoupon(error=gift_card_status.get('error') or gift_card_status.get('not_found'))
+        return ApplyGiftCard(error=gift_card_status.get('error') or gift_card_status.get('not_found'))
 
 
 class OrderMutation(graphene.ObjectType):
