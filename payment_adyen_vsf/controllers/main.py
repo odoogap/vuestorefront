@@ -223,6 +223,7 @@ class AdyenControllerInherit(AdyenController):
 
                 # Case the transaction was created on vsf (Success flow)
                 if event_code == 'AUTHORISATION' and success and payment_transaction.created_on_vsf:
+                    request.session["__payment_monitored_tx_ids__"] = [payment_transaction.id]
                     # Confirm sale order
                     PaymentPostProcessing().poll_status()
 
