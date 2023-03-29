@@ -249,8 +249,8 @@ class ProductPublicCategory(models.Model):
 
         website = self.env['website'].get_current_website()
         base_url = website.domain or ''
-        if domain and domain[-1] == '/':
-            domain = domain[:-1]
+        if base_url and base_url[-1:] == '/':
+            base_url = base_url[:-1]
 
         json_ld = {
             "@context": "https://schema.org",
