@@ -203,6 +203,7 @@ class Category(OdooObjectType):
     childs = graphene.List(graphene.NonNull(lambda: Category))
     slug = graphene.String()
     products = graphene.List(graphene.NonNull(lambda: Product))
+    json_ld = generic.GenericScalar()
 
     def resolve_parent(self, info):
         return self.parent_id or None
@@ -215,6 +216,9 @@ class Category(OdooObjectType):
 
     def resolve_products(self, info):
         return self.product_tmpl_ids or None
+
+    def resolve_json_ld(self, info):
+        return self.get_json_ld()
 
 
 class AttributeValue(OdooObjectType):
@@ -311,6 +315,7 @@ class Product(OdooObjectType):
                                      description='Specific to Product Template')
     product_variants = graphene.List(graphene.NonNull(lambda: Product), description='Specific to Product Template')
     first_variant = graphene.Int(description='Specific to use in Product Template')
+    json_ld = generic.GenericScalar()
 
     def resolve_type_id(self, info):
         if self.type == 'product':
@@ -443,6 +448,9 @@ class Product(OdooObjectType):
 
     def resolve_first_variant(self, info):
         return self.product_variant_id or None
+
+    def resolve_json_ld(self, info):
+        return self.get_json_ld()
 
 
 class Payment(OdooObjectType):
