@@ -93,11 +93,11 @@
                             </div>
                         </div>
                     </div>
-                    <div class="col-12 col-lg-6 o_setting_box" id="vsf_image_resize_whitelist_settings">
+                    <div class="col-12 col-lg-6 o_setting_box" id="vsf_image_resize_limit_settings">
                         <div class="o_setting_right_pane">
-                            <label for="vsf_image_resize_whitelist"/>
+                            <label for="vsf_image_resize_limit"/>
                             <div class="content-group">
-                                <field name="vsf_image_resize_whitelist"/>
+                                <field name="vsf_image_resize_limit"/> px
                             </div>
                         </div>
                     </div>
