@@ -17,7 +17,7 @@
                         <group>
                             <field name="name"/>
                             <field name="url"/>
-                            <field name="website_id" options="{'no_create': True}" groups="website.group_multi_website"/>
+                            <field name="website_id" options="{'no_create': True}"/>
                         </group>
                         <group>
                             <field name="is_published"/>
