@@ -42,13 +42,12 @@ class VSFBinary(Binary):
                       filename_field='name', unique=None, filename=None, mimetype=None,
                       download=None, width=0, height=0, crop=False, access_token=None,
                       **kwargs):
-        """ Validate width and height against a whitelist """
+        """ Validate width and height """
         try:
             ICP = request.env['ir.config_parameter'].sudo()
-            resize_whitelist = safe_eval(ICP.get_param('vsf_image_resize_whitelist', '[]'))
-
-            if resize_whitelist and width and height and \
-                    (int(width) not in resize_whitelist or int(height) not in resize_whitelist):
+            vsf_image_resize_limit = int(ICP.get_param('vsf_image_resize_limit', 1920))
+            
+            if width > vsf_image_resize_limit or height > vsf_image_resize_limit:
                 return request.not_found()
         except Exception:
             return request.not_found()
