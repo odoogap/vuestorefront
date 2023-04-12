@@ -182,6 +182,8 @@ class Partner(OdooObjectType):
     parent_id = graphene.Field(lambda: Partner)
     image = graphene.String()
     vat = graphene.String()
+    company_name = graphene.String()
+    company_reg_no = graphene.String()
 
     def resolve_country(self, info):
         return self.country_id or None
@@ -207,6 +209,9 @@ class Partner(OdooObjectType):
 
     def resolve_image(self, info):
         return '/web/image/res.partner/{}/image_1920'.format(self.id)
+
+    def resolve_company_name(self, info):
+        return self.parent_id and self.parent_id.name or None
 
 
 class User(OdooObjectType):
