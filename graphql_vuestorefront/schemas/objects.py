@@ -74,7 +74,7 @@ def get_document_count_with_check_access(model, domain):
 def get_product_pricing_info(env, product):
     website = env['website'].get_current_website()
     pricelist = website.get_current_pricelist()
-    return product._get_combination_info_variant(pricelist=pricelist)
+    return product and product._get_combination_info_variant(pricelist=pricelist) or None
 
 
 def product_is_in_wishlist(env, product):
@@ -255,7 +255,7 @@ class Category(OdooObjectType):
         return self.product_tmpl_ids or None
 
     def resolve_json_ld(self, info):
-        return self.get_json_ld()
+        return self and self.get_json_ld() or None
 
 
 class AttributeValue(OdooObjectType):
@@ -514,7 +514,7 @@ class Product(OdooObjectType):
         return self.product_variant_id or None
 
     def resolve_json_ld(self, info):
-        return self.get_json_ld()
+        return self and self.get_json_ld() or None
 
 
 class Payment(OdooObjectType):
