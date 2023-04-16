@@ -213,6 +213,9 @@ class Partner(OdooObjectType):
     def resolve_company_name(self, info):
         return self.parent_id and self.parent_id.name or None
 
+    def resolve_company_reg_no(self, info):
+        return self.parent_id and self.parent_id.company_reg_no or None
+
 
 class User(OdooObjectType):
     id = graphene.Int(required=True)
