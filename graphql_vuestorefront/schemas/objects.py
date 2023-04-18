@@ -597,12 +597,16 @@ class ShippingMethod(OdooObjectType):
     id = graphene.Int(required=True)
     name = graphene.String()
     price = graphene.Float()
+    product = graphene.Field(lambda: Product)
 
     def resolve_price(self, info):
         website = self.env['website'].get_current_website()
         request.website = website
         order = website.sale_get_order(force_create=True)
         return self.rate_shipment(order)['price'] if self.free_over else self.fixed_price
+
+    def resolve_product(self, info):
+        return self.product_id or None
 
 
 class Order(OdooObjectType):
