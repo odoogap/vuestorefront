@@ -170,6 +170,8 @@ class AddAddress(graphene.Mutation):
         # Update order with the new shipping or invoice address
         if values['type'] == 'invoice':
             order.partner_invoice_id = partner.id
+            if order.partner_id.id == order.partner_shipping_id.id:
+                order.partner_shipping_id = partner.id
         elif values['type'] == 'delivery':
             order.partner_shipping_id = partner.id
 
@@ -279,6 +281,8 @@ class SelectAddress(graphene.Mutation):
         # Update order with the new shipping or invoice address
         if type.value == 'invoice':
             order.partner_invoice_id = partner.id
+            if order.partner_id.id == order.partner_shipping_id.id:
+                order.partner_shipping_id = partner.id
         elif type.value == 'delivery':
             order.partner_shipping_id = partner.id
 
