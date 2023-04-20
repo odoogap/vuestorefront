@@ -211,10 +211,10 @@ class Partner(OdooObjectType):
         return '/web/image/res.partner/{}/image_1920'.format(self.id)
 
     def resolve_company_name(self, info):
-        return self.parent_id and self.parent_id.name or None
+        return self.parent_id and self.parent_id.is_company and self.parent_id.name or None
 
     def resolve_company_reg_no(self, info):
-        return self.parent_id and self.parent_id.company_reg_no or None
+        return self.parent_id and self.parent_id.is_company and self.parent_id.company_reg_no or None
 
 
 class User(OdooObjectType):
