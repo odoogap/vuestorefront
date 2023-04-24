@@ -598,6 +598,8 @@ class ShippingMethod(OdooObjectType):
     name = graphene.String()
     price = graphene.Float()
     product = graphene.Field(lambda: Product)
+    image = graphene.String()
+    image_filename = graphene.String()
 
     def resolve_price(self, info):
         website = self.env['website'].get_current_website()
@@ -606,7 +608,13 @@ class ShippingMethod(OdooObjectType):
         return self.rate_shipment(order)['price'] if self.free_over else self.fixed_price
 
     def resolve_product(self, info):
-        return self.sudo().product_id or None
+        return self.product_id or None
+
+    def resolve_image(self, info):
+        return '/web/image/{}/{}/image_1920'.format(self._name, self.id)
+
+    def resolve_image_filename(self, info):
+        return slugify(self.product_id.name or '')
 
 
 class Order(OdooObjectType):
