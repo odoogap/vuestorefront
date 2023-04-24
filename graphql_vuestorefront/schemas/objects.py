@@ -606,7 +606,7 @@ class ShippingMethod(OdooObjectType):
         return self.rate_shipment(order)['price'] if self.free_over else self.fixed_price
 
     def resolve_product(self, info):
-        return self.product_id or None
+        return self.sudo().product_id or None
 
 
 class Order(OdooObjectType):
