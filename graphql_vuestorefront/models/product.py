@@ -103,9 +103,9 @@ class ProductTemplate(models.Model):
 
         discount = 0
         discount_perc = 0
-        if combination_info['has_discounted_price']:
+        if combination_info['has_discounted_price'] and product_id:
             product = self.env['product.product'].search([('id', '=', product_id)])
-            combination_info['price'] = pricelist.get_product_price(product, add_qty, self.env.user.partner_id)
+            combination_info['price'] = pricelist._get_product_price(product, add_qty)
             discount = combination_info['list_price'] - combination_info['price']
             discount_perc = combination_info['list_price'] and (discount * 100 / combination_info['list_price']) or 0
 
