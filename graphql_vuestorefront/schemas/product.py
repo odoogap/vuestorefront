@@ -48,6 +48,10 @@ def get_search_domain(env, search, **kwargs):
     if kwargs.get('category_slug', False):
         domains.append([('public_categ_slug_ids.website_slug', '=', kwargs['category_slug'])])
 
+    # Filter with "VSF Page Url"
+    if kwargs.get('vsf_page_url', False):
+        domains.append([('vsf_page_ids.url', '=', kwargs['vsf_page_url'])])
+
     # Filter With Name
     if kwargs.get('name', False):
         name = kwargs['name']
@@ -146,6 +150,7 @@ class ProductFilterInput(graphene.InputObjectType):
     ids = graphene.List(graphene.Int)
     category_id = graphene.List(graphene.Int)
     category_slug = graphene.String()
+    vsf_page_url = graphene.String()
     # Deprecated
     attribute_value_id = graphene.List(graphene.Int)
     attrib_values = graphene.List(graphene.String)

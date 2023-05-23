@@ -38,6 +38,8 @@ PaymentTransactionState = graphene.Enum('PaymentTransactionState', [('Draft', 'd
                                                                ('Authorized', 'authorized'), ('Confirmed', 'done'),
                                                                ('Canceled', 'cancel'), ('Error', 'error')])
 
+PageType = graphene.Enum('PageType', [('StaticPage', 'static'), ('ProductsPage', 'products')])
+
 
 class SortEnum(graphene.Enum):
     ASC = 'ASC'
@@ -243,6 +245,7 @@ class Category(OdooObjectType):
     childs = graphene.List(graphene.NonNull(lambda: Category))
     slug = graphene.String()
     products = graphene.List(graphene.NonNull(lambda: Product))
+    vsf_pages = graphene.List(graphene.NonNull(lambda: WebsitePage))
     json_ld = generic.GenericScalar()
 
     def resolve_parent(self, info):
@@ -256,6 +259,9 @@ class Category(OdooObjectType):
 
     def resolve_products(self, info):
         return self.product_tmpl_ids or None
+
+    def resolve_vsf_pages(self, info):
+        return self.vsf_page_ids or None
 
     def resolve_json_ld(self, info):
         return self and self.get_json_ld() or None
@@ -376,6 +382,7 @@ class Product(OdooObjectType):
                                      description='Specific to Product Template')
     product_variants = graphene.List(graphene.NonNull(lambda: Product), description='Specific to Product Template')
     first_variant = graphene.Int(description='Specific to use in Product Template')
+    vsf_pages = graphene.List(graphene.NonNull(lambda: WebsitePage))
     json_ld = generic.GenericScalar()
 
     def resolve_type_id(self, info):
@@ -515,6 +522,9 @@ class Product(OdooObjectType):
 
     def resolve_first_variant(self, info):
         return self.product_variant_id or None
+
+    def resolve_vsf_pages(self, info):
+        return self.vsf_page_ids or None
 
     def resolve_json_ld(self, info):
         return self and self.get_json_ld() or None
@@ -872,12 +882,18 @@ class WebsiteMenuImage(OdooObjectType):
 
 class WebsitePage(OdooObjectType):
     id = graphene.Int()
+    page_type = PageType()
     name = graphene.String()
     website_url = graphene.String()
     is_published = graphene.Boolean()
     publishing_date = graphene.String()
     website = graphene.Field(lambda: Website)
     content = graphene.String()
+    products = graphene.List(graphene.NonNull(lambda: Product))
+    categories = graphene.List(graphene.NonNull(lambda: Category))
+
+    def resolve_page_type(self, info):
+        return self.page_type or None
 
     def resolve_website_url(self, info):
         return self.url or None
@@ -887,6 +903,12 @@ class WebsitePage(OdooObjectType):
 
     def resolve_website(self, info):
         return self.website_id or None
+
+    def resolve_products(self, info):
+        return self.product_tmpl_ids or None
+
+    def resolve_categories(self, info):
+        return self.public_categ_ids or None
 
 
 # ----------------------------- #

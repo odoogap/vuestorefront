@@ -24,9 +24,15 @@ def get_search_order(sort):
     return sorting
 
 
+class PageTypeEnum(graphene.Enum):
+    Static = 'static'
+    Products = 'products'
+
+
 class WebsitePageFilterInput(graphene.InputObjectType):
     id = graphene.List(graphene.Int)
     website_url = graphene.String()
+    page_type = graphene.List(PageTypeEnum)
 
 
 class WebsitePageSortInput(graphene.InputObjectType):
@@ -92,6 +98,11 @@ class WebsitePageQuery(graphene.ObjectType):
 
         if filter.get('website_url'):
             domain += [('url', '=', filter['website_url'])]
+
+        if filter.get('page_type'):
+            page_types = [page_type.value for page_type in filter.get('page_type', [])]
+
+            domain += [('page_type', 'in', page_types)]
 
         # First offset is 0 but first page is 1
         if current_page > 1:

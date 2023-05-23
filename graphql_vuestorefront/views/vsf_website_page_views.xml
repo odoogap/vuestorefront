@@ -13,7 +13,13 @@
         <field name="arch" type="xml">
             <form string="Website Page Settings">
                 <sheet>
-                    <group>
+                    <group name="page_type">
+                        <group>
+                            <field name="page_type"/>
+                        </group>
+                        <group></group>
+                    </group>
+                    <group name="page_details">
                         <group>
                             <field name="name"/>
                             <field name="url"/>
@@ -21,14 +27,25 @@
                         </group>
                         <group>
                             <field name="is_published"/>
-                            <field name="date_publish"/>
+                            <field name="date_publish" attrs="{'invisible': [('page_type', '=', 'products')]}"/>
                         </group>
                     </group>
                     <notebook>
-                        <!-- Content Page -->
-                        <page name="content" string="Content">
+                        <!-- Page Type: Static -->
+                        <page name="content" string="Content" attrs="{'invisible': [('page_type', '=', 'products')]}">
                             <group name="content_info">
                                 <field name="content" widget="markdown" options="{'placeholder': 'Type content here'}" nolabel="1"/>
+                            </group>
+                        </page>
+                        <!-- Page Type: Products -->
+                        <page name="page_products" string="Products" attrs="{'invisible': [('page_type', '=', 'static')]}">
+                            <group name="group_products">
+                                <field name="product_tmpl_ids"/>
+                            </group>
+                        </page>
+                        <page name="page_categories" string="Categories" attrs="{'invisible': [('page_type', '=', 'static')]}">
+                            <group name="group_public_categories">
+                                <field name="public_categ_ids"/>
                             </group>
                         </page>
                     </notebook>
@@ -42,6 +59,7 @@
         <field name="model">vsf.website.page</field>
         <field name="arch" type="xml">
             <tree string="Website Pages" default_order="name" multi_edit="1">
+                <field name="page_type"/>
                 <field name="name"/>
                 <field name="url"/>
                 <field name="website_id" groups="website.group_multi_website"/>
@@ -62,6 +80,9 @@
                 <filter string="Published" name="published" domain="[('website_published', '=', True)]"/>
                 <filter string="Not published" name="not_published" domain="[('website_published', '=', False)]"/>
                 <separator/>
+                <group expand="1" string="Group By">
+                    <filter string="Page Type" name="group_by_page_type" context="{'group_by':'page_type'}"/>
+                </group>
             </search>
         </field>
     </record>
@@ -74,6 +95,7 @@
         <field name="view_mode">tree,form</field>
         <field name="view_id" ref="graphql_vuestorefront.vsf_website_pages_tree_view"/>
         <field name="target">current</field>
+        <field name="context">{'search_default_group_by_page_type': 1}</field>
     </record>
 
 </odoo>
