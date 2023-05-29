@@ -654,6 +654,7 @@ class Order(OdooObjectType):
     client_order_ref = graphene.String()
     invoice_status = InvoiceStatus()
     invoice_count = graphene.Int()
+    invoices_url = graphene.String()
     coupons = graphene.List(graphene.NonNull(lambda: Coupon))
 
     def resolve_partner(self, info):
@@ -693,6 +694,12 @@ class Order(OdooObjectType):
         if self.transaction_ids:
             return self.transaction_ids.sorted(key=lambda r: r.create_date, reverse=True)[0]
         return None
+
+    def resolve_invoices_url(self, info):
+        if self.invoice_ids and self.invoice_ids.ids:
+            return '/download/invoices/{}?access_token={}'.format(self.id, self.access_token)
+        else:
+            return None
 
     def resolve_coupons(self, info):
         return self.applied_coupon_ids or None
