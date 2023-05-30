@@ -12,7 +12,7 @@ _logger = logging.getLogger(__name__)
 
 class VSFWebsiteController(http.Controller):
 
-    @http.route(['/download/invoices/<int:order_id>/'], type='http', auth="none", cors="*", website=False)
+    @http.route(['/download/invoices/<int:order_id>'], type='http', auth="none", cors="*", website=False)
     def download_order_invoices_pdf(self, order_id, access_token=False):
         """ Download the Invoices Pdf """
         order = request.env['sale.order'].sudo().search([('id', '=', order_id)])
