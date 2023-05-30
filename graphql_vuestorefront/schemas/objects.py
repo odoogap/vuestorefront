@@ -2,6 +2,8 @@
 # Copyright 2022 ODOOGAP/PROMPTEQUATION LDA
 # License LGPL-3.0 or later (http://www.gnu.org/licenses/lgpl).
 
+import uuid
+
 import graphene
 from graphene.types import generic
 from graphql import GraphQLError
@@ -697,6 +699,8 @@ class Order(OdooObjectType):
 
     def resolve_invoices_url(self, info):
         if self.invoice_ids and self.invoice_ids.ids:
+            if not self.access_token:
+                self.access_token = uuid.uuid4()
             return '/download/invoices/{}?access_token={}'.format(self.id, self.access_token)
         else:
             return None
