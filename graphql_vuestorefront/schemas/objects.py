@@ -129,6 +129,15 @@ class Country(OdooObjectType):
         return self.state_ids or None
 
 
+class Pricelist(OdooObjectType):
+    id = graphene.Int()
+    name = graphene.String()
+    currency = graphene.Field(lambda: Currency)
+
+    def resolve_currency(self, info):
+        return self.currency_id or None
+
+
 class Partner(OdooObjectType):
     id = graphene.Int(required=True)
     name = graphene.String()
@@ -150,6 +159,8 @@ class Partner(OdooObjectType):
     signup_valid = graphene.String()
     parent_id = graphene.Field(lambda: Partner)
     image = graphene.String()
+    public_pricelist = graphene.Field(lambda: Pricelist)
+    current_pricelist = graphene.Field(lambda: Pricelist)
 
     def resolve_country(self, info):
         return self.country_id or None
@@ -175,6 +186,15 @@ class Partner(OdooObjectType):
 
     def resolve_image(self, info):
         return '/web/image/res.partner/{}/image_1920'.format(self.id)
+
+    def resolve_public_pricelist(self, info):
+        website = self.env['website'].get_current_website()
+        partner = website.user_id.partner_id
+        return partner.last_website_so_id.pricelist_id or partner.property_product_pricelist
+
+    def resolve_current_pricelist(self, info):
+        website = self.env['website'].get_current_website()
+        return website.get_current_pricelist()
 
 
 class User(OdooObjectType):
