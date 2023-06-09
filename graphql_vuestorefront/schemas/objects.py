@@ -334,7 +334,7 @@ class Product(OdooObjectType):
     attribute_values = graphene.List(graphene.NonNull(lambda: AttributeValue),
                                      description='Specific to Product Template')
     product_variants = graphene.List(graphene.NonNull(lambda: Product), description='Specific to Product Template')
-    first_variant = graphene.Int(description='Specific to use in Product Template')
+    first_variant = graphene.Field(lambda: Product, description='Specific to use in Product Template')
     json_ld = generic.GenericScalar()
 
     def resolve_type_id(self, info):
