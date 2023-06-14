@@ -22,7 +22,7 @@
                     <group name="page_details">
                         <group>
                             <field name="name"/>
-                            <field name="url"/>
+                            <field name="url" required="1"/>
                             <field name="website_id" options="{'no_create': True}"/>
                         </group>
                         <group>

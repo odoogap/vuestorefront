@@ -31,7 +31,7 @@ class PageTypeEnum(graphene.Enum):
 
 class WebsitePageFilterInput(graphene.InputObjectType):
     id = graphene.List(graphene.Int)
-    website_url = graphene.String()
+    page_slug = graphene.String()
     page_type = graphene.List(PageTypeEnum)
 
 
@@ -53,7 +53,7 @@ class WebsitePageQuery(graphene.ObjectType):
     website_page = graphene.Field(
         WebsitePage,
         id=graphene.Int(),
-        website_url=graphene.String(default_value=None),
+        page_slug=graphene.String(default_value=None),
     )
     website_pages = graphene.Field(
         WebsitePages,
@@ -65,7 +65,7 @@ class WebsitePageQuery(graphene.ObjectType):
     )
 
     @staticmethod
-    def resolve_website_page(self, info, id=None, website_url=None):
+    def resolve_website_page(self, info, id=None, page_slug=None):
         env = info.context['env']
         WebsitePage = env['vsf.website.page'].sudo()
         domain = env['website'].get_current_website().website_domain()
@@ -73,8 +73,8 @@ class WebsitePageQuery(graphene.ObjectType):
         if id:
             domain += [('id', '=', id)]
             website_page = WebsitePage.search(domain, limit=1)
-        elif website_url:
-            domain += [('url', '=', website_url)]
+        elif page_slug:
+            domain += [('url', '=', page_slug)]
             website_page = WebsitePage.search(domain, limit=1)
         else:
             website_page = WebsitePage
@@ -87,7 +87,7 @@ class WebsitePageQuery(graphene.ObjectType):
         website = env['website'].get_current_website()
         request.website = website
         order = get_search_order(sort)
-        domain = [('website_id', '=', website.id), ('is_published', '=', True)]
+        domain = [('website_id', 'in', (False, website.id)), ('is_published', '=', True)]
 
         if search:
             for srch in search.split(" "):
@@ -96,8 +96,8 @@ class WebsitePageQuery(graphene.ObjectType):
         if filter.get('id'):
             domain += [('id', 'in', filter['id'])]
 
-        if filter.get('website_url'):
-            domain += [('url', '=', filter['website_url'])]
+        if filter.get('page_slug'):
+            domain += [('url', '=', filter['page_slug'])]
 
         if filter.get('page_type'):
             page_types = [page_type.value for page_type in filter.get('page_type', [])]
