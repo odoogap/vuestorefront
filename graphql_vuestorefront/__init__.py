@@ -4,3 +4,7 @@
 
 from . import controllers
 from . import models
+from .hooks import (
+    pre_init_hook_login_check,
+    post_init_hook_login_convert
+)
