@@ -27,6 +27,9 @@ class Login(graphene.Mutation):
         website = env['website'].get_current_website()
         request.website = website
 
+        # Set email in lowercase
+        email = email.lower()
+
         try:
             uid = request.session.authenticate(request.session.db, email, password)
             # Subscribe Newsletter
@@ -64,6 +67,9 @@ class Register(graphene.Mutation):
         website = env['website'].get_current_website()
         request.website = website
 
+        # Set email in lowercase
+        email = email.lower()
+
         data = {
             'name': name,
             'login': email,
@@ -93,6 +99,10 @@ class ResetPassword(graphene.Mutation):
         env = info.context['env']
         ResUsers = env['res.users'].sudo()
         create_user = info.context.get('create_user', False)
+
+        # Set email in lowercase
+        email = email.lower()
+
         user = ResUsers.search([('login', '=', email)])
         if not user:
             user = ResUsers.search([('email', '=', email)])
