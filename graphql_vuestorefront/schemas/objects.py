@@ -74,7 +74,7 @@ def get_document_count_with_check_access(model, domain):
 def get_product_pricing_info(env, product):
     website = env['website'].get_current_website()
     pricelist = website.get_current_pricelist()
-    return product._get_combination_info_variant(pricelist=pricelist)
+    return product and product._get_combination_info_variant(pricelist=pricelist) or None
 
 
 def product_is_in_wishlist(env, product):
@@ -160,6 +160,15 @@ class Company(OdooObjectType):
         return '/web/image/res.company/{}/image_1920'.format(self.id)
 
 
+class Pricelist(OdooObjectType):
+    id = graphene.Int()
+    name = graphene.String()
+    currency = graphene.Field(lambda: Currency)
+
+    def resolve_currency(self, info):
+        return self.currency_id or None
+
+
 class Partner(OdooObjectType):
     id = graphene.Int(required=True)
     name = graphene.String()
@@ -182,6 +191,8 @@ class Partner(OdooObjectType):
     parent_id = graphene.Field(lambda: Partner)
     image = graphene.String()
     vat = graphene.String()
+    public_pricelist = graphene.Field(lambda: Pricelist)
+    current_pricelist = graphene.Field(lambda: Pricelist)
 
     def resolve_country(self, info):
         return self.country_id or None
@@ -207,6 +218,15 @@ class Partner(OdooObjectType):
 
     def resolve_image(self, info):
         return '/web/image/res.partner/{}/image_1920'.format(self.id)
+
+    def resolve_public_pricelist(self, info):
+        website = self.env['website'].get_current_website()
+        partner = website.user_id.partner_id
+        return partner.last_website_so_id.pricelist_id or partner.property_product_pricelist
+
+    def resolve_current_pricelist(self, info):
+        website = self.env['website'].get_current_website()
+        return website.get_current_pricelist()
 
 
 class User(OdooObjectType):
@@ -250,7 +270,7 @@ class Category(OdooObjectType):
         return self.product_tmpl_ids or None
 
     def resolve_json_ld(self, info):
-        return self.get_json_ld()
+        return self and self.get_json_ld() or None
 
 
 class AttributeValue(OdooObjectType):
@@ -367,7 +387,7 @@ class Product(OdooObjectType):
     attribute_values = graphene.List(graphene.NonNull(lambda: AttributeValue),
                                      description='Specific to Product Template')
     product_variants = graphene.List(graphene.NonNull(lambda: Product), description='Specific to Product Template')
-    first_variant = graphene.Int(description='Specific to use in Product Template')
+    first_variant = graphene.Field((lambda: Product), description='Specific to use in Product Template')
     json_ld = generic.GenericScalar()
 
     def resolve_type_id(self, info):
@@ -509,7 +529,7 @@ class Product(OdooObjectType):
         return self.product_variant_id or None
 
     def resolve_json_ld(self, info):
-        return self.get_json_ld()
+        return self and self.get_json_ld() or None
 
 
 class Payment(OdooObjectType):
@@ -593,12 +613,16 @@ class ShippingMethod(OdooObjectType):
     id = graphene.Int(required=True)
     name = graphene.String()
     price = graphene.Float()
+    product = graphene.Field(lambda: Product)
 
     def resolve_price(self, info):
         website = self.env['website'].get_current_website()
         request.website = website
         order = website.sale_get_order(force_create=True)
         return self.rate_shipment(order)['price'] if self.free_over else self.fixed_price
+
+    def resolve_product(self, info):
+        return self.product_id or None
 
 
 class Order(OdooObjectType):
