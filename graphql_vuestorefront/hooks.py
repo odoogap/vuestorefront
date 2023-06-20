@@ -2,21 +2,22 @@
 # Copyright 2023 ODOOGAP/PROMPTEQUATION LDA
 # License LGPL-3.0 or later (http://www.gnu.org/licenses/lgpl).
 
-from odoo import _
+from odoo import api, SUPERUSER_ID, _
 from odoo.exceptions import ValidationError
 
 
 def pre_init_hook_login_check(cr):
     """
-    This hook will look to see if any conflicting logins exist before the module is installed
+    This hook will see if exists any conflict between Portal logins, before the module is installed
     """
-    with cr.savepoint():
-        users = []
-        cr.execute("SELECT login FROM res_users")
-        for user in cr.fetchall():
-            login = user[0].lower()
-            if login not in users:
-                users.append(login)
+    env = api.Environment(cr, SUPERUSER_ID, {})
+    check_users = []
+    users = env['res.users'].search([])
+    for user in users:
+        if user.login and user.has_group('base.group_portal'):
+            login = user.login.lower()
+            if login not in check_users:
+                check_users.append(login)
             else:
                 raise ValidationError(
                     _("Conflicting user logins exist for `%s`", login)
@@ -25,7 +26,10 @@ def pre_init_hook_login_check(cr):
 
 def post_init_hook_login_convert(cr, registry):
     """
-    After the module is installed, set all logins to lowercase
+    After the module is installed, set Portal Logins to lowercase
     """
-    with cr.savepoint():
-        cr.execute("UPDATE res_users SET login=lower(login)")
+    env = api.Environment(cr, SUPERUSER_ID, {})
+    users = env['res.users'].search([])
+    for user in users:
+        if user.login and user.has_group('base.group_portal'):
+            user.login = user.login.lower()

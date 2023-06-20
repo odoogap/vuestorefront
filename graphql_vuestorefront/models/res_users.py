@@ -52,16 +52,3 @@ class ResUsers(models.Model):
             with self.env.cr.savepoint():
                 template.with_context(lang=user.lang, signup_url=signup_url).send_mail(user.id, force_send=not create_mode, raise_exception=True)
             _logger.info("Password reset email sent for user <%s> to <%s>", user.login, user.email)
-
-    @api.model_create_multi
-    def create(self, vals_list):
-        """Override to set login in lowercase."""
-        for val in vals_list:
-            val["login"] = val.get("login", "").lower()
-        return super(ResUsers, self).create(vals_list)
-
-    def write(self, vals):
-        """Override to set login in lowercase."""
-        if vals.get("login"):
-            vals["login"] = vals["login"].lower()
-        return super(ResUsers, self).write(vals)
