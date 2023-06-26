@@ -157,7 +157,7 @@ class AddAddress(graphene.Mutation):
         }
 
         # Check public user
-        if partner_id == website.user_id.partner_id.id:
+        if partner_id == website.user_id.sudo().partner_id.id:
             # Create main contact
             values['type'] = 'contact'
             partner_id = ResPartner.create(values).id
