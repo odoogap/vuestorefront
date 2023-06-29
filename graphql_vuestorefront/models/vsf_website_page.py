@@ -24,14 +24,10 @@ class VsfWebsitePage(models.Model):
     content = fields.Text(string='Content', default=_default_content, translate=True)
 
     page_type = fields.Selection(selection=[
-        ('static', 'Static Page'), ('products', 'Products Page')
+        ('static', 'Static Page'), ('products', 'Campaign Page')
     ], string='Page Type', default='static', required=True)
 
     product_tmpl_ids = fields.Many2many(
         'product.template', 'product_template_vsf_website_page_rel', 'vsf_page_id', 'product_tmpl_id',
         string='Product Templates'
-    )
-    public_categ_ids = fields.Many2many(
-        'product.public.category', 'product_public_category_vsf_website_page_rel', 'vsf_page_id', 'public_categ_id',
-        string='Public Categories'
     )

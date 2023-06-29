@@ -40,12 +40,7 @@
                         <!-- Page Type: Products -->
                         <page name="page_products" string="Products" attrs="{'invisible': [('page_type', '=', 'static')]}">
                             <group name="group_products">
-                                <field name="product_tmpl_ids"/>
-                            </group>
-                        </page>
-                        <page name="page_categories" string="Categories" attrs="{'invisible': [('page_type', '=', 'static')]}">
-                            <group name="group_public_categories">
-                                <field name="public_categ_ids"/>
+                                <field name="product_tmpl_ids" nolabel="1"/>
                             </group>
                         </page>
                     </notebook>

@@ -25,7 +25,6 @@ def get_search_order(sort):
 class CategoryFilterInput(graphene.InputObjectType):
     id = graphene.List(graphene.Int)
     parent = graphene.Boolean()
-    vsf_page_url = graphene.String()
 
 
 class CategorySortInput(graphene.InputObjectType):
@@ -91,10 +90,6 @@ class CategoryQuery(graphene.ObjectType):
         # Parent if is a Top Category
         if filter.get('parent'):
             domain += [('parent_id', '=', False)]
-
-        # Filter with "VSF Page Url"
-        if filter.get('vsf_page_url', False):
-            domain += ([('vsf_page_ids.url', '=', filter['vsf_page_url'])])
 
         # First offset is 0 but first page is 1
         if current_page > 1:

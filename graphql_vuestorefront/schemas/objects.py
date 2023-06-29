@@ -267,7 +267,6 @@ class Category(OdooObjectType):
     childs = graphene.List(graphene.NonNull(lambda: Category))
     slug = graphene.String()
     products = graphene.List(graphene.NonNull(lambda: Product))
-    vsf_pages = graphene.List(graphene.NonNull(lambda: WebsitePage))
     json_ld = generic.GenericScalar()
 
     def resolve_parent(self, info):
@@ -281,9 +280,6 @@ class Category(OdooObjectType):
 
     def resolve_products(self, info):
         return self.product_tmpl_ids or None
-
-    def resolve_vsf_pages(self, info):
-        return self.vsf_page_ids or None
 
     def resolve_json_ld(self, info):
         return self and self.get_json_ld() or None
@@ -921,7 +917,6 @@ class WebsitePage(OdooObjectType):
     website = graphene.Field(lambda: Website)
     content = graphene.String()
     products = graphene.List(graphene.NonNull(lambda: Product))
-    categories = graphene.List(graphene.NonNull(lambda: Category))
 
     def resolve_page_type(self, info):
         return self.page_type or None
@@ -937,9 +932,6 @@ class WebsitePage(OdooObjectType):
 
     def resolve_products(self, info):
         return self.product_tmpl_ids or None
-
-    def resolve_categories(self, info):
-        return self.public_categ_ids or None
 
 
 # ----------------------------- #

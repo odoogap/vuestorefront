@@ -220,10 +220,6 @@ class ProductPublicCategory(models.Model):
                 raise ValidationError(_('Slug is already in use: {}'.format(category.website_slug)))
 
     website_slug = fields.Char('Website Slug', translate=True, copy=False)
-    vsf_page_ids = fields.Many2many(
-        'vsf.website.page', 'product_public_category_vsf_website_page_rel', 'public_categ_id', 'vsf_page_id',
-        string='VSF Website Pages'
-    )
     json_ld = fields.Char('JSON-LD')
 
     @api.model
