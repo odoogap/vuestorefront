@@ -87,6 +87,14 @@ def product_is_in_wishlist(env, product):
     return product._is_in_wishlist()
 
 
+def get_parent_company(partner):
+    if partner.parent_id:
+        return get_parent_company(partner.parent_id)
+    if partner.is_company:
+        return partner
+    return None
+
+
 # --------------------- #
 #       Objects         #
 # --------------------- #
@@ -226,10 +234,16 @@ class Partner(OdooObjectType):
         return '/web/image/res.partner/{}/image_1920'.format(self.id)
 
     def resolve_company_name(self, info):
-        return self.parent_id and self.parent_id.is_company and self.parent_id.name or None
+        company = get_parent_company(self)
+        if company:
+            return company.name
+        return None
 
     def resolve_company_reg_no(self, info):
-        return self.parent_id and self.parent_id.is_company and self.parent_id.company_reg_no or None
+        company = get_parent_company(self)
+        if company:
+            return company.company_reg_no
+        return None
 
     def resolve_public_pricelist(self, info):
         website = self.env['website'].get_current_website()
