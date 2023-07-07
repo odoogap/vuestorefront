@@ -13,6 +13,7 @@ from odoo.addons.graphql_vuestorefront.schemas.objects import WishlistItem
 
 class WishlistItems(graphene.Interface):
     wishlist_items = graphene.List(WishlistItem)
+    total_count = graphene.Int(required=True)
 
 
 class WishlistData(graphene.ObjectType):
@@ -32,7 +33,8 @@ class WishlistQuery(graphene.ObjectType):
         website = env['website'].get_current_website()
         request.website = website
         wishlist_items = env['product.wishlist'].current()
-        return WishlistData(wishlist_items=wishlist_items)
+        total_count = len(wishlist_items)
+        return WishlistData(wishlist_items=wishlist_items, total_count=total_count)
 
 
 class WishlistAddItem(graphene.Mutation):
@@ -54,7 +56,8 @@ class WishlistAddItem(graphene.Mutation):
         WebsiteSaleWishlist().add_to_wishlist(product_id)
 
         wishlist_items = env['product.wishlist'].current()
-        return WishlistData(wishlist_items=wishlist_items)
+        total_count = len(wishlist_items)
+        return WishlistData(wishlist_items=wishlist_items, total_count=total_count)
 
 
 class WishlistRemoveItem(graphene.Mutation):
@@ -75,7 +78,8 @@ class WishlistRemoveItem(graphene.Mutation):
         request.website = website
         wishlist_items = env['product.wishlist'].current()
 
-        return WishlistData(wishlist_items=wishlist_items)
+        total_count = len(wishlist_items)
+        return WishlistData(wishlist_items=wishlist_items, total_count=total_count)
 
 
 class WishlistMutation(graphene.ObjectType):
