@@ -688,6 +688,7 @@ class Order(OdooObjectType):
     invoice_count = graphene.Int()
     invoices_url = graphene.String()
     coupons = graphene.List(graphene.NonNull(lambda: Coupon))
+    cart_quantity = graphene.Int()
 
     def resolve_partner(self, info):
         return self.partner_id or None
@@ -747,6 +748,9 @@ class Order(OdooObjectType):
 
     def resolve_amount_gift_cards(self, info):
         return sum(self.order_line.filtered(lambda l: l.gift_card_id).mapped('price_total'))
+
+    def resolve_cart_quantity(self, info):
+        return self.cart_quantity or None
 
 
 class InvoiceLine(OdooObjectType):
