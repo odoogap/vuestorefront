@@ -44,7 +44,17 @@ class UpdateMyAccount(graphene.Mutation):
 
     @staticmethod
     def mutate(self, info, myaccount):
-        partner = request.env.user.partner_id
+        env = info.context["env"]
+        website = env['website'].get_current_website()
+        request.website = website
+        user = request.env.user
+        website_user = website.user_id
+
+        # Prevent "Public User" to be Updated
+        if user.id == website_user.id:
+            raise GraphQLError(_('Partner cannot be updated.'))
+
+        partner = user.partner_id
         if partner:
             partner.write(myaccount)
         else:
