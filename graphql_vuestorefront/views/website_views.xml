@@ -40,6 +40,9 @@
             <xpath expr="//field[@name='new_window']" position="attributes">
                 <attribute name="invisible">1</attribute>
             </xpath>
+            <xpath expr="//field[@name='website_id']" position="replace">
+                <field name="website_id" options="{'no_create': True}"/>
+            </xpath>
             <xpath expr="//field[@name='child_id']" position="after">
                 <label for="menu_image_ids" string="Images"/>
                 <field name="menu_image_ids">
@@ -84,6 +87,9 @@
             </xpath>
             <xpath expr="//field[@name='new_window']" position="attributes">
                 <attribute name="invisible">1</attribute>
+            </xpath>
+            <xpath expr="//field[@name='website_id']" position="replace">
+                <field name="website_id" options="{'no_create': True}"/>
             </xpath>
             <xpath expr="//field[@name='group_ids']" position="attributes">
                 <attribute name="invisible">1</attribute>
