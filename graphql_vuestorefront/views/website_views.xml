@@ -21,4 +21,26 @@
         </field>
     </record>
 
+    <record id="view_website_menu_form" model="ir.ui.view">
+        <field name="name">website.menu.form</field>
+        <field name="model">website.menu</field>
+        <field name="inherit_id" ref="website.website_menus_form_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='website_id']" position="replace">
+                <field name="website_id" options="{'no_create': True}"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="menu_tree" model="ir.ui.view">
+        <field name="name">website.menu.tree</field>
+        <field name="model">website.menu</field>
+        <field name="inherit_id" ref="website.menu_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='website_id']" position="replace">
+                <field name="website_id" options="{'no_create': True}"/>
+            </xpath>
+        </field>
+    </record>
+
 </odoo>
