@@ -848,9 +848,13 @@ class Website(OdooObjectType):
     id = graphene.Int()
     name = graphene.String()
     company = graphene.Field(lambda: Company)
+    public_user = graphene.Field(lambda: User)
 
     def resolve_company(self, info):
         return self.company_id or None
+
+    def resolve_public_user(self, info):
+        return self.user_id or None
 
 
 class WebsiteMenu(OdooObjectType):
