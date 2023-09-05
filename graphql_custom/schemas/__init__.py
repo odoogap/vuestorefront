@@ -13,3 +13,6 @@ from . import order
 from . import shop
 from . import payment
 from . import sign
+from . import user_profile
+from . import wishlist
+from . import website
