@@ -11,16 +11,17 @@ from odoo.addons.graphql_vuestorefront.schema import (
 from odoo.addons.graphql_custom.schemas import (
     address,
     category,
+    product,
     contact_us,
     country,
     invoice,
     mailing_list,
-    # product,
-    # order,
+    order,
+    shop,
+    payment,
+    sign,
     # wishlist,
-    # shop,
     # store,
-    # payment,
     # website,
     # website_page,
 )
@@ -30,10 +31,14 @@ class Query(
     VSFQuery,
     address.AddressQuery,
     category.CategoryQuery,
+    product.ProductQuery,
     country.CountryQuery,
     invoice.InvoiceQuery,
     mailing_list.MailingContactQuery,
     mailing_list.MailingListQuery,
+    order.OrderQuery,
+    shop.ShoppingCartQuery,
+    payment.PaymentQuery,
 ):
     pass
 
@@ -43,6 +48,11 @@ class Mutation(
     address.AddressMutation,
     contact_us.ContactUsMutation,
     mailing_list.NewsletterSubscribeMutation,
+    order.OrderMutation,
+    shop.ShopMutation,
+    payment.PaymentMutation,
+    payment.AdyenPaymentMutation,
+    sign.SignMutation,
 ):
     pass
 
@@ -50,6 +60,7 @@ class Mutation(
 schema = graphene.Schema(
     query=Query,
     mutation=Mutation,
-    types=[category.CategoryList, country.CountryList, invoice.InvoiceList, mailing_list.MailingContactList,
-           mailing_list.MailingListList]
+    types=[category.CategoryList, product.ProductList, product.ProductVariantData, country.CountryList,
+           invoice.InvoiceList, mailing_list.MailingContactList, mailing_list.MailingListList, order.OrderList,
+           shop.CartData, ]
 )

@@ -42,7 +42,7 @@ class CategoryQuery(VSFCategoryQuery):
 
     @staticmethod
     def resolve_category(self, info, id=None, slug=None):
-        res = VSFCategoryQuery.resolve_category(self, info, id, slug)
+        res = VSFCategoryQuery.resolve_category(self, info, id=id, slug=slug)
         return res
 
     @staticmethod
