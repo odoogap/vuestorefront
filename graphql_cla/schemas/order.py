@@ -14,9 +14,9 @@ from odoo.addons.graphql_vuestorefront.schemas.order import (
     ApplyGiftCard as VSFApplyGiftCard,
     OrderMutation as VSFOrderMutation,
 )
-from odoo.addons.graphql_custom.schemas.objects import (
-    CustomOrder as Order,
-    CustomShippingMethod as ShippingMethod,
+from odoo.addons.graphql_cla.schemas.objects import (
+    ClaOrder as Order,
+    ClaShippingMethod as ShippingMethod,
 )
 
 

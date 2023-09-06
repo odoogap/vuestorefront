@@ -3,10 +3,10 @@
 # License LGPL-3.0 or later (http://www.gnu.org/licenses/lgpl).
 
 {
-    'name': 'Custom VSF Api',
+    'name': 'CLA VSF Api',
     'version': '16.0.1.0.0',
-    'summary': 'Custom API',
-    'description': """Custom Graphql API""",
+    'summary': 'CLA API',
+    'description': """CLA Graphql API""",
     'category': 'Website',
     'license': 'LGPL-3',
     'author': 'ERPGap',

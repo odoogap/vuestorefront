@@ -20,9 +20,9 @@ from odoo.addons.graphql_vuestorefront.schemas.mailing_list import (
     UserAddMultipleMailing as VSFUserAddMultipleMailing,
     NewsletterSubscribeMutation as VSFNewsletterSubscribeMutation,
 )
-from odoo.addons.graphql_custom.schemas.objects import (
-    CustomMailingContact as MailingContact,
-    CustomMailingList as MailingList,
+from odoo.addons.graphql_cla.schemas.objects import (
+    ClaMailingContact as MailingContact,
+    ClaMailingList as MailingList,
 )
 
 

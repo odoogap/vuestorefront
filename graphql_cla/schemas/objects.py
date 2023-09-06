@@ -54,26 +54,26 @@ from odoo.addons.graphql_vuestorefront.schemas.objects import (
 #       Objects         #
 # --------------------- #
 
-class CustomLead(VSFLead):
+class ClaLead(VSFLead):
     id = graphene.Int(required=True)
 
 
-class CustomState(VSFState):
+class ClaState(VSFState):
     id = graphene.Int(required=True)
 
 
-class CustomCountry(VSFCountry):
+class ClaCountry(VSFCountry):
     id = graphene.Int(required=True)
-    states = graphene.List(graphene.NonNull(lambda: CustomState))
+    states = graphene.List(graphene.NonNull(lambda: ClaState))
 
     def resolve_states(self, info):
         return self.state_ids or None
 
 
-class CustomCompany(VSFCompany):
+class ClaCompany(VSFCompany):
     id = graphene.Int(required=True)
-    country = graphene.Field(lambda: CustomCountry)
-    state = graphene.Field(lambda: CustomState)
+    country = graphene.Field(lambda: ClaCountry)
+    state = graphene.Field(lambda: ClaState)
 
     def resolve_country(self, info):
         return self.country_id or None
@@ -82,24 +82,24 @@ class CustomCompany(VSFCompany):
         return self.state_id or None
 
 
-class CustomPricelist(VSFPricelist):
+class ClaPricelist(VSFPricelist):
     id = graphene.Int()
-    currency = graphene.Field(lambda: CustomCurrency)
+    currency = graphene.Field(lambda: ClaCurrency)
 
     def resolve_currency(self, info):
         return self.currency_id or None
 
 
-class CustomPartner(VSFPartner):
+class ClaPartner(VSFPartner):
     id = graphene.Int(required=True)
-    country = graphene.Field(lambda: CustomCountry)
-    state = graphene.Field(lambda: CustomState)
-    billing_address = graphene.Field(lambda: CustomPartner)
-    company = graphene.Field(lambda: CustomPartner)
-    contacts = graphene.List(graphene.NonNull(lambda: CustomPartner))
-    parent_id = graphene.Field(lambda: CustomPartner)
-    public_pricelist = graphene.Field(lambda: CustomPricelist)
-    current_pricelist = graphene.Field(lambda: CustomPricelist)
+    country = graphene.Field(lambda: ClaCountry)
+    state = graphene.Field(lambda: ClaState)
+    billing_address = graphene.Field(lambda: ClaPartner)
+    company = graphene.Field(lambda: ClaPartner)
+    contacts = graphene.List(graphene.NonNull(lambda: ClaPartner))
+    parent_id = graphene.Field(lambda: ClaPartner)
+    public_pricelist = graphene.Field(lambda: ClaPricelist)
+    current_pricelist = graphene.Field(lambda: ClaPricelist)
 
     def resolve_country(self, info):
         return self.country_id or None
@@ -130,23 +130,23 @@ class CustomPartner(VSFPartner):
         return website.get_current_pricelist()
 
 
-class CustomUser(VSFUser):
+class ClaUser(VSFUser):
     id = graphene.Int(required=True)
-    partner = graphene.Field(lambda: CustomPartner)
+    partner = graphene.Field(lambda: ClaPartner)
 
     def resolve_partner(self, info):
         return self.partner_id or None
 
 
-class CustomCurrency(VSFCurrency):
+class ClaCurrency(VSFCurrency):
     id = graphene.Int(required=True)
 
 
-class CustomCategory(VSFCategory):
+class ClaCategory(VSFCategory):
     id = graphene.Int(required=True)
-    parent = graphene.Field(lambda: CustomCategory)
-    childs = graphene.List(graphene.NonNull(lambda: CustomCategory))
-    products = graphene.List(graphene.NonNull(lambda: CustomProduct))
+    parent = graphene.Field(lambda: ClaCategory)
+    childs = graphene.List(graphene.NonNull(lambda: ClaCategory))
+    products = graphene.List(graphene.NonNull(lambda: ClaProduct))
 
     def resolve_parent(self, info):
         return self.parent_id or None
@@ -158,45 +158,45 @@ class CustomCategory(VSFCategory):
         return self.product_tmpl_ids or None
 
 
-class CustomAttributeValue(VSFAttributeValue):
+class ClaAttributeValue(VSFAttributeValue):
     id = graphene.Int(required=True)
-    attribute = graphene.Field(lambda: CustomAttribute)
+    attribute = graphene.Field(lambda: ClaAttribute)
 
     def resolve_attribute(self, info):
         return self.attribute_id or None
 
 
-class CustomAttribute(VSFAttribute):
+class ClaAttribute(VSFAttribute):
     id = graphene.Int(required=True)
-    values = graphene.List(graphene.NonNull(lambda: CustomAttributeValue))
+    values = graphene.List(graphene.NonNull(lambda: ClaAttributeValue))
 
     def resolve_values(self, info):
         return self.value_ids or None
 
 
-class CustomProductImage(VSFProductImage):
+class ClaProductImage(VSFProductImage):
     id = graphene.Int(required=True)
 
 
-class CustomRibbon(VSFRibbon):
+class ClaRibbon(VSFRibbon):
     id = graphene.Int(required=True)
 
 
-class CustomProduct(VSFProduct):
+class ClaProduct(VSFProduct):
     id = graphene.Int(required=True)
-    currency = graphene.Field(lambda: CustomCurrency)
-    categories = graphene.List(graphene.NonNull(lambda: CustomCategory))
-    media_gallery = graphene.List(graphene.NonNull(lambda: CustomProductImage))
-    alternative_products = graphene.List(graphene.NonNull(lambda: CustomProduct))
-    accessory_products = graphene.List(graphene.NonNull(lambda: CustomProduct))
-    variant_attribute_values = graphene.List(graphene.NonNull(lambda: CustomAttributeValue),
+    currency = graphene.Field(lambda: ClaCurrency)
+    categories = graphene.List(graphene.NonNull(lambda: ClaCategory))
+    media_gallery = graphene.List(graphene.NonNull(lambda: ClaProductImage))
+    alternative_products = graphene.List(graphene.NonNull(lambda: ClaProduct))
+    accessory_products = graphene.List(graphene.NonNull(lambda: ClaProduct))
+    variant_attribute_values = graphene.List(graphene.NonNull(lambda: ClaAttributeValue),
                                              description='Specific to Product Variant')
-    product_template = graphene.Field((lambda: CustomProduct), description='Specific to Product Variant')
-    attribute_values = graphene.List(graphene.NonNull(lambda: CustomAttributeValue),
+    product_template = graphene.Field((lambda: ClaProduct), description='Specific to Product Variant')
+    attribute_values = graphene.List(graphene.NonNull(lambda: ClaAttributeValue),
                                      description='Specific to Product Template')
-    product_variants = graphene.List(graphene.NonNull(lambda: CustomProduct),
+    product_variants = graphene.List(graphene.NonNull(lambda: ClaProduct),
                                      description='Specific to Product Template')
-    first_variant = graphene.Field((lambda: CustomProduct), description='Specific to use in Product Template')
+    first_variant = graphene.Field((lambda: ClaProduct), description='Specific to use in Product Template')
 
     def resolve_currency(self, info):
         return self.currency_id or None
@@ -236,16 +236,16 @@ class CustomProduct(VSFProduct):
         return self.product_variant_id or None
 
 
-class CustomPayment(VSFPayment):
+class ClaPayment(VSFPayment):
     id = graphene.Int()
 
 
-class CustomPaymentTransaction(VSFPaymentTransaction):
+class ClaPaymentTransaction(VSFPaymentTransaction):
     id = graphene.Int()
-    payment = graphene.Field(lambda: CustomPayment)
-    currency = graphene.Field(lambda: CustomCurrency)
-    company = graphene.Field(lambda: CustomPartner)
-    customer = graphene.Field(lambda: CustomPartner)
+    payment = graphene.Field(lambda: ClaPayment)
+    currency = graphene.Field(lambda: ClaCurrency)
+    company = graphene.Field(lambda: ClaPartner)
+    customer = graphene.Field(lambda: ClaPartner)
 
     def resolve_payment(self, info):
         return self.payment_id or None
@@ -260,11 +260,11 @@ class CustomPaymentTransaction(VSFPaymentTransaction):
         return self.partner_id or None
 
 
-class CustomOrderLine(VSFOrderLine):
+class ClaOrderLine(VSFOrderLine):
     id = graphene.Int(required=True)
-    product = graphene.Field(lambda: CustomProduct)
-    gift_card = graphene.Field(lambda: CustomGiftCard)
-    coupon = graphene.Field(lambda: CustomCoupon)
+    product = graphene.Field(lambda: ClaProduct)
+    gift_card = graphene.Field(lambda: ClaGiftCard)
+    coupon = graphene.Field(lambda: ClaCoupon)
 
     def resolve_product(self, info):
         return self.product_id or None
@@ -282,35 +282,35 @@ class CustomOrderLine(VSFOrderLine):
         return coupon
 
 
-class CustomCoupon(VSFCoupon):
+class ClaCoupon(VSFCoupon):
     id = graphene.Int(required=True)
 
 
-class CustomGiftCard(VSFGiftCard):
+class ClaGiftCard(VSFGiftCard):
     id = graphene.Int(required=True)
 
 
-class CustomShippingMethod(VSFShippingMethod):
+class ClaShippingMethod(VSFShippingMethod):
     id = graphene.Int(required=True)
-    product = graphene.Field(lambda: CustomProduct)
+    product = graphene.Field(lambda: ClaProduct)
 
     def resolve_product(self, info):
         return self.product_id or None
 
 
-class CustomOrder(VSFOrder):
+class ClaOrder(VSFOrder):
     id = graphene.Int(required=True)
-    partner = graphene.Field(lambda: CustomPartner)
-    partner_shipping = graphene.Field(lambda: CustomPartner)
-    partner_invoice = graphene.Field(lambda: CustomPartner)
-    shipping_method = graphene.Field(lambda: CustomShippingMethod)
-    currency = graphene.Field(lambda: CustomCurrency)
-    order_lines = graphene.List(graphene.NonNull(lambda: CustomOrderLine))
-    website_order_line = graphene.List(graphene.NonNull(lambda: CustomOrderLine))
-    transactions = graphene.List(graphene.NonNull(lambda: CustomPaymentTransaction))
-    last_transaction = graphene.Field(lambda: CustomPaymentTransaction)
-    coupons = graphene.List(graphene.NonNull(lambda: CustomCoupon))
-    gift_cards = graphene.List(graphene.NonNull(lambda: CustomGiftCard))
+    partner = graphene.Field(lambda: ClaPartner)
+    partner_shipping = graphene.Field(lambda: ClaPartner)
+    partner_invoice = graphene.Field(lambda: ClaPartner)
+    shipping_method = graphene.Field(lambda: ClaShippingMethod)
+    currency = graphene.Field(lambda: ClaCurrency)
+    order_lines = graphene.List(graphene.NonNull(lambda: ClaOrderLine))
+    website_order_line = graphene.List(graphene.NonNull(lambda: ClaOrderLine))
+    transactions = graphene.List(graphene.NonNull(lambda: ClaPaymentTransaction))
+    last_transaction = graphene.Field(lambda: ClaPaymentTransaction)
+    coupons = graphene.List(graphene.NonNull(lambda: ClaCoupon))
+    gift_cards = graphene.List(graphene.NonNull(lambda: ClaGiftCard))
 
     def resolve_partner(self, info):
         return self.partner_id or None
@@ -348,21 +348,21 @@ class CustomOrder(VSFOrder):
         return self.applied_coupon_ids.filtered(lambda c: c.program_type == 'gift_card') or None
 
 
-class CustomInvoiceLine(VSFInvoiceLine):
+class ClaInvoiceLine(VSFInvoiceLine):
     id = graphene.Int(required=True)
-    product = graphene.Field(lambda: CustomProduct)
+    product = graphene.Field(lambda: ClaProduct)
 
     def resolve_product(self, info):
         return self.product_id or None
 
 
-class CustomInvoice(VSFInvoice):
+class ClaInvoice(VSFInvoice):
     id = graphene.Int(required=True)
-    partner = graphene.Field(lambda: CustomPartner)
-    partner_shipping = graphene.Field(lambda: CustomPartner)
-    currency = graphene.Field(lambda: CustomCurrency)
-    invoice_lines = graphene.List(graphene.NonNull(lambda: CustomInvoiceLine))
-    transactions = graphene.List(graphene.NonNull(lambda: CustomPaymentTransaction))
+    partner = graphene.Field(lambda: ClaPartner)
+    partner_shipping = graphene.Field(lambda: ClaPartner)
+    currency = graphene.Field(lambda: ClaCurrency)
+    invoice_lines = graphene.List(graphene.NonNull(lambda: ClaInvoiceLine))
+    transactions = graphene.List(graphene.NonNull(lambda: ClaPaymentTransaction))
 
     def resolve_partner(self, info):
         return self.partner_id or None
@@ -380,10 +380,10 @@ class CustomInvoice(VSFInvoice):
         return self.transaction_ids or None
 
 
-class CustomWishlistItem(VSFWishlistItem):
+class ClaWishlistItem(VSFWishlistItem):
     id = graphene.Int(required=True)
-    partner = graphene.Field(lambda: CustomPartner)
-    product = graphene.Field(lambda: CustomProduct)
+    partner = graphene.Field(lambda: ClaPartner)
+    product = graphene.Field(lambda: ClaProduct)
 
     def resolve_partner(self, info):
         return self.partner_id or None
@@ -392,31 +392,31 @@ class CustomWishlistItem(VSFWishlistItem):
         return self.product_id or None
 
 
-class CustomPaymentIcon(VSFPaymentIcon):
+class ClaPaymentIcon(VSFPaymentIcon):
     id = graphene.Int()
 
 
-class CustomPaymentProvider(VSFPaymentProvider):
+class ClaPaymentProvider(VSFPaymentProvider):
     id = graphene.Int(required=True)
-    payment_icons = graphene.List(graphene.NonNull(lambda: CustomPaymentIcon))
+    payment_icons = graphene.List(graphene.NonNull(lambda: ClaPaymentIcon))
 
     def resolve_payment_icons(self, info):
         return self.payment_icon_ids or None
 
 
-class CustomMailingList(VSFMailingList):
+class ClaMailingList(VSFMailingList):
     id = graphene.Int(required=True)
 
 
-class CustomMailingContactSubscription(VSFMailingContactSubscription):
+class ClaMailingContactSubscription(VSFMailingContactSubscription):
     id = graphene.Int(required=True)
-    mailing_list = graphene.Field(lambda: CustomMailingList)
+    mailing_list = graphene.Field(lambda: ClaMailingList)
 
     def resolve_mailing_list(self, info):
         return self.list_id or None
 
 
-class CustomMailingContact(VSFMailingContact):
+class ClaMailingContact(VSFMailingContact):
     id = graphene.Int()
     subscription_list = graphene.List(graphene.NonNull(lambda: VSFMailingContactSubscription))
 
@@ -424,10 +424,10 @@ class CustomMailingContact(VSFMailingContact):
         return self.subscription_list_ids or None
 
 
-class CustomWebsite(VSFWebsite):
+class ClaWebsite(VSFWebsite):
     id = graphene.Int()
-    company = graphene.Field(lambda: CustomCompany)
-    public_user = graphene.Field(lambda: CustomUser)
+    company = graphene.Field(lambda: ClaCompany)
+    public_user = graphene.Field(lambda: ClaUser)
 
     def resolve_company(self, info):
         return self.company_id or None
@@ -436,11 +436,11 @@ class CustomWebsite(VSFWebsite):
         return self.user_id or None
 
 
-class CustomWebsiteMenu(VSFWebsiteMenu):
+class ClaWebsiteMenu(VSFWebsiteMenu):
     id = graphene.Int(required=True)
-    parent = graphene.Field(lambda: CustomWebsiteMenu)
-    childs = graphene.List(graphene.NonNull(lambda: CustomWebsiteMenu))
-    images = graphene.List(graphene.NonNull(lambda: CustomWebsiteMenuImage))
+    parent = graphene.Field(lambda: ClaWebsiteMenu)
+    childs = graphene.List(graphene.NonNull(lambda: ClaWebsiteMenu))
+    images = graphene.List(graphene.NonNull(lambda: ClaWebsiteMenuImage))
 
     def resolve_parent(self, info):
         return self.parent_id or None
@@ -452,5 +452,5 @@ class CustomWebsiteMenu(VSFWebsiteMenu):
         return self.menu_image_ids or None
 
 
-class CustomWebsiteMenuImage(VSFWebsiteMenuImage):
+class ClaWebsiteMenuImage(VSFWebsiteMenuImage):
     id = graphene.Int(required=True)

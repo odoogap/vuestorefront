@@ -8,7 +8,7 @@ from odoo.addons.graphql_vuestorefront.schema import (
     Query as VSFQuery,
     Mutation as VSFMutation,
 )
-from odoo.addons.graphql_custom.schemas import (
+from odoo.addons.graphql_cla.schemas import (
     address,
     category,
     product,

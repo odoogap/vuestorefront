@@ -21,9 +21,9 @@ from odoo.addons.graphql_vuestorefront.schemas.shop import (
     CreateUpdatePartner as VSFCreateUpdatePartner,
     ShopMutation as VSFShopMutation,
 )
-from odoo.addons.graphql_custom.schemas.objects import (
-    CustomOrder as Order,
-    CustomPartner as Partner,
+from odoo.addons.graphql_cla.schemas.objects import (
+    ClaOrder as Order,
+    ClaPartner as Partner,
 )
 
 

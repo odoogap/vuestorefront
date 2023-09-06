@@ -10,8 +10,8 @@ from odoo.addons.graphql_vuestorefront.schemas.invoice import (
     InvoiceList as VSFInvoiceList,
     InvoiceQuery as VSFInvoiceQuery,
 )
-from odoo.addons.graphql_custom.schemas.objects import (
-    CustomInvoice as Invoice,
+from odoo.addons.graphql_cla.schemas.objects import (
+    ClaInvoice as Invoice,
 )
 
 

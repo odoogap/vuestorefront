@@ -13,8 +13,8 @@ from odoo.addons.graphql_vuestorefront.schemas.sign import (
     UpdatePassword as VSFUpdatePassword,
     SignMutation as VSFSignMutation,
 )
-from odoo.addons.graphql_custom.schemas.objects import (
-    CustomUser as User,
+from odoo.addons.graphql_cla.schemas.objects import (
+    ClaUser as User,
 )
 
 

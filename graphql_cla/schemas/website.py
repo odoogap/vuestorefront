@@ -7,8 +7,8 @@ import graphene
 from odoo.addons.graphql_vuestorefront.schemas.website import (
     WebsiteQuery as VSFWebsiteQuery,
 )
-from odoo.addons.graphql_custom.schemas.objects import (
-    CustomWebsiteMenu as WebsiteMenu,
+from odoo.addons.graphql_cla.schemas.objects import (
+    ClaWebsiteMenu as WebsiteMenu,
 )
 
 

@@ -17,10 +17,10 @@ from odoo.addons.graphql_vuestorefront.schemas.product import (
     ProductVariantData as VSFProductVariantData,
     ProductQuery as VSFProductQuery,
 )
-from odoo.addons.graphql_custom.schemas.objects import (
-    CustomProduct as Product,
-    CustomAttribute as Attribute,
-    CustomAttributeValue as AttributeValue,
+from odoo.addons.graphql_cla.schemas.objects import (
+    ClaProduct as Product,
+    ClaAttribute as Attribute,
+    ClaAttributeValue as AttributeValue,
 )
 
 

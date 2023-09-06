@@ -7,8 +7,8 @@ from odoo.addons.graphql_vuestorefront.schemas.contact_us import (
     ContactUs as VSFContactUs,
     ContactUsMutation as VSFContactUsMutation,
 )
-from odoo.addons.graphql_custom.schemas.objects import (
-    CustomLead as Lead,
+from odoo.addons.graphql_cla.schemas.objects import (
+    ClaLead as Lead,
 )
 
 

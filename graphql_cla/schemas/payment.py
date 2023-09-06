@@ -21,11 +21,11 @@ from odoo.addons.graphql_vuestorefront.schemas.payment import (
     AdyenPaymentDetails as VSFAdyenPaymentDetails,
     AdyenPaymentMutation as VSFAdyenPaymentMutation,
 )
-from odoo.addons.graphql_custom.schemas.objects import (
-    CustomPaymentProvider as PaymentProvider,
-    CustomPaymentTransaction as PaymentTransaction,
+from odoo.addons.graphql_cla.schemas.objects import (
+    ClaPaymentProvider as PaymentProvider,
+    ClaPaymentTransaction as PaymentTransaction,
 )
-from odoo.addons.graphql_custom.schemas.shop import Cart, CartData
+from odoo.addons.graphql_cla.schemas.shop import Cart, CartData
 
 
 class PaymentQuery(VSFPaymentQuery):

@@ -10,8 +10,8 @@ from odoo.addons.graphql_vuestorefront.schemas.user_profile import (
     UpdateMyAccountParams as VSFUpdateMyAccountParams,
     UserProfileMutation as VSFUserProfileMutation,
 )
-from odoo.addons.graphql_custom.schemas.objects import (
-    CustomPartner as Partner,
+from odoo.addons.graphql_cla.schemas.objects import (
+    ClaPartner as Partner,
 )
 
 

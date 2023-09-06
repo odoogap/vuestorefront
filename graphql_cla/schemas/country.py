@@ -11,8 +11,8 @@ from odoo.addons.graphql_vuestorefront.schemas.country import (
     CountryList as VSFCountryList,
     CountryQuery as VSFCountryQuery,
 )
-from odoo.addons.graphql_custom.schemas.objects import (
-    CustomCountry as Country,
+from odoo.addons.graphql_cla.schemas.objects import (
+    ClaCountry as Country,
 )
 
 

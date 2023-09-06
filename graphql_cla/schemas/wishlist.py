@@ -12,8 +12,8 @@ from odoo.addons.graphql_vuestorefront.schemas.wishlist import (
     WishlistRemoveItem as VSFWishlistRemoveItem,
     WishlistMutation as VSFWishlistMutation,
 )
-from odoo.addons.graphql_custom.schemas.objects import (
-    CustomWishlistItem as WishlistItem,
+from odoo.addons.graphql_cla.schemas.objects import (
+    ClaWishlistItem as WishlistItem,
 )
 
 

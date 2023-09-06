@@ -11,8 +11,8 @@ from odoo.addons.graphql_vuestorefront.schemas.category import (
     CategoryList as VSFCategoryList,
     CategoryQuery as VSFCategoryQuery,
 )
-from odoo.addons.graphql_custom.schemas.objects import (
-    CustomCategory as Category,
+from odoo.addons.graphql_cla.schemas.objects import (
+    ClaCategory as Category,
 )
 
 

@@ -18,8 +18,8 @@ from odoo.addons.graphql_vuestorefront.schemas.address import (
     SelectAddress as VSFSelectAddress,
     AddressMutation as VSFAddressMutation,
 )
-from odoo.addons.graphql_custom.schemas.objects import (
-    CustomPartner as Partner,
+from odoo.addons.graphql_cla.schemas.objects import (
+    ClaPartner as Partner,
 )
 
 
