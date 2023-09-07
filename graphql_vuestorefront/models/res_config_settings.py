@@ -20,6 +20,7 @@ class ResConfigSettings(models.TransientModel):
         'Payment Error Return Url', related='website_id.vsf_payment_error_return_url', readonly=False,
         required=True
     )
+    vsf_cache_invalidation = fields.Boolean('Cache Invalidation')
     vsf_cache_invalidation_key = fields.Char('Cache Invalidation Key', required=True)
     vsf_cache_invalidation_url = fields.Char('Cache Invalidation Url', required=True)
     vsf_mailing_list_id = fields.Many2one('mailing.list', 'Newsletter', domain=[('is_public', '=', True)],
@@ -36,6 +37,7 @@ class ResConfigSettings(models.TransientModel):
         ICP = self.env['ir.config_parameter'].sudo()
         res.update(
             vsf_debug_mode=ICP.get_param('vsf_debug_mode'),
+            vsf_cache_invalidation=ICP.get_param('vsf_cache_invalidation'),
             vsf_cache_invalidation_key=ICP.get_param('vsf_cache_invalidation_key'),
             vsf_cache_invalidation_url=ICP.get_param('vsf_cache_invalidation_url'),
             vsf_image_quality=int(ICP.get_param('vsf_image_quality', 100)),
@@ -54,6 +56,7 @@ class ResConfigSettings(models.TransientModel):
         super(ResConfigSettings, self).set_values()
         ICP = self.env['ir.config_parameter'].sudo()
         ICP.set_param('vsf_debug_mode', self.vsf_debug_mode)
+        ICP.set_param('vsf_cache_invalidation', self.vsf_cache_invalidation)
         ICP.set_param('vsf_cache_invalidation_key', self.vsf_cache_invalidation_key)
         ICP.set_param('vsf_cache_invalidation_url', self.vsf_cache_invalidation_url)
         ICP.set_param('vsf_image_quality', self.vsf_image_quality)

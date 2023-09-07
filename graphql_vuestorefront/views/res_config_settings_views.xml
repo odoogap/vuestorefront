@@ -14,7 +14,7 @@
             <xpath expr="//div[@id='website_settings'][2]" position="after">
                 <h2>Vue Storefront</h2>
                 <div class="row mt16 o_settings_container" id="vsf_settings">
-                     <div class="col-12 col-lg-6 o_setting_box" id="vsf_debug_mode_settings">
+                    <div class="col-12 col-lg-6 o_setting_box" id="vsf_debug_mode_settings">
                         <div class="o_setting_left_pane">
                             <field name="vsf_debug_mode"/>
                         </div>
@@ -42,7 +42,19 @@
                             </div>
                         </div>
                     </div>
-                    <div class="col-12 col-lg-6 o_setting_box" id="vsf_cache_invalidation_key_settings">
+                    <div class="col-12 col-lg-6 o_setting_box" id="vsf_cache_invalidation_settings">
+                        <div class="o_setting_left_pane">
+                            <field name="vsf_cache_invalidation"/>
+                        </div>
+                        <div class="o_setting_right_pane">
+                            <label for="vsf_cache_invalidation"/>
+                            <div class="text-muted">
+                                Enable the Cache Invalidation.
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12 col-lg-6 o_setting_box"/>
+                    <div class="col-12 col-lg-6 o_setting_box" id="vsf_cache_invalidation_key_settings" attrs="{'invisible': [('vsf_cache_invalidation','=',False)]}">
                         <div class="o_setting_right_pane">
                             <label for="vsf_cache_invalidation_key"/>
                             <div class="content-group">
@@ -50,7 +62,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="col-12 col-lg-6 o_setting_box" id="vsf_cache_invalidation_url_settings">
+                    <div class="col-12 col-lg-6 o_setting_box" id="vsf_cache_invalidation_url_settings" attrs="{'invisible': [('vsf_cache_invalidation','=',False)]}">
                         <div class="o_setting_right_pane">
                             <label for="vsf_cache_invalidation_url"/>
                             <div class="content-group">
