@@ -16,6 +16,7 @@
             <field name="numbercall">-1</field>
             <field name="doall" eval="False"/>
             <field name="user_id" ref="base.user_admin"/>
+            <field name="active" eval="False"/>
         </record>
 
     </data>
