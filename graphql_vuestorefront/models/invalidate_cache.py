@@ -40,6 +40,12 @@ class InvalidateCache(models.Model):
 
     @api.model
     def create_invalidate_cache(self, res_model, res_ids):
+        ICP = self.env['ir.config_parameter'].sudo()
+        cache_invalidation_enable = ICP.get_param('vsf_cache_invalidation', False)
+
+        if not cache_invalidation_enable:
+            return False
+
         for res_id in res_ids:
             if not self.find_invalidate_cache(res_model, res_id):
                 query = """
