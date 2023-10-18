@@ -52,8 +52,11 @@ class SortEnum(graphene.Enum):
 #      Functions        #
 # --------------------- #
 
-def get_document_with_check_access(model, domain, order=None, limit=20, offset=0,
+def get_document_with_check_access(model, domain=[], order=None, limit=20, offset=0, access_token=None,
                                    error_msg='This document does not exist.'):
+    if access_token:
+        model = model.sudo()
+        domain = [('access_token', '=', access_token)]
     document = model.search(domain, order=order, limit=limit, offset=offset)
     document_sudo = document.with_user(SUPERUSER_ID).exists()
     if document and not document_sudo:
