@@ -4,7 +4,7 @@
 
 {
     'name': 'Vue Storefront Api',
-    'version': '16.0.1.0.0',
+    'version': '17.0.0.0.1',
     'summary': 'Vue Storefront API',
     'description': """Vue Storefront API Integration""",
     'category': 'Website',
