@@ -14,14 +14,14 @@
     'depends': [
         'graphql_base',
         'website_sale_wishlist',
-        'website_sale_delivery',
         'website_mass_mailing',
         'website_sale_loyalty',
+        'stock',
         'auth_signup',
         'contacts',
         'crm',
         'theme_default',
-        'payment_adyen_vsf',
+        'payment_adyen_vsf'
     ],
     'data': [
         'security/ir.model.access.csv',

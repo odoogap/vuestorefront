@@ -6,13 +6,13 @@
     # Application Information
     'name': 'Adyen Payment Acquirer to VSF',
     'category': 'Accounting/Payment Acquirers',
-    'version': '16.0.1.0.1',
+    'version': '17.0.1.0.0',
     'summary': 'Adyen Payment Acquirer: Adapting Adyen to VSF',
 
     # Author
-    'author': "OdooGap",
-    'website': "https://www.odoogap.com/",
-    'maintainer': 'OdooGap',
+    'author': "ERPGAP",
+    'website': "https://www.erpgap.com/",
+    'maintainer': 'ERPGAP',
     'license': 'LGPL-3',
 
     # Dependencies

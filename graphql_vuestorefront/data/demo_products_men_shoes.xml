@@ -12,7 +12,7 @@
         <field name="list_price">137.50</field>
         <field name="is_published" eval="True"/>
         <field name="standard_price">137.50</field>
-        <field name="type">product</field>
+        <field name="detailed_type">product</field>
         <field name="taxes_id" eval="False"/>
         <field name="uom_id" ref="uom.product_uom_unit"/>
         <field name="uom_po_id" ref="uom.product_uom_unit"/>
@@ -80,7 +80,7 @@
         <field name="list_price">186.25</field>
         <field name="is_published" eval="True"/>
         <field name="standard_price">186.25</field>
-        <field name="type">product</field>
+        <field name="detailed_type">product</field>
         <field name="taxes_id" eval="False"/>
         <field name="uom_id" ref="uom.product_uom_unit"/>
         <field name="uom_po_id" ref="uom.product_uom_unit"/>
@@ -149,7 +149,7 @@
         <field name="list_price">462.50</field>
         <field name="is_published" eval="True"/>
         <field name="standard_price">462.50</field>
-        <field name="type">product</field>
+        <field name="detailed_type">product</field>
         <field name="taxes_id" eval="False"/>
         <field name="uom_id" ref="uom.product_uom_unit"/>
         <field name="uom_po_id" ref="uom.product_uom_unit"/>
@@ -217,7 +217,7 @@
         <field name="list_price">362.50</field>
         <field name="is_published" eval="True"/>
         <field name="standard_price">362.50</field>
-        <field name="type">product</field>
+        <field name="detailed_type">product</field>
         <field name="taxes_id" eval="False"/>
         <field name="uom_id" ref="uom.product_uom_unit"/>
         <field name="uom_po_id" ref="uom.product_uom_unit"/>
@@ -286,7 +286,7 @@
         <field name="list_price">343.75</field>
         <field name="is_published" eval="True"/>
         <field name="standard_price">343.75</field>
-        <field name="type">product</field>
+        <field name="detailed_type">product</field>
         <field name="taxes_id" eval="False"/>
         <field name="uom_id" ref="uom.product_uom_unit"/>
         <field name="uom_po_id" ref="uom.product_uom_unit"/>
@@ -354,7 +354,7 @@
         <field name="list_price">27.50</field>
         <field name="is_published" eval="True"/>
         <field name="standard_price">27.50</field>
-        <field name="type">product</field>
+        <field name="detailed_type">product</field>
         <field name="taxes_id" eval="False"/>
         <field name="uom_id" ref="uom.product_uom_unit"/>
         <field name="uom_po_id" ref="uom.product_uom_unit"/>

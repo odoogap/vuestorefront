@@ -11,101 +11,52 @@
         <field name="priority" eval="99"/>
         <field name="inherit_id" ref="website.res_config_settings_view_form"/>
         <field name="arch" type="xml">
-            <xpath expr="//div[@id='website_settings'][2]" position="after">
-                <h2>Vue Storefront</h2>
-                <div class="row mt16 o_settings_container" id="vsf_settings">
-                    <div class="col-12 col-lg-6 o_setting_box" id="vsf_debug_mode_settings">
-                        <div class="o_setting_left_pane">
-                            <field name="vsf_debug_mode"/>
+            <xpath expr="//block[@id='website_info_settings']" position="after">
+                <block title="Vue Storefront" id="website_vue_storefront">
+                    <setting help="Enable the debug mode. Will log headers, queries and mutations information" id="vsf_debug_mode_settings">
+                        <field name="vsf_debug_mode"/>
+                    </setting>
+                    <setting id="vsf_payment_return_url_settings">
+                        <field name="vsf_payment_success_return_url"/>
+                    </setting>
+                    <setting id="vsf_payment_return_url_settings">
+                        <field name="vsf_payment_error_return_url"/>
+                    </setting>
+                    <setting title="Enable the Cache Invalidation" id="vsf_cache_invalidation_settings">
+                        <field name="vsf_cache_invalidation"/>
+                        <div class="content-group" invisible="not vsf_cache_invalidation">
+                                <div class="row mt16">
+                                    <label class="col-lg-3 o_light_label" for="vsf_cache_invalidation_key"/>
+                                    <field name="vsf_cache_invalidation_key"
+                                            required="vsf_cache_invalidation" t-translation="off"/>
+                                </div>
+                                <div class="row mt16">
+                                    <label class="col-lg-3 o_light_label" for="vsf_cache_invalidation_url"/>
+                                    <field name="vsf_cache_invalidation_url"
+                                            required="vsf_cache_invalidation" t-translation="off"/>
+                                </div>
                         </div>
-                        <div class="o_setting_right_pane">
-                            <label for="vsf_debug_mode"/>
-                            <div class="text-muted">
-                                Enable the debug mode. Will log headers, queries and mutations information.
+                    </setting>
+                    <setting id="vsf_mailing_list_id_settings">
+                        <field name="vsf_mailing_list_id"/>
+                    </setting>
+                    <setting title="Image Processing" id="vsf_image_processing_settings">
+                        <div class="content-group">
+                            <div class="row mt16">
+                                <label class="o_light_label col-lg-3" string="Sales Team" for="vsf_image_quality"/>
+                                <field name="vsf_image_quality"/>
                             </div>
-                        </div>
-                    </div>
-                    <div class="col-12 col-lg-6 o_setting_box"/>
-                    <div class="col-12 col-lg-6 o_setting_box" id="vsf_payment_return_url_settings">
-                        <div class="o_setting_right_pane">
-                            <label for="vsf_payment_success_return_url"/>
-                            <div class="content-group">
-                                <field name="vsf_payment_success_return_url"/>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-12 col-lg-6 o_setting_box" id="vsf_payment_return_url_settings">
-                        <div class="o_setting_right_pane">
-                            <label for="vsf_payment_error_return_url"/>
-                            <div class="content-group">
-                                <field name="vsf_payment_error_return_url"/>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-12 col-lg-6 o_setting_box" id="vsf_cache_invalidation_settings">
-                        <div class="o_setting_left_pane">
-                            <field name="vsf_cache_invalidation"/>
-                        </div>
-                        <div class="o_setting_right_pane">
-                            <label for="vsf_cache_invalidation"/>
-                            <div class="text-muted">
-                                Enable the Cache Invalidation.
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-12 col-lg-6 o_setting_box"/>
-                    <div class="col-12 col-lg-6 o_setting_box" id="vsf_cache_invalidation_key_settings" attrs="{'invisible': [('vsf_cache_invalidation','=',False)]}">
-                        <div class="o_setting_right_pane">
-                            <label for="vsf_cache_invalidation_key"/>
-                            <div class="content-group">
-                                <field name="vsf_cache_invalidation_key"/>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-12 col-lg-6 o_setting_box" id="vsf_cache_invalidation_url_settings" attrs="{'invisible': [('vsf_cache_invalidation','=',False)]}">
-                        <div class="o_setting_right_pane">
-                            <label for="vsf_cache_invalidation_url"/>
-                            <div class="content-group">
-                                <field name="vsf_cache_invalidation_url"/>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-12 col-lg-6 o_setting_box" id="vsf_mailing_list_id_settings">
-                        <div class="o_setting_right_pane">
-                            <label for="vsf_mailing_list_id"/>
-                            <div class="content-group">
-                                <field name="vsf_mailing_list_id"/>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <h2>Vue Storefront Images</h2>
-                <div class="row mt16 o_settings_container" id="vsf_images_settings">
-                    <div class="col-12 col-lg-6 o_setting_box" id="vsf_image_quality_settings">
-                        <div class="o_setting_right_pane">
-                            <label for="vsf_image_quality"/>
-                            <div class="content-group">
-                                <field name="vsf_image_quality"/> %
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-12 col-lg-6 o_setting_box" id="vsf_image_background_rgba_settings">
-                        <div class="o_setting_right_pane">
-                            <label for="vsf_image_background_rgba"/>
-                            <div class="content-group">
+                            <div class="row">
+                                <label class="o_light_label col-lg-3" for="vsf_image_background_rgba"/>
                                 <field name="vsf_image_background_rgba"/>
                             </div>
-                        </div>
-                    </div>
-                    <div class="col-12 col-lg-6 o_setting_box" id="vsf_image_resize_limit_settings">
-                        <div class="o_setting_right_pane">
-                            <label for="vsf_image_resize_limit"/>
-                            <div class="content-group">
-                                <field name="vsf_image_resize_limit"/> px
+                             <div class="row">
+                                <label class="o_light_label col-lg-3" for="vsf_image_resize_limit"/>
+                                <field name="vsf_image_resize_limit"/>
                             </div>
                         </div>
-                    </div>
-                </div>
+                    </setting>
+                </block>
             </xpath>
         </field>
     </record>
