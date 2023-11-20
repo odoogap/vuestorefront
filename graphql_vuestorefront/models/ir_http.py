@@ -49,9 +49,12 @@ class Http(models.AbstractModel):
                 if img.mode != 'RGBA':
                     img = img.convert('RGBA')
 
-                # Get background color from settings
+                # Get background color from context or settings
                 try:
-                    background_rgba = safe_eval(ICP.get_param('vsf_image_background_rgba', '(255, 255, 255, 255)'))
+                    if self.env.context.get('background_rgba'):
+                        background_rgba = safe_eval(self.env.context.get('background_rgba'))
+                    else:
+                        background_rgba = safe_eval(ICP.get_param('vsf_image_background_rgba', '(255, 255, 255, 255)'))
                 except:
                     background_rgba = (255, 255, 255, 255)
 
