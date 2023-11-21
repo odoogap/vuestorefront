@@ -7,19 +7,28 @@ import json
 import logging
 import pprint
 
-from odoo import http
+from odoo import models, http
 from odoo.addons.web.controllers.binary import Binary
 from odoo.addons.graphql_base import GraphQLControllerMixin
 from odoo.http import request, Response
-from odoo.tools.safe_eval import safe_eval
 from urllib.parse import urlparse
-
-from ..schema import schema
+from odoo.addons.graphql_vuestorefront.schema import SchemaBuilder
 
 _logger = logging.getLogger(__name__)
 
 
+class Base(models.AbstractModel):
+    _inherit = 'base'
+    _graphql_fields = False
+
+
+class ResCountryState(models.Model):
+    _inherit = "res.country.state"
+    _graphql_fields = ["name", "code"]
+
+
 class VSFBinary(Binary):
+
     @http.route(['/web/image',
                  '/web/image/<string:xmlid>',
                  '/web/image/<string:xmlid>/<string:filename>',
@@ -59,6 +68,7 @@ class VSFBinary(Binary):
 
 
 class GraphQLController(http.Controller, GraphQLControllerMixin):
+    _schema = False
 
     def _process_request(self, schema, data):
         # Set the vsf_debug_mode value that exist in the settings
@@ -114,16 +124,24 @@ class GraphQLController(http.Controller, GraphQLControllerMixin):
     # The GraphiQL route, providing an IDE for developers
     @http.route("/graphiql/vsf", auth="user")
     def graphiql(self, **kwargs):
+        if not self._schema:
+            _logger.info('... Loading GraphQL schema ...')
+            schema_builder = SchemaBuilder(request.env)
+            self._schema = schema_builder.load_schema()
         self._set_website_context()
-        return self._handle_graphiql_request(schema.graphql_schema)
+        return self._handle_graphiql_request(self._schema.graphql_schema)
 
     # The graphql route, for applications.
     # Note csrf=False: you may want to apply extra security
     # (such as origin restrictions) to this route.
     @http.route("/graphql/vsf", auth="public", csrf=False)
     def graphql(self, **kwargs):
+        if not self._schema:
+            _logger.info('... Loading GraphQL schema ...')
+            schema_builder = SchemaBuilder(request.env)
+            self._schema = schema_builder.load_schema()
         self._set_website_context()
-        return self._handle_graphql_request(schema.graphql_schema)
+        return self._handle_graphql_request(self._schema.graphql_schema)
 
     @http.route('/vsf/categories', type='http', auth='public', csrf=False)
     def vsf_categories(self):

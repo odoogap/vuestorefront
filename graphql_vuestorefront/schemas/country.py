@@ -7,7 +7,9 @@ import graphene
 from odoo.addons.graphql_vuestorefront.schemas.objects import (
     SortEnum, Country
 )
+import logging
 
+_logger = logging.getLogger(__name__)
 
 def get_search_order(sort):
     sorting = ''
