@@ -10,27 +10,20 @@ from odoo.addons.graphql_vuestorefront.schemas import (
     address, wishlist, shop, payment,
     mailing_list, website,
 )
-from .schema_models import *
 import logging
 
 _logger = logging.getLogger(__name__)
 
-#
-# class GraphQLType(OdooObjectType):
-#     _odoo_model = False
-#
-#
-# class GraphQLQuery(graphene.ObjectType):
-#     _odoo_model = False
+
+class GraphQLType(OdooObjectType):
+    """ Base class for all GraphQL types"""
+    _odoo_model = False
 
 
-# class LinkTracker(GraphQLType):
-#     _odoo_model = "link.tracker"
-#
-#
-# class LinkTrackerQuery(GraphQLQuery):
-#     _odoo_model = "link.tracker"
-#
+class GraphQLQuery(graphene.ObjectType):
+    """ Base class for all GraphQL queries"""
+    _odoo_model = False
+
 
 class Mutation(
     OdooObjectType,
@@ -119,8 +112,6 @@ class SchemaBuilder(object):
         resolver_dict = {}
         for field_name, fld_properties in filter(lambda item: item[1]['type'] in (
                 'char', 'html', 'text', 'integer', 'selection', 'float', 'monetary'), fields.items()):
-            if field_name not in ('url', 'code'):
-                continue
             if fld_properties['type'] in ('char', 'html', 'text', 'selection'):
                 fields_dict[field_name] = graphene.String(required=False)
             elif fld_properties['type'] in ('float', 'monetary'):

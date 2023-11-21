@@ -69,6 +69,7 @@ class VSFBinary(Binary):
 
 class GraphQLController(http.Controller, GraphQLControllerMixin):
     _schema = False
+    _modules_extend = []
 
     def _process_request(self, schema, data):
         # Set the vsf_debug_mode value that exist in the settings
@@ -121,14 +122,19 @@ class GraphQLController(http.Controller, GraphQLControllerMixin):
         except:
             pass
 
-    # The GraphiQL route, providing an IDE for developers
-    @http.route("/graphiql/vsf", auth="user")
-    def graphiql(self, **kwargs):
-        if not self._schema:
-            _logger.info('... Loading GraphQL schema ...')
+    def _check_load_schema(self, module_name):
+        if module_name not in self._modules_extend:
+            self._modules_extend.append(module_name)
+            _logger.info('... Loading Extended GraphQL schema ... ' + module_name)
             schema_builder = SchemaBuilder(request.env)
             self._schema = schema_builder.load_schema()
         self._set_website_context()
+
+    # The GraphiQL route, providing an IDE for developers
+    @http.route("/graphiql/vsf", auth="user")
+    def graphiql(self, **kwargs):
+        module_name = __name__.split('.')[2]
+        self._check_load_schema(module_name)
         return self._handle_graphiql_request(self._schema.graphql_schema)
 
     # The graphql route, for applications.
@@ -136,11 +142,8 @@ class GraphQLController(http.Controller, GraphQLControllerMixin):
     # (such as origin restrictions) to this route.
     @http.route("/graphql/vsf", auth="public", csrf=False)
     def graphql(self, **kwargs):
-        if not self._schema:
-            _logger.info('... Loading GraphQL schema ...')
-            schema_builder = SchemaBuilder(request.env)
-            self._schema = schema_builder.load_schema()
-        self._set_website_context()
+        module_name = __name__.split('.')[2]
+        self._check_load_schema(module_name)
         return self._handle_graphql_request(self._schema.graphql_schema)
 
     @http.route('/vsf/categories', type='http', auth='public', csrf=False)
