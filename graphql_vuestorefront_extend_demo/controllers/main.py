@@ -19,7 +19,7 @@ class YourGraphQLController(GraphQLController):
         return self._handle_graphiql_request(self._schema.graphql_schema)
 
     def graphql(self, **kwargs):
-        super().graphiql(**kwargs)
+        super().graphql(**kwargs)
         module_name = __name__.split('.')[2]
         self._check_load_schema(module_name)
         return self._handle_graphql_request(self._schema.graphql_schema)

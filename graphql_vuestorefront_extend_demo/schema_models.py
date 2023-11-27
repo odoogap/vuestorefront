@@ -7,6 +7,7 @@ from odoo.addons.graphql_vuestorefront.schema import GraphQLType, GraphQLQuery
 
 # dynamic types
 
+
 class LinkTracker(GraphQLType):
     _odoo_model = "link.tracker"
 

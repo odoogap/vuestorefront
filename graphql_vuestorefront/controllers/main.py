@@ -125,7 +125,7 @@ class GraphQLController(http.Controller, GraphQLControllerMixin):
     def _check_load_schema(self, module_name):
         if module_name not in self._modules_extend:
             self._modules_extend.append(module_name)
-            _logger.info('... Loading Extended GraphQL schema ... ' + module_name)
+            _logger.info('Loading Extended GraphQL schema:' + module_name)
             schema_builder = SchemaBuilder(request.env)
             self._schema = schema_builder.load_schema()
         self._set_website_context()
