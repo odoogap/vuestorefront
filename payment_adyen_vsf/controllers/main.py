@@ -125,7 +125,7 @@ class AdyenControllerInherit(AdyenController):
         ], limit=1)
 
         # Get Website
-        website = sale_order.website_id
+        website = sale_order.website_id or request.env['website'].get_current_website()
         # Redirect to VSF
         vsf_payment_success_return_url = website.vsf_payment_success_return_url
         vsf_payment_error_return_url = website.vsf_payment_error_return_url
