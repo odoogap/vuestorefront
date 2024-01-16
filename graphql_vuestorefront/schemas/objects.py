@@ -222,7 +222,10 @@ class Partner(OdooObjectType):
 
     def resolve_billing_address(self, info):
         billing_address = self.child_ids.filtered(lambda a: a.type and a.type == 'invoice')
-        return billing_address and billing_address[0] or None
+        if billing_address:
+            return billing_address.sorted(key=lambda r: r.write_date, reverse=True)[0]
+        else:
+            return None
 
     def resolve_company(self, info):
         return self.company_id.partner_id or None
