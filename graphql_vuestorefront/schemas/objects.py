@@ -197,6 +197,7 @@ class Partner(OdooObjectType):
     phone = graphene.String()
     mobile = graphene.String()
     address_type = AddressType()
+    shipping_address = graphene.Field(lambda: Partner)
     billing_address = graphene.Field(lambda: Partner)
     is_company = graphene.Boolean(required=True)
     company = graphene.Field(lambda: Partner)
@@ -219,6 +220,13 @@ class Partner(OdooObjectType):
 
     def resolve_address_type(self, info):
         return self.type or None
+
+    def resolve_shipping_address(self, info):
+        shipping_address = self.child_ids.filtered(lambda a: a.type and a.type == 'delivery')
+        if shipping_address:
+            return shipping_address.sorted(key=lambda r: r.write_date, reverse=True)[0]
+        else:
+            return None
 
     def resolve_billing_address(self, info):
         billing_address = self.child_ids.filtered(lambda a: a.type and a.type == 'invoice')
