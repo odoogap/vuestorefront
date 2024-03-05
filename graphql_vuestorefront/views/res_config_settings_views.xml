@@ -12,51 +12,48 @@
         <field name="inherit_id" ref="website.res_config_settings_view_form"/>
         <field name="arch" type="xml">
             <xpath expr="//block[@id='website_info_settings']" position="after">
-                <block title="Vue Storefront" id="website_vue_storefront">
+                <block title="Vue Storefront" id="vsf_settings">
                     <setting help="Enable the debug mode. Will log headers, queries and mutations information" id="vsf_debug_mode_settings">
                         <field name="vsf_debug_mode"/>
                     </setting>
-                    <setting id="vsf_payment_return_url_settings">
+                    <setting></setting>
+
+                    <setting id="vsf_payment_success_return_url_settings">
                         <field name="vsf_payment_success_return_url"/>
                     </setting>
-                    <setting id="vsf_payment_return_url_settings">
+                    <setting id="vsf_payment_error_return_url_settings">
                         <field name="vsf_payment_error_return_url"/>
                     </setting>
+
                     <setting title="Enable the Cache Invalidation" id="vsf_cache_invalidation_settings">
                         <field name="vsf_cache_invalidation"/>
-                        <div class="content-group" invisible="not vsf_cache_invalidation">
-                                <div class="row mt16">
-                                    <label class="col-lg-3 o_light_label" for="vsf_cache_invalidation_key"/>
-                                    <field name="vsf_cache_invalidation_key"
-                                            required="vsf_cache_invalidation" t-translation="off"/>
-                                </div>
-                                <div class="row mt16">
-                                    <label class="col-lg-3 o_light_label" for="vsf_cache_invalidation_url"/>
-                                    <field name="vsf_cache_invalidation_url"
-                                            required="vsf_cache_invalidation" t-translation="off"/>
-                                </div>
-                        </div>
                     </setting>
+                    <setting></setting>
+                    <setting id="vsf_cache_invalidation_key_settings" invisible="not vsf_cache_invalidation">
+                        <field name="vsf_cache_invalidation_key" required="vsf_cache_invalidation" t-translation="off"/>
+                    </setting>
+                    <setting id="vsf_cache_invalidation_url_settings" invisible="not vsf_cache_invalidation">
+                        <field name="vsf_cache_invalidation_url" required="vsf_cache_invalidation" t-translation="off"/>
+                    </setting>
+
                     <setting id="vsf_mailing_list_id_settings">
                         <field name="vsf_mailing_list_id"/>
                     </setting>
-                    <setting title="Image Processing" id="vsf_image_processing_settings">
-                        <div class="content-group">
-                            <div class="row mt16">
-                                <label class="o_light_label col-lg-3" string="Sales Team" for="vsf_image_quality"/>
-                                <field name="vsf_image_quality"/>
-                            </div>
-                            <div class="row">
-                                <label class="o_light_label col-lg-3" for="vsf_image_background_rgba"/>
-                                <field name="vsf_image_background_rgba"/>
-                            </div>
-                             <div class="row">
-                                <label class="o_light_label col-lg-3" for="vsf_image_resize_limit"/>
-                                <field name="vsf_image_resize_limit"/>
-                            </div>
-                        </div>
+                    <setting></setting>
+                </block>
+
+                <block title="Vue Storefront Images" id="vsf_images_settings">
+                    <setting id="vsf_image_quality_settings">
+                        <field name="vsf_image_quality"/>
+                    </setting>
+                    <setting id="vsf_image_background_rgba_settings">
+                        <field name="vsf_image_background_rgba"/>
+                    </setting>
+                    <setting id="vsf_image_resize_limit_settings">
+                        <field name="vsf_image_resize_limit"/>
                     </setting>
                 </block>
+
             </xpath>
         </field>
     </record>
