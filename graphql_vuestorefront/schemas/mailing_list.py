@@ -211,7 +211,7 @@ class UserAddMultipleMailing(graphene.Mutation):
                 raise GraphQLError(_('Maillist does not exist.'))
 
             if mailing_contact:
-                line = mailing_contact.subscription_list_ids.filtered(lambda mail: mail.list_id.id == maillist_id)
+                line = mailing_contact.subscription_ids.filtered(lambda mail: mail.list_id.id == maillist_id)
 
                 if not mailing_contact.company_name or (company_name and mailing_contact.company_name != company_name):
                     mailing_contact.update({'company_name': company_name})
@@ -223,14 +223,14 @@ class UserAddMultipleMailing(graphene.Mutation):
                     line.update({'opt_out': optout})
                 else:
                     mailing_contact.write(
-                        {'subscription_list_ids': [(0, 0, {'list_id': mailing_list.id, 'opt_out': optout})], })
+                        {'subscription_ids': [(0, 0, {'list_id': mailing_list.id, 'opt_out': optout})], })
             else:
                 mailing_contact = env['mailing.contact'].sudo().create({
                     'name': user.name,
                     'country_id': country_id,
                     'email': user.email,
                     'company_name': company_name,
-                    'subscription_list_ids': [(0, 0, {'list_id': mailing_list.id, 'opt_out': optout})],
+                    'subscription_ids': [(0, 0, {'list_id': mailing_list.id, 'opt_out': optout})],
                 })
 
         return mailing_contact

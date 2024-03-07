@@ -76,8 +76,8 @@ def get_document_count_with_check_access(model, domain):
 
 def get_product_pricing_info(env, product):
     website = env['website'].get_current_website()
-    pricelist = website.get_current_pricelist()
-    return product and product._get_combination_info_variant(pricelist=pricelist) or None
+    pricelist = website._get_current_pricelist()
+    return product and product._get_combination_info_variant() or None
 
 
 def product_is_in_wishlist(env, product):
@@ -229,7 +229,7 @@ class Partner(OdooObjectType):
 
     def resolve_current_pricelist(self, info):
         website = self.env['website'].get_current_website()
-        return website.get_current_pricelist()
+        return website._get_current_pricelist()
 
 
 class User(OdooObjectType):
@@ -844,7 +844,7 @@ class MailingContact(OdooObjectType):
         return self.industry_id or None
 
     def resolve_subscription_list(self, info):
-        return self.subscription_list_ids or None
+        return self.subscription_ids or None
 
 
 class Website(OdooObjectType):

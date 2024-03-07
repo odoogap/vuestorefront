@@ -94,12 +94,12 @@ class ProductTemplate(models.Model):
         self.env['invalidate.cache'].create_invalidate_cache(self._name, self.ids)
         return super(ProductTemplate, self).unlink()
 
-    def _get_combination_info(self, combination=False, product_id=False, add_qty=1, pricelist=False,
-                              parent_combination=False, only_template=False):
+    def _get_combination_info(self, combination=False, product_id=False, add_qty=1, parent_combination=False,
+                              only_template=False):
         """ Add discount value and percentage based """
         combination_info = super(ProductTemplate, self)._get_combination_info(
-            combination=combination, product_id=product_id, add_qty=add_qty, pricelist=pricelist,
-            parent_combination=parent_combination, only_template=only_template)
+            combination=combination, product_id=product_id, add_qty=add_qty, parent_combination=parent_combination,
+            only_template=only_template)
 
         discount = 0
         discount_perc = 0
