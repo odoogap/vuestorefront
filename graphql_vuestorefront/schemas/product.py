@@ -228,7 +228,7 @@ class ProductQuery(graphene.ObjectType):
     @staticmethod
     def resolve_products(self, info, filter, current_page, page_size, search, sort):
         env = info.context["env"]
-        products, total_count, attribute_values,min_price, max_price = get_product_list(
+        products, total_count, attribute_values, min_price, max_price = get_product_list(
             env, current_page, page_size, search, sort, **filter)
         return ProductList(products=products, total_count=total_count, attribute_values=attribute_values,
                            min_price=min_price, max_price=max_price)
@@ -243,12 +243,11 @@ class ProductQuery(graphene.ObjectType):
 
         website = env['website'].get_current_website()
         request.website = website
-        pricelist = website.get_current_pricelist()
 
         product_template = env['product.template'].browse(product_template_id)
         combination = env['product.template.attribute.value'].browse(combination_id)
 
-        variant_info = product_template._get_combination_info(combination, pricelist)
+        variant_info = product_template._get_combination_info(combination)
 
         product = env['product.product'].browse(variant_info['product_id'])
 
