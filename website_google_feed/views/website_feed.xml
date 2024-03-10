@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!--
-    Copyright 2023 ERPGAP/PROMPTEQUATION LDA
+    Copyright 2024 ERPGAP/PROMPTEQUATION LDA
     License LGPL-3.0 or later (http://www.gnu.org/licenses/lgpl).
 -->
 <odoo>
@@ -8,7 +8,7 @@
     <template id="feed_xml">&lt;?xml version="1.0"?&gt;
         <rss version="2.0" xmlns:g="http://base.google.com/ns/1.0">
             <channel>
-                <title><t t-esc="website.name"/>Product Feed</title>
+                <title><t t-esc="website.name"/> - Product Feed</title>
                 <link><t t-esc="website.domain"/></link>
                 <description><t t-esc="website.name"/></description>
                 <t t-foreach="feed_info_array" t-as="product_info">

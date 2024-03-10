@@ -832,24 +832,10 @@ class WishlistItem(OdooObjectType):
         return self.product_id or None
 
 
-class PaymentIcon(OdooObjectType):
-    id = graphene.Int()
-    name = graphene.String(required=True)
-    image = graphene.String()
-
-    def resolve_image(self, info):
-        return '/web/image/payment.icon/{}/image'.format(self.id)
-
-
 class PaymentProvider(OdooObjectType):
     id = graphene.Int(required=True)
     name = graphene.String()
-    display_as = graphene.String()
     code = graphene.String()
-    payment_icons = graphene.List(graphene.NonNull(lambda: PaymentIcon))
-
-    def resolve_payment_icons(self, info):
-        return self.payment_icon_ids or None
 
 
 class MailingList(OdooObjectType):
