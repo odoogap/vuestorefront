@@ -70,12 +70,12 @@ class AdyenControllerInherit(AdyenController):
             'recurringProcessingModel': 'CardOnFile',  # Most susceptible to trigger a 3DS check
             'shopperIP': shopper_ip,
             'shopperInteraction': 'Ecommerce',
-            'shopperEmail': tx_sudo.partner_email,
+            'shopperEmail': tx_sudo.partner_email or "",
             'shopperName': adyen_utils.format_partner_name(tx_sudo.partner_name),
-            'telephoneNumber': tx_sudo.partner_phone,
+            'telephoneNumber': tx_sudo.partner_phone or "",
             'storePaymentMethod': tx_sudo.tokenize,  # True by default on Adyen side
             # 'additionalData': {
-            #     'allow3DS2': True
+            #     'authenticationData.threeDSRequestData.nativeThreeDS': True,
             # },
             'channel': 'web',  # Required to support 3DS
             'origin': provider_sudo.get_base_url(),  # Required to support 3DS
@@ -151,7 +151,7 @@ class AdyenControllerInherit(AdyenController):
         vsf_payment_success_return_url = website.vsf_payment_success_return_url
         vsf_payment_error_return_url = website.vsf_payment_error_return_url
 
-        request.session["__payment_monitored_tx_ids__"] = [payment_transaction.id]
+        request.session["__payment_monitored_tx_id__"] = payment_transaction.id
 
         # Retrieve the transaction based on the reference included in the return url
         tx_sudo = request.env['payment.transaction'].sudo()._get_tx_from_notification_data(
@@ -197,7 +197,7 @@ class AdyenControllerInherit(AdyenController):
             # Redirect the user to the status page
             return request.redirect('/payment/status')
 
-    @http.route(_webhook_url, type='json', auth='public')
+    @http.route(_webhook_url, type='http', methods=['POST'], auth='public', csrf=False)
     def adyen_webhook(self):
         """ Process the data sent by Adyen to the webhook based on the event code.
 
@@ -207,7 +207,7 @@ class AdyenControllerInherit(AdyenController):
         :return: The '[accepted]' string to acknowledge the notification
         :rtype: str
         """
-        data = request.dispatcher.jsonrequest
+        data = request.get_json_data()
         for notification_item in data['notificationItems']:
             notification_data = notification_item['NotificationRequestItem']
 
@@ -236,6 +236,9 @@ class AdyenControllerInherit(AdyenController):
                     notification_data['resultCode'] = 'Cancelled' if success else 'Error'
                 elif event_code in ['REFUND', 'CAPTURE']:
                     notification_data['resultCode'] = 'Authorised' if success else 'Error'
+                elif event_code == 'CAPTURE_FAILED' and success:
+                    # The capture failed after a capture notification with success = True was sent
+                    notification_data['resultCode'] = 'Error'
                 else:
                     continue  # Don't handle unsupported event codes and failed events
 
@@ -256,7 +259,7 @@ class AdyenControllerInherit(AdyenController):
                     # Redirect to VSF
                     vsf_payment_success_return_url = website.vsf_payment_success_return_url
 
-                    request.session["__payment_monitored_tx_ids__"] = [payment_transaction.id]
+                    request.session["__payment_monitored_tx_id__"] = payment_transaction.id
 
                     # Confirm sale order
                     PaymentPostProcessing().poll_status()
@@ -266,4 +269,4 @@ class AdyenControllerInherit(AdyenController):
             except ValidationError:  # Acknowledge the notification to avoid getting spammed
                 _logger.exception("unable to handle the notification data; skipping to acknowledge")
 
-        return '[accepted]'  # Acknowledge the notification
+        return request.make_json_response('[accepted]')  # Acknowledge the notification
