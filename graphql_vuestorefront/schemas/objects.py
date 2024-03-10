@@ -832,10 +832,38 @@ class WishlistItem(OdooObjectType):
         return self.product_id or None
 
 
+class PaymentMethod(OdooObjectType):
+    id = graphene.Int(required=True)
+    name = graphene.String()
+    sequence = graphene.Int()
+    code = graphene.String()
+    active = graphene.Boolean()
+    providers = graphene.List(graphene.NonNull(lambda: PaymentProvider))
+    brands = graphene.List(graphene.NonNull(lambda: PaymentMethod))
+    image = graphene.String()
+    image_payment_form = graphene.String()
+
+    def resolve_providers(self, info):
+        return self.provider_ids or None
+
+    def resolve_brands(self, info):
+        return self.brand_ids or None
+
+    def resolve_image(self, info):
+        return '/web/image/payment.method/{}/image'.format(self.id)
+
+    def resolve_image_payment_form(self, info):
+        return '/web/image/payment.method/{}/image_payment_form'.format(self.id)
+
+
 class PaymentProvider(OdooObjectType):
     id = graphene.Int(required=True)
     name = graphene.String()
     code = graphene.String()
+    payment_methods = graphene.List(graphene.NonNull(lambda: PaymentMethod))
+
+    def resolve_payment_methods(self, info):
+        return self.payment_method_ids or None
 
 
 class MailingList(OdooObjectType):

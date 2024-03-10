@@ -44,7 +44,7 @@ class AdyenControllerInherit(AdyenController):
         # Check that the transaction details have not been altered. This allows preventing users
         # from validating transactions by paying less than agreed upon.
         if not payment_utils.check_access_token(
-                access_token, reference, converted_amount, partner_id
+                access_token, reference, converted_amount, currency_id, partner_id
         ):
             raise ValidationError("Adyen: " + _("Received tampered payment request data."))
 
@@ -74,9 +74,9 @@ class AdyenControllerInherit(AdyenController):
             'shopperName': adyen_utils.format_partner_name(tx_sudo.partner_name),
             'telephoneNumber': tx_sudo.partner_phone or "",
             'storePaymentMethod': tx_sudo.tokenize,  # True by default on Adyen side
-            # 'additionalData': {
-            #     'authenticationData.threeDSRequestData.nativeThreeDS': True,
-            # },
+            'additionalData': {
+                'authenticationData.threeDSRequestData.nativeThreeDS': True,
+            },
             'channel': 'web',  # Required to support 3DS
             'origin': provider_sudo.get_base_url(),  # Required to support 3DS
             'browserInfo': browser_info,  # Required to support 3DS
@@ -102,10 +102,7 @@ class AdyenControllerInherit(AdyenController):
 
         # Make the payment request to Adyen
         response_content = provider_sudo._adyen_make_request(
-            url_field_name='adyen_checkout_api_url',
-            endpoint='/payments',
-            payload=data,
-            method='POST'
+            endpoint='/payments', payload=data, method='POST'
         )
 
         # Handle the payment request response

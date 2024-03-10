@@ -8,6 +8,7 @@ from graphql import GraphQLError
 from odoo import _
 from odoo.http import request
 from odoo.osv import expression
+from odoo.tools import format_amount
 
 from odoo.addons.payment import utils as payment_utils
 from odoo.addons.payment_adyen_vsf.const import CURRENCY_DECIMALS
@@ -177,9 +178,10 @@ class AdyenProviderInfo(graphene.Mutation):
         if not payment_provider_id.code == 'adyen':
             raise GraphQLError(_('Payment Provider "Adyen" does not exist.'))
 
-        adyen_provider_info = AdyenController().adyen_provider_info(
-            provider_id=payment_provider_id.id
-        )
+        adyen_provider_info = {
+            'state': payment_provider_id.state,
+            'client_key': payment_provider_id.adyen_client_key
+        }
 
         return AdyenProviderInfoResult(adyen_provider_info=adyen_provider_info)
 
@@ -211,8 +213,7 @@ class AdyenPaymentMethods(graphene.Mutation):
 
         adyen_payment_methods = AdyenController().adyen_payment_methods(
             provider_id=payment_provider_id.id,
-            amount=order.amount_total,
-            currency_id=order.currency_id.id,
+            formatted_amount=format_amount(env, order.amount_total, order.currency_id),
             partner_id=order.partner_id.id
         )
 
@@ -222,11 +223,12 @@ class AdyenPaymentMethods(graphene.Mutation):
 class AdyenTransaction(graphene.Mutation):
     class Arguments:
         provider_id = graphene.Int(required=True)
+        tokenization_requested = graphene.Boolean(default_value=False)
 
     Output = AdyenTransactionResult
 
     @staticmethod
-    def mutate(self, info, provider_id):
+    def mutate(self, info, provider_id, tokenization_requested):
         env = info.context["env"]
         PaymentProvider = env['payment.provider'].sudo()
         PaymentTransaction = env['payment.transaction'].sudo()
@@ -239,21 +241,26 @@ class AdyenTransaction(graphene.Mutation):
         ]
 
         payment_provider_id = PaymentProvider.search(domain, limit=1)
+        payment_method_id = payment_provider_id.payment_method_ids[0].id if payment_provider_id.payment_method_ids else None
         if not payment_provider_id:
             raise GraphQLError(_('Payment Provider does not exist.'))
 
         if not payment_provider_id.code == 'adyen':
             raise GraphQLError(_('Payment Provider "Adyen" does not exist.'))
 
+        # Generate a new access token
+        access_token = payment_utils.generate_access_token(order.partner_id.id, order.amount_total, order.currency_id.id)
+        order.access_token = access_token
+
         transaction = PaymentPortal().shop_payment_transaction(
             order_id=order.id,
             access_token=order.access_token,
-            payment_option_id=provider_id,
+            provider_id=provider_id,
+            payment_method_id=payment_method_id,
+            token_id=None,
             amount=order.amount_total,
-            currency_id=order.currency_id.id,
-            partner_id=order.partner_id.id,
             flow='direct',
-            tokenization_requested=False,
+            tokenization_requested=tokenization_requested,
             landing_route='/shop/payment/validate'
         )
 
