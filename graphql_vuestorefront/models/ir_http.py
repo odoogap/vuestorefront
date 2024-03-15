@@ -5,6 +5,7 @@
 import base64
 import codecs
 import io
+import odoo
 
 from PIL.WebPImagePlugin import Image
 from odoo import api, http, models
@@ -32,6 +33,16 @@ class Http(models.AbstractModel):
     def _content_image_get_response(self, status, headers, image_base64, model='ir.attachment',
                                     field='datas', download=None, width=0, height=0, crop=False, quality=0):
         """ Center image in background with color, resize, compress and convert image to webp or jpeg """
+        if not image_base64:
+            placeholder_filename = False
+            if model in self.env:
+                placeholder_filename = self.env[model]._get_placeholder_filename(field)
+            placeholder_content = self._placeholder(image=placeholder_filename)
+            status = 200
+            image_base64 = base64.b64encode(placeholder_content)
+            if not (width or height):
+                width, height = odoo.tools.image_guess_size_from_field_name(field)
+
         if status == 200 and image_base64 and width and height:
             try:
                 # Accepts jpeg and webp, defaults to webp if none found
