@@ -42,6 +42,7 @@ class Http(models.AbstractModel):
             image_base64 = base64.b64encode(placeholder_content)
             if not (width or height):
                 width, height = odoo.tools.image_guess_size_from_field_name(field)
+            request.image_format = 'jpeg'
 
         if status == 200 and image_base64 and width and height:
             try:
