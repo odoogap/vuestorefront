@@ -219,16 +219,17 @@ class ProductPublicCategory(models.Model):
     website_slug = fields.Char('Website Slug', translate=True, copy=False)
     json_ld = fields.Char('JSON-LD')
 
-    @api.model
-    def create(self, vals):
-        rec = super(ProductPublicCategory, self).create(vals)
+    @api.model_create_multi
+    def create(self, vals_list):
+        res = super(ProductPublicCategory, self).create(vals_list)
 
-        if rec.website_slug:
-            rec._validate_website_slug()
-        else:
-            rec.website_slug = '/category/{}'.format(rec.id)
+        for rec in res:
+            if rec.website_slug:
+                rec._validate_website_slug()
+            else:
+                rec.website_slug = '/category/{}'.format(rec.id)
 
-        return rec
+        return res
 
     def write(self, vals):
         res = super(ProductPublicCategory, self).write(vals)
