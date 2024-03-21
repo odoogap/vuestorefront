@@ -27,7 +27,7 @@ class ResConfigSettings(models.TransientModel):
                                           related='website_id.vsf_mailing_list_id', readonly=False, required=True)
 
     # VSF Images
-    vsf_image_quality = fields.Integer('Quality', required=True)
+    vsf_image_quality = fields.Integer('Quality (%)', required=True)
     vsf_image_background_rgba = fields.Char('Background RGBA', required=True)
     vsf_image_resize_limit = fields.Integer('Resize Limit', required=True,
                                             help='Limit in pixels to resize image for width and height')
