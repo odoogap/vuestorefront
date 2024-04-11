@@ -27,49 +27,51 @@ class IrBinary(models.AbstractModel):
             if not placeholder:
                 placeholder = record._get_placeholder_filename(field_name)
             stream = self._get_placeholder_stream(placeholder)
-        if filename and filename.endswith(('jpeg', 'jpg')):
+        image_format = None
+        if stream and stream.mimetype and ('jpg' in stream.mimetype or 'jpeg' in stream.mimetype):
             image_format = 'jpeg'
-        else:
+        if stream and stream.mimetype and 'webp' in stream.mimetype:
             image_format = 'webp'
-        if stream.data and width and height:
-            image_base64 = stream.data
-            img = Image.open(io.BytesIO(image_base64))
-            ICP = request.env['ir.config_parameter'].sudo()
-            if img.mode != 'RGBA':
-                img = img.convert('RGBA')
+        if image_format:
+            if stream.data and width and height:
+                image_base64 = stream.data
+                img = Image.open(io.BytesIO(image_base64))
+                ICP = request.env['ir.config_parameter'].sudo()
+                if img.mode != 'RGBA':
+                    img = img.convert('RGBA')
 
-            # Get background color from context or settings
-            try:
-                if self.env.context.get('background_rgba'):
-                    background_rgba = safe_eval(self.env.context.get('background_rgba'))
+                # Get background color from context or settings
+                try:
+                    if self.env.context.get('background_rgba'):
+                        background_rgba = safe_eval(self.env.context.get('background_rgba'))
+                    else:
+                        background_rgba = safe_eval(ICP.get_param('vsf_image_background_rgba', '(255, 255, 255, 255)'))
+                except:
+                    background_rgba = (66, 28, 82)
+                # Create a new background, merge the background with the image centered
+                img_w, img_h = img.size
+                if image_format == 'jpeg':
+                    background = Image.new('RGB', (width, height), background_rgba[:3])
                 else:
-                    background_rgba = safe_eval(ICP.get_param('vsf_image_background_rgba', '(255, 255, 255, 255)'))
-            except:
-                background_rgba = (66, 28, 82)
-            # Create a new background, merge the background with the image centered
-            img_w, img_h = img.size
-            if image_format == 'jpeg':
-                background = Image.new('RGB', (width, height), background_rgba[:3])
-            else:
-                background = WebPImagePlugin.Image.new('RGBA', (width, height), background_rgba)
-            bg_w, bg_h = background.size
-            offset = ((bg_w - img_w) // 2, (bg_h - img_h) // 2)
-            background.paste(img, offset)
+                    background = WebPImagePlugin.Image.new('RGBA', (width, height), background_rgba)
+                bg_w, bg_h = background.size
+                offset = ((bg_w - img_w) // 2, (bg_h - img_h) // 2)
+                background.paste(img, offset)
 
-            # Get compression quality from settings
-            quality = ICP.get_param('vsf_image_quality', 100)
+                # Get compression quality from settings
+                quality = ICP.get_param('vsf_image_quality', 100)
 
-            stream_image = io.BytesIO()
-            if image_format == 'jpeg':
-                background.save(stream_image, format=image_format.upper(), subsampling=0)
-            else:
-                background.save(stream_image, format=image_format.upper(), quality=quality, subsampling=0)
+                stream_image = io.BytesIO()
+                if image_format == 'jpeg':
+                    background.save(stream_image, format=image_format.upper(), subsampling=0)
+                else:
+                    background.save(stream_image, format=image_format.upper(), quality=quality, subsampling=0)
 
-            image_base64 = base64.b64encode(stream_image.getvalue())
+                image_base64 = base64.b64encode(stream_image.getvalue())
 
-            # Response
-            stream.data = base64.b64decode(image_base64)
-        self._update_download_name(record, stream, filename, field_name, filename_field, f'image/{image_format}', default_mimetype)
+                # Response
+                stream.data = base64.b64decode(image_base64)
+            self._update_download_name(record, stream, filename, field_name, filename_field, f'image/{image_format}', default_mimetype)
         return stream
 
     def _update_download_name(self, record, stream, filename, field_name, filename_field, mimetype, default_mimetype):
