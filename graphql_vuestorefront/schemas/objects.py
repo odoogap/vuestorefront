@@ -487,24 +487,30 @@ class Product(OdooObjectType):
     def resolve_combination_info_variant(self, info):
         env = info.context["env"]
         pricing_info = get_product_pricing_info(env, self)
-        if pricing_info.get('currency', False):
+        if pricing_info.get('currency', False) and pricing_info['currency'].id:
             pricing_info['currency'] = {
                 'id': pricing_info['currency'].id,
                 'name': pricing_info['currency'].name,
                 'symbol': pricing_info['currency'].symbol
             }
+        else:
+            pricing_info['currency'] = None
         if pricing_info.get('date', False):
             pricing_info['date'] = '%s' % pricing_info['date']
-        if pricing_info.get('product_taxes', False):
+        if pricing_info.get('product_taxes', False) and pricing_info['product_taxes'].id:
             pricing_info['product_taxes'] = {
                 'id': pricing_info['product_taxes'].id,
                 'name': pricing_info['product_taxes'].name
             }
-        if pricing_info.get('taxes', False):
+        else:
+            pricing_info['product_taxes'] = None
+        if pricing_info.get('taxes', False) and pricing_info['taxes'].id:
             pricing_info['taxes'] = {
                 'id': pricing_info['taxes'].id,
                 'name': pricing_info['taxes'].name
             }
+        else:
+            pricing_info['taxes'] = None
         return pricing_info or None
 
     def resolve_variant_price(self, info):
@@ -535,24 +541,30 @@ class Product(OdooObjectType):
     def resolve_combination_info(self, info):
         env = info.context["env"]
         pricing_info = get_product_pricing_info(env, self.product_variant_id)
-        if pricing_info.get('currency', False):
+        if pricing_info.get('currency', False) and pricing_info['currency'].id:
             pricing_info['currency'] = {
                 'id': pricing_info['currency'].id,
                 'name': pricing_info['currency'].name,
                 'symbol': pricing_info['currency'].symbol
             }
+        else:
+            pricing_info['currency'] = None
         if pricing_info.get('date', False):
             pricing_info['date'] = '%s' % pricing_info['date']
-        if pricing_info.get('product_taxes', False):
+        if pricing_info.get('product_taxes', False) and pricing_info['product_taxes'].id:
             pricing_info['product_taxes'] = {
                 'id': pricing_info['product_taxes'].id,
                 'name': pricing_info['product_taxes'].name
             }
-        if pricing_info.get('taxes', False):
+        else:
+            pricing_info['product_taxes'] = None
+        if pricing_info.get('taxes', False) and pricing_info['taxes'].id:
             pricing_info['taxes'] = {
                 'id': pricing_info['taxes'].id,
                 'name': pricing_info['taxes'].name
             }
+        else:
+            pricing_info['taxes'] = None
         return pricing_info or None
 
     def resolve_price(self, info):
