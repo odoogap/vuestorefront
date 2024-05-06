@@ -83,6 +83,7 @@ class GraphQLController(http.Controller, GraphQLControllerMixin):
                 _logger.info('#                         ARGUMENTS                       #')
                 _logger.info('# ------------------------------------------------------- #')
                 _logger.info('\n%s', request.args.get('variables', None))
+                _logger.info('\n%s', data.get('variables', None))
                 _logger.info('')
                 _logger.info('# ------------------------------------------------------------------------------------ #')
             except:
