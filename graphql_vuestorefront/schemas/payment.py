@@ -98,10 +98,8 @@ class PaymentQuery(graphene.ObjectType):
 
         if payment_transaction_id and payment_transaction_id[0]:
             payment_transaction = PaymentTransaction.sudo().search([('id', '=', payment_transaction_id[0])], limit=1)
-            sale_order_id = payment_transaction.sale_order_ids.ids[0]
-
-            if sale_order_id:
-                order = Order.search([('id', '=', sale_order_id)], limit=1)
+            if payment_transaction.sale_order_ids:
+                order = payment_transaction.sale_order_ids[0]
 
         if order.exists():
             return CartData(order=order)
