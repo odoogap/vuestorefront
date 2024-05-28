@@ -35,6 +35,7 @@ def get_search_order(sort):
 def get_search_domain(env, search, **kwargs):
     # Only get published products
     domains = [env['website'].get_current_website().sale_product_domain()]
+    domains = expression.AND([domains, [('is_published', '=', True)]])
 
     # Filter with ids
     if kwargs.get('ids', False):
