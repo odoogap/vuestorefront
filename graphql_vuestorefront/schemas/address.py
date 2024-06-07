@@ -10,20 +10,27 @@ from odoo.http import request
 from odoo.addons.graphql_vuestorefront.schemas.objects import Partner
 
 
-def get_partner(env, partner_id, order, website):
-    if not order:
+def get_partner_id(env, order, website):
+    if order:
+        # Is public user
+        if not order.partner_id.user_ids or order.partner_id.id == website.user_id.sudo().partner_id.id:
+            partner_id = order.partner_id.id
+        else:
+            partner_id = env.user.partner_id.commercial_partner_id.id
+    elif env.user.id == website.user_id.id:
+        # Public users need to have an order to be able to list addresses
         raise GraphQLError(_('Shopping cart not found.'))
-
-    ResPartner = env['res.partner'].with_context(show_address=1).sudo()
-    partner = ResPartner.browse(partner_id)
-
-    # Is public user
-    if not order.partner_id.user_ids or order.partner_id.id == website.user_id.sudo().partner_id.id:
-        partner_id = order.partner_id.id
     else:
         partner_id = env.user.partner_id.commercial_partner_id.id
 
+    return partner_id
+
+def get_partner(env, partner_id, order, website):
+    ResPartner = env['res.partner'].with_context(show_address=1).sudo()
+    partner = ResPartner.browse(partner_id)
+
     # Addresses that belong to this user
+    partner_id = get_partner_id(env, order, website)
     shippings = ResPartner.search([
         ("id", "child_of", partner_id),
         '|', ("type", "in", ["delivery", "invoice"]),
@@ -135,9 +142,12 @@ class AddAddress(graphene.Mutation):
         website = env['website'].get_current_website()
         request.website = website
         order = website.sale_get_order()
-
-        if not order:
+        if order:
+            partner_id = order.partner_id.id
+        elif env.user.id == website.user_id.id:
             raise GraphQLError(_('Shopping cart not found.'))
+        else:
+            partner_id = env.user.partner_id.id
 
         values = {
             'name': address.get('name'),
@@ -150,8 +160,6 @@ class AddAddress(graphene.Mutation):
             'country_id': address.get('country_id', False),
             'email': address.get('email', False),
         }
-
-        partner_id = order.partner_id.id
 
         # Check public user
         if partner_id == website.user_id.sudo().partner_id.id:
@@ -166,14 +174,17 @@ class AddAddress(graphene.Mutation):
         # Create the new shipping or invoice address
         partner = ResPartner.create(values)
 
-        # Update order with the new shipping or invoice address
-        if values['type'] == 'invoice':
-            order.partner_invoice_id = partner.id
-        elif values['type'] == 'delivery':
-            order.partner_shipping_id = partner.id
+        if order:
+            # Update order with the new shipping or invoice address
+            if values['type'] == 'invoice':
+                order.partner_invoice_id = partner.id
+                if order.partner_id.id == order.partner_shipping_id.id:
+                    order.partner_shipping_id = partner.id
+            elif values['type'] == 'delivery':
+                order.partner_shipping_id = partner.id
 
-        # Trigger the change of fiscal position when the shipping address is modified
-        order._compute_fiscal_position_id()
+            # Trigger the change of fiscal position when the shipping address is modified
+            order._compute_fiscal_position_id()
 
         return partner
 
@@ -211,6 +222,7 @@ class UpdateAddress(graphene.Mutation):
         if address.get('country_id'):
             values.update({'country_id': address['country_id']})
 
+        if order:
             # Trigger the change of fiscal position when the shipping address is modified
             order._compute_fiscal_position_id()
 
@@ -241,17 +253,18 @@ class DeleteAddress(graphene.Mutation):
         if not partner.parent_id:
             raise GraphQLError(_("You can't delete the primary address."))
 
-        if order.partner_invoice_id.id == partner.id:
-            order.partner_invoice_id = partner.parent_id.id
+        if order:
+            if order.partner_invoice_id.id == partner.id:
+                order.partner_invoice_id = partner.parent_id.id
 
-        if order.partner_shipping_id.id == partner.id:
-            order.partner_shipping_id = partner.parent_id.id
+            if order.partner_shipping_id.id == partner.id:
+                order.partner_shipping_id = partner.parent_id.id
+
+            # Trigger the change of fiscal position when the shipping address is modified
+            order._compute_fiscal_position_id()
 
         # Archive address, safer than delete since this address could be in use by other object
         partner.active = False
-
-        # Trigger the change of fiscal position when the shipping address is modified
-        order._compute_fiscal_position_id()
 
         return DeleteAddress(result=True)
 
