@@ -33,7 +33,7 @@ def get_partner(env, partner_id, order, website):
     partner_id = get_partner_id(env, order, website)
     shippings = ResPartner.search([
         ("id", "child_of", partner_id),
-        '|', ("type", "in", ["delivery", "invoice", "contact"]),
+        '|', ("type", "in", ["delivery", "invoice"]),
         ("id", "=", partner_id)
     ])
 
