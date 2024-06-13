@@ -196,6 +196,7 @@ class Partner(OdooObjectType):
     vat = graphene.String()
     public_pricelist = graphene.Field(lambda: Pricelist)
     current_pricelist = graphene.Field(lambda: Pricelist)
+    is_public = graphene.Boolean()
 
     def resolve_country(self, info):
         return self.country_id or None
@@ -231,6 +232,8 @@ class Partner(OdooObjectType):
         website = self.env['website'].get_current_website()
         return website.get_current_pricelist()
 
+    def resolve_is_public(self, info):
+        return self.env.user._is_public()
 
 class User(OdooObjectType):
     id = graphene.Int(required=True)
