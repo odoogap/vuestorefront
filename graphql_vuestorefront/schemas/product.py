@@ -241,27 +241,31 @@ class ProductQuery(graphene.ObjectType):
         return info.context["env"]["product.attribute"].search([('id', '=', id)], limit=1)
 
     @staticmethod
-    def resolve_product_variant(self, info, product_template_id, combination_id):
+    def resolve_product_variant(self, info, product_template_id, combination_id=None):
         env = info.context["env"]
 
         website = env['website'].get_current_website()
         request.website = website
+        is_combination_possible = False
 
         product_template = env['product.template'].browse(product_template_id)
-        combination = env['product.template.attribute.value'].browse(combination_id)
+        variant_info = product_template._get_combination_info()
+        if combination_id:
+            combination = env['product.template.attribute.value'].browse(combination_id)
+            is_combination_possible = product_template._is_combination_possible(combination)
 
-        variant_info = product_template._get_combination_info(combination)
+            variant_info = product_template._get_combination_info(combination)
 
-        product = env['product.product'].browse(variant_info['product_id'])
+            product = env['product.product'].browse(variant_info['product_id'])
+        else:
+            product = product_template.product_variant_id
 
         # Condition to verify if Product exist
         if not product:
             raise GraphQLError(_('Product does not exist'))
 
-        is_combination_possible = product_template._is_combination_possible(combination)
-
         # Condition to Verify if Product is active or if combination exist
-        if not product.active or not is_combination_possible:
+        if not product.active or not is_combination_possible or not combination_id:
             variant_info['is_combination_possible'] = False
         else:
             variant_info['is_combination_possible'] = True
