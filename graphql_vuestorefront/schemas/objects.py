@@ -714,6 +714,7 @@ class Order(OdooObjectType):
     coupons = graphene.List(graphene.NonNull(lambda: Coupon))
     gift_cards = graphene.List(graphene.NonNull(lambda: GiftCard))
     cart_quantity = graphene.Int()
+    report_order_line = graphene.List(graphene.NonNull(lambda: OrderLine))
 
     def resolve_partner(self, info):
         return self.partner_id or None
@@ -776,6 +777,10 @@ class Order(OdooObjectType):
 
     def resolve_cart_quantity(self, info):
         return self.cart_quantity or None
+
+    def resolve_report_order_line(self, info):
+        report_order_line = self._get_order_lines_to_report()
+        return report_order_line.filtered(lambda rec:not rec.is_delivery) or None
 
 
 class InvoiceLine(OdooObjectType):
