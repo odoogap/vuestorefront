@@ -32,6 +32,7 @@
         'views/product_views.xml',
         'views/website_views.xml',
         'views/res_config_settings_views.xml',
+        'views/menu.xml'
     ],
     'demo': [
         'data/demo_product_attribute.xml',
@@ -45,11 +46,6 @@
         'data/demo_products_men_clothing_4.xml',
         'data/demo_products_men_shoes.xml',
     ],
-    'assets': {
-        'web.assets_backend': [
-            'graphql_vuestorefront/static/src/js/website_preview.js',
-        ]
-    },
     'installable': True,
     'auto_install': False,
     'pre_init_hook': 'pre_init_hook_login_check',

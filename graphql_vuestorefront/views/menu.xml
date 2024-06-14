@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <menuitem id="menu_website_lists"
+        name="Website"
+        sequence="1"
+        action="website.action_website_list"
+        parent="website.menu_website_configuration"/>
+</odoo>
