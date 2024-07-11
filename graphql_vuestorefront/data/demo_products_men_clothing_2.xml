@@ -76,7 +76,6 @@
         <field name="default_code">CJSDDB-01</field>
         <field name="standard_price">198.75</field>
         <field name="image_1920" type="base64" file="graphql_vuestorefront/static/men/clothing/jackets/jackets-11-blue.jpg"/>
-        <field name="active" eval="False"/>
     </record>
     <record id="men_clothing_jackets_11b" model="product.product">
         <field name="default_code">CJSDDB-02</field>
@@ -161,7 +160,6 @@
         <field name="default_code">LJB3-02</field>
         <field name="standard_price">872.50</field>
         <field name="image_1920" type="base64" file="graphql_vuestorefront/static/men/clothing/jackets/jackets-12-black.jpg"/>
-        <field name="active" eval="False"/>
     </record>
 
 
@@ -491,7 +489,6 @@
         <field name="default_code">KATHMANDU-03</field>
         <field name="standard_price">411.25</field>
         <field name="image_1920" type="base64" file="graphql_vuestorefront/static/men/clothing/jackets/jackets-16-grey.jpg"/>
-        <field name="active" eval="False"/>
     </record>
 
 
@@ -571,7 +568,6 @@
         <field name="default_code">CAD02-02</field>
         <field name="standard_price">536.25</field>
         <field name="image_1920" type="base64" file="graphql_vuestorefront/static/men/clothing/jackets/jackets-17-beige.jpg"/>
-        <field name="active" eval="False"/>
     </record>
 
 
@@ -804,7 +800,6 @@
         <field name="default_code">BULLY02-01</field>
         <field name="standard_price">497.50</field>
         <field name="image_1920" type="base64" file="graphql_vuestorefront/static/men/clothing/jackets/jackets-20-brown.jpg"/>
-        <field name="active" eval="False"/>
     </record>
     <record id="men_clothing_jackets_20b" model="product.product">
         <field name="default_code">BULLY02-02</field>

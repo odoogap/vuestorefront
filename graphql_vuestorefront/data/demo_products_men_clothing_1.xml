@@ -605,7 +605,6 @@
         <field name="default_code">MDJ01-03</field>
         <field name="standard_price">1218.75</field>
         <field name="image_1920" type="base64" file="graphql_vuestorefront/static/men/clothing/jackets/jackets-6-brown.jpg"/>
-        <field name="active" eval="False"/>
     </record>
 
 
@@ -843,7 +842,6 @@
         <field name="default_code">Invicta-02</field>
         <field name="standard_price">423.75</field>
         <field name="image_1920" type="base64" file="graphql_vuestorefront/static/men/clothing/jackets/jackets-9-blue.jpg"/>
-        <field name="active" eval="False"/>
     </record>
 
 
@@ -923,7 +921,6 @@
         <field name="default_code">LYON-02</field>
         <field name="standard_price">656.25</field>
         <field name="image_1920" type="base64" file="graphql_vuestorefront/static/men/clothing/jackets/jackets-10-black.jpg"/>
-        <field name="active" eval="False"/>
     </record>
 
 </odoo>

@@ -226,7 +226,6 @@
         <field name="default_code">CJSTMK-01</field>
         <field name="standard_price">106.25</field>
         <field name="image_1920" type="base64" file="graphql_vuestorefront/static/women/bags/clutches/clutches-3-yellow.jpg"/>
-        <field name="active" eval="False"/>
     </record>
     <record id="women_bags_clutches_3b" model="product.product">
         <field name="default_code">CJSTMK-02</field>
@@ -252,19 +251,16 @@
         <field name="default_code">CJSTMK-06</field>
         <field name="standard_price">106.25</field>
         <field name="image_1920" type="base64" file="graphql_vuestorefront/static/women/bags/clutches/clutches-3-blue.jpg"/>
-        <field name="active" eval="False"/>
     </record>
     <record id="women_bags_clutches_3g" model="product.product">
         <field name="default_code">CJSTMK-07</field>
         <field name="standard_price">106.25</field>
         <field name="image_1920" type="base64" file="graphql_vuestorefront/static/women/bags/clutches/clutches-3-brown.jpg"/>
-        <field name="active" eval="False"/>
     </record>
     <record id="women_bags_clutches_3h" model="product.product">
         <field name="default_code">CJSTMK-08</field>
         <field name="standard_price">106.25</field>
         <field name="image_1920" type="base64" file="graphql_vuestorefront/static/women/bags/clutches/clutches-3-pink.jpg"/>
-        <field name="active" eval="False"/>
     </record>
 
     <record id="graphql_vuestorefront.women_bags_clutches_3_attribute_1_value_2" model="product.template.attribute.value">
