@@ -71,6 +71,9 @@ class ProductTemplate(models.Model):
             attribute_values = variants.\
                 mapped('product_template_attribute_value_ids').\
                 mapped('product_attribute_value_id')
+            attribute_values += variants.\
+                mapped('valid_product_template_attribute_line_ids').\
+                mapped('value_ids')
             product.variant_attribute_value_ids = [(6, 0, attribute_values.ids)]
 
     variant_attribute_value_ids = fields.Many2many('product.attribute.value',
