@@ -21,6 +21,7 @@
                             <field name="website_meta_description" string="Meta Description"/>
                             <field name="website_meta_keywords" string="Meta Keywords"
                                    help="Separate every keyword with a comma"/>
+                            <field name="json_ld"/>
                             <field name="website_meta_og_img"/>
                             <field name="website_meta_img" string="Meta Image" widget="image"/>
                         </group>
@@ -37,7 +38,6 @@
         <field name="arch" type="xml">
             <xpath expr="//field[@name='website_id']" position="before">
                 <field name="website_slug"/>
-                <field name="json_ld"/>
             </xpath>
         </field>
     </record>
@@ -54,6 +54,7 @@
                         <field name="website_meta_description" string="Meta Description"/>
                         <field name="website_meta_keywords" string="Meta Keywords"
                                help="Separate every keyword with a comma"/>
+                        <field name="json_ld"/>
                         <field name="website_meta_og_img"/>
                         <field name="website_meta_img" string="Meta Image" widget="image"/>
                     </group>
