@@ -12,6 +12,7 @@
         <field name="arch" type="xml">
             <xpath expr="//field[@name='website_id']" position="before">
                 <field name="website_slug"/>
+                <field name="attribute_ids"/>
             </xpath>
             <sheet position="inside">
                 <notebook>

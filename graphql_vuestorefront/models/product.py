@@ -220,6 +220,7 @@ class ProductPublicCategory(models.Model):
                 raise ValidationError(_('Slug is already in use: {}'.format(category.website_slug)))
 
     website_slug = fields.Char('Website Slug', translate=True, copy=False)
+    attribute_ids = fields.Many2many('product.attribute', string='Filtering Attributes')
     json_ld = fields.Char('JSON-LD')
 
     @api.model_create_multi
@@ -263,3 +264,9 @@ class ProductPublicCategory(models.Model):
         }
 
         return json.dumps(json_ld)
+
+
+class ProductAttributeValue(models.Model):
+    _inherit = 'product.attribute.value'
+
+    visibility = fields.Selection(related='attribute_id.visibility', store=True, readonly=True)

@@ -106,6 +106,7 @@ def get_search_domain(env, search, **kwargs):
 
 def get_product_list(env, current_page, page_size, search, sort, **kwargs):
     Product = env['product.template'].sudo()
+    Category = env['product.public.category'].sudo()
     domain, partial_domain = get_search_domain(env, search, **kwargs)
 
     # First offset is 0 but first page is 1
@@ -116,17 +117,46 @@ def get_product_list(env, current_page, page_size, search, sort, **kwargs):
     order = get_search_order(sort)
     products = Product.search(domain, order=order)
 
-    # If attribute values are selected, we need to get the full list of attribute values and prices
+    # Attempt to get attribute values from category, otherwise fallback to attribute values from products
+    attribute_values = env['product.attribute.value'].sudo()
+    category = None
+    if kwargs.get('category_id'):
+        category = Category.search([('id', 'in', kwargs['category_id'])], limit=1)
+    elif kwargs.get('category_slug'):
+        category = Category.search([('website_slug', '=', kwargs['category_slug'])], limit=1)
+    if category:
+        attribute_values = category.\
+            mapped('attribute_ids').\
+            mapped('value_ids').\
+            filtered(lambda av: av.visibility and av.visibility == 'visible')
+
+    # The partial domain is being used because when we select (example) attributes, the full list of products is
+    # reduced which in turn also reduces the full list of attribute values, prices and warehouses
     if domain == partial_domain:
-        attribute_values = products.mapped('variant_attribute_value_ids')
-        prices = products.mapped('list_price')
+        without_filters_products = products
     else:
-        without_attributes_products = Product.search(partial_domain)
-        attribute_values = without_attributes_products.mapped('variant_attribute_value_ids')
-        prices = without_attributes_products.mapped('list_price')
+        without_filters_products = Product.search(partial_domain)
+
+    # Attributes from category, they still need to be filtered based on the products we are returning
+    if attribute_values:
+        category_attribute_value_ids = attribute_values.ids
+        product_attribute_value_ids = without_filters_products.\
+            mapped('variant_attribute_value_ids').\
+            filtered(lambda av: av.visibility and av.visibility == 'visible').ids
+        # Convert lists to sets and find the intersection to make sure attributes from category exist on products
+        common_ids = list(set(category_attribute_value_ids) & set(product_attribute_value_ids))
+        attribute_values = attribute_values.filtered(lambda av: av.id in common_ids)
+    else:
+        # Attributes from products
+        attribute_values = without_filters_products.\
+            mapped('variant_attribute_value_ids').\
+            filtered(lambda av: av.visibility and av.visibility == 'visible')
+
+    prices = without_filters_products.mapped('list_price')
 
     total_count = len(products)
     products = products[offset:offset + page_size]
+
     if prices:
         return products, total_count, attribute_values, min(prices), max(prices)
     return products, total_count, attribute_values, 0.0, 0.0
