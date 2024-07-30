@@ -6,6 +6,12 @@ import requests
 from odoo import models, fields, api
 
 
+class WebsiteSeoMetadata(models.AbstractModel):
+    _inherit = 'website.seo.metadata'
+
+    website_meta_img = fields.Image('Website meta image')
+
+
 class Website(models.Model):
     _inherit = 'website'
 
