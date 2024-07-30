@@ -13,6 +13,18 @@
             <xpath expr="//field[@name='website_id']" position="before">
                 <field name="website_slug"/>
             </xpath>
+            <sheet position="inside">
+                <notebook>
+                    <page name="seo" string="SEO" groups="base.group_no_one">
+                        <group name="default_opengraph">
+                            <field name="website_meta_title" string="Meta Title"/>
+                            <field name="website_meta_description" string="Meta Description"/>
+                            <field name="website_meta_keywords" string="Meta Keywords" help="Separate every keyword with a comma"/>
+                            <field name="website_meta_og_img"/>
+                        </group>
+                    </page>
+                </notebook>
+            </sheet>
         </field>
     </record>
 
@@ -28,4 +40,21 @@
         </field>
     </record>
 
+    <record id="product_normal_form_view_inherit" model="ir.ui.view">
+        <field name="name">product.product.form.inherit</field>
+        <field name="model">product.product</field>
+        <field name="inherit_id" ref="product.product_normal_form_view"/>
+        <field name="arch" type="xml">
+            <notebook position="inside">
+                <page name="seo" string="SEO" groups="base.group_no_one">
+                    <group name="default_opengraph">
+                        <field name="website_meta_title" string="Meta Title"/>
+                        <field name="website_meta_description" string="Meta Description"/>
+                        <field name="website_meta_keywords" string="Meta Keywords" help="Separate every keyword with a comma"/>
+                        <field name="website_meta_og_img"/>
+                    </group>
+                </page>
+            </notebook>
+        </field>
+    </record>
 </odoo>
