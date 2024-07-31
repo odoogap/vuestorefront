@@ -267,6 +267,10 @@ class Category(OdooObjectType):
     slug = graphene.String()
     products = graphene.List(graphene.NonNull(lambda: Product))
     json_ld = generic.GenericScalar()
+    meta_title = graphene.String()
+    meta_keyword = graphene.String()
+    meta_description = graphene.String()
+    meta_image = graphene.String()
 
     def resolve_parent(self, info):
         return self.parent_id or None
@@ -282,6 +286,18 @@ class Category(OdooObjectType):
 
     def resolve_json_ld(self, info):
         return self and self.get_json_ld() or None
+
+    def resolve_meta_title(self, info):
+        return self.website_meta_title or None
+
+    def resolve_meta_keyword(self, info):
+        return self.website_meta_keywords or None
+
+    def resolve_meta_description(self, info):
+        return self.website_meta_description or None
+
+    def resolve_meta_image(self, info):
+        return '/web/image/{}/{}/website_meta_img'.format(self._name, self.id)
 
 
 class AttributeValue(OdooObjectType):
@@ -368,6 +384,7 @@ class Product(OdooObjectType):
     meta_title = graphene.String()
     meta_keyword = graphene.String()
     meta_description = graphene.String()
+    meta_image = graphene.String()
     image = graphene.String()
     small_image = graphene.String()
     image_filename = graphene.String()
@@ -437,6 +454,9 @@ class Product(OdooObjectType):
 
     def resolve_meta_description(self, info):
         return self.website_meta_description or None
+
+    def resolve_meta_image(self, info):
+        return '/web/image/{}/{}/website_meta_img'.format(self._name, self.id)
 
     def resolve_image(self, info):
         return '/web/image/{}/{}/image_1920'.format(self._name, self.id)
