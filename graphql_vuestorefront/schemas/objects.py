@@ -362,6 +362,7 @@ class Product(OdooObjectType):
     sku = graphene.String()
     barcode = graphene.String()
     description = graphene.String()
+    website_description = graphene.String()
     currency = graphene.Field(lambda: Currency)
     weight = graphene.Float()
     meta_title = graphene.String()

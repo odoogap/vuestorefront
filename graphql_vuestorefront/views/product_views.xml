@@ -40,6 +40,11 @@
             <xpath expr="//field[@name='website_id']" position="before">
                 <field name="website_slug"/>
             </xpath>
+            <page name="sales" position="inside">
+                <group string="Website Description" name="website_description">
+                    <field colspan="2" name="website_description" nolabel="1"/>
+                </group>
+            </page>
         </field>
     </record>
 
