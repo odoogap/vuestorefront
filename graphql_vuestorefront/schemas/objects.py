@@ -238,7 +238,9 @@ class Partner(OdooObjectType):
         return website._get_current_pricelist()
 
     def resolve_is_public(self, info):
-        return self.env.user._is_public()
+        website = self.env['website'].get_current_website()
+        return self.user_ids == website.user_id
+
 
 class User(OdooObjectType):
     id = graphene.Int(required=True)
