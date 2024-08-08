@@ -38,10 +38,10 @@ class VSFBinary(Binary):
                  '/web/image/<int:id>-<string:unique>/<int:width>x<int:height>',
                  '/web/image/<int:id>-<string:unique>/<int:width>x<int:height>/<string:filename>'], type='http',
                 auth="public")
-    def content_image(self, xmlid=None, model='ir.attachment', id=None, field='datas',
-                      filename_field='name', unique=None, filename=None, mimetype=None,
-                      download=None, width=0, height=0, crop=False, access_token=None,
-                      **kwargs):
+    def content_image(self, xmlid=None, model='ir.attachment', id=None, field='raw',
+                    filename_field='name', filename=None, mimetype=None, unique=False,
+                    download=False, width=0, height=0, crop=False, access_token=None,
+                    nocache=False):
         """ Validate width and height """
         try:
             ICP = request.env['ir.config_parameter'].sudo()
@@ -53,9 +53,9 @@ class VSFBinary(Binary):
             return request.not_found()
 
         return super(VSFBinary, self).content_image(
-            xmlid=xmlid, model=model, id=id, field=field, filename_field=filename_field, unique=unique,
-            filename=filename, mimetype=mimetype, download=download, width=width, height=height, crop=crop,
-            access_token=access_token, **kwargs)
+            xmlid=xmlid, model=model, id=id, field=field, filename_field=filename_field, filename=filename,
+            mimetype=mimetype, unique=unique, download=download, width=width, height=height, crop=crop,
+            access_token=access_token, nocache=nocache)
 
 
 class GraphQLController(http.Controller, GraphQLControllerMixin):
