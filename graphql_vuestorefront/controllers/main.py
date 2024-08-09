@@ -92,25 +92,29 @@ class GraphQLController(http.Controller, GraphQLControllerMixin):
 
     def _set_website_context(self):
         """Set website context based on http_request_host header."""
+        website = None
         try:
-            request_host = request.httprequest.headers.environ['HTTP_RESQUEST_HOST']
-            website = request.env['website'].search([('domain', 'ilike', request_host)], limit=1)
-            if website:
-                context = dict(request.context)
-                context.update({
-                    'website_id': website.id,
-                    'lang': website.default_lang_id.code,
-                })
-                request.context = context
-
-                request_uid = http.request.env.uid
-                website_uid = website.sudo().user_id.id
-
-                if request_uid != website_uid \
-                        and request.env['res.users'].sudo().browse(request_uid).has_group('base.group_public'):
-                    request.uid = website_uid
+            request_host = request.httprequest.headers.environ.get('HTTP_RESQUEST_HOST')
+            if not request_host.startswith(('http://', 'https://')):
+                request_host = f'https://{request_host}'
+            website = request.env['website'].search([('domain', '=', request_host)], limit=1)
         except:
             pass
+
+        if not website:
+            website = request.env['website'].search([], limit=1)
+
+        request.update_context(
+            website_id=website.id,
+            lang=website.default_lang_id.code,
+        )
+
+        request_uid = request.env.uid
+        website_uid = website.sudo().user_id.id
+
+        if request_uid != website_uid \
+                and request.env['res.users'].sudo().browse(request_uid).has_group('base.group_public'):
+            request.uid = website_uid
 
     # The GraphiQL route, providing an IDE for developers
     @http.route("/graphiql/vsf", auth="user")
