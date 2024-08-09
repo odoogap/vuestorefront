@@ -239,7 +239,7 @@ class Partner(OdooObjectType):
 
     def resolve_is_public(self, info):
         website = self.env['website'].get_current_website()
-        return self.user_ids == website.user_id
+        return True if not self or not self.user_ids or self.user_ids == website.user_id else False
 
 
 class User(OdooObjectType):
