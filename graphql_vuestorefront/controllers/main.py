@@ -11,8 +11,8 @@ from odoo import http
 from odoo.addons.web.controllers.binary import Binary
 from odoo.addons.graphql_base import GraphQLControllerMixin
 from odoo.http import request, Response
-from odoo.tools.safe_eval import safe_eval
 from urllib.parse import urlparse
+from werkzeug.exceptions import Forbidden
 
 from ..schema import schema
 
@@ -119,6 +119,12 @@ class GraphQLController(http.Controller, GraphQLControllerMixin):
     # The GraphiQL route, providing an IDE for developers
     @http.route("/graphiql/vsf", auth="user")
     def graphiql(self, **kwargs):
+        internal_group_id = request.env.ref('base.group_user').id
+
+        # Check if the current user belongs to the internal user group
+        if internal_group_id not in request.env.user.groups_id.ids:
+            raise Forbidden()
+
         self._set_website_context()
         return self._handle_graphiql_request(schema.graphql_schema)
 
