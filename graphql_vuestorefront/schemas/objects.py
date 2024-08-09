@@ -264,6 +264,7 @@ class Currency(OdooObjectType):
 class Category(OdooObjectType):
     id = graphene.Int(required=True)
     name = graphene.String()
+    image = graphene.String()
     parent = graphene.Field(lambda: Category)
     childs = graphene.List(graphene.NonNull(lambda: Category))
     slug = graphene.String()
@@ -273,6 +274,9 @@ class Category(OdooObjectType):
     meta_keyword = graphene.String()
     meta_description = graphene.String()
     meta_image = graphene.String()
+
+    def resolve_image(self, info):
+        return '/web/image/product.public.category/{}/image_1920'.format(self.id)
 
     def resolve_parent(self, info):
         return self.parent_id or None
@@ -299,7 +303,7 @@ class Category(OdooObjectType):
         return self.website_meta_description or None
 
     def resolve_meta_image(self, info):
-        return '/web/image/{}/{}/website_meta_img'.format(self._name, self.id)
+        return '/web/image/product.public.category/{}/website_meta_img'.format(self.id)
 
 
 class AttributeValue(OdooObjectType):
