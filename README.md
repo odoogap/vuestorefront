@@ -1,8 +1,8 @@
-# Vuestorefront2 - Odoo Backend Modules
+# Vuestorefront 3 - Odoo Backend Modules
 
 ## Overview
 
-Vuestorefront 2 is a lightning-fast frontend platform for Headless Commerce.
+Vuestorefront 3 is a lightning-fast frontend platform for Headless Commerce.
 In some situations it's ok to just use an Odoo template and start your website, but some
 companies they need and full blown eCommerce platform because their business depends on that.
 
@@ -13,7 +13,7 @@ This is not another sync between Odoo and other eCommerce, data will always be i
 
 ## Purpose
 
-You will need these modules installed in your Odoo to publish the GraphQL endpoints that VSF2 needs.
+You will need these modules installed in your Odoo to publish the GraphQL endpoints that VSF3 needs.
 
 ## How to install
 
@@ -27,7 +27,7 @@ You will need these modules installed in your Odoo to publish the GraphQL endpoi
 
 ## Dependencies
 
-OCA - Odoo Community Association - Base REST
+OCA - Odoo Community Association - Base Graphql
 
 ## How to configure
 
