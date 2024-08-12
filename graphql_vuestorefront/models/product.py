@@ -86,7 +86,6 @@ class ProductTemplate(models.Model):
                                              'product_template_product_public_category_slug_rel',
                                              compute='_compute_public_categ_slug_ids',
                                              store=True, readonly=True)
-    json_ld = fields.Char('JSON-LD')
 
     def write(self, vals):
         res = super(ProductTemplate, self).write(vals)
@@ -221,7 +220,6 @@ class ProductPublicCategory(models.Model):
 
     website_slug = fields.Char('Website Slug', translate=True, copy=False)
     attribute_ids = fields.Many2many('product.attribute', string='Filtering Attributes')
-    json_ld = fields.Char('JSON-LD')
 
     @api.model_create_multi
     def create(self, vals_list):

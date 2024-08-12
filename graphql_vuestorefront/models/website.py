@@ -10,10 +10,12 @@ class WebsiteSeoMetadata(models.AbstractModel):
     _inherit = 'website.seo.metadata'
 
     website_meta_img = fields.Image('Website meta image')
+    json_ld = fields.Char('JSON-LD')
 
 
 class Website(models.Model):
-    _inherit = 'website'
+    _name = 'website'
+    _inherit = ['website', 'website.seo.metadata']
 
     vsf_payment_success_return_url = fields.Char(
         'Payment Success Return Url', required=True, translate=True, default='Dummy'

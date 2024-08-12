@@ -17,6 +17,18 @@
                     <field name="vsf_payment_error_return_url"/>
                 </group>
             </xpath>
+            <xpath expr="//page[@name='page_custom_code']" position="before">
+                <page name="seo" string="Homepage SEO" groups="base.group_no_one">
+                    <group name="default_opengraph">
+                        <field name="website_meta_title" string="Meta Title"/>
+                        <field name="website_meta_description" string="Meta Description"/>
+                        <field name="website_meta_keywords" string="Meta Keywords"
+                               help="Separate every keyword with a comma"/>
+                        <field name="website_meta_img" string="Meta Image" widget="image"/>
+                        <field name="json_ld"/>
+                    </group>
+                </page>
+            </xpath>
         </field>
     </record>
 
