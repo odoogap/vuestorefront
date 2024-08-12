@@ -74,9 +74,7 @@ def get_document_count_with_check_access(model, domain):
     return model.search_count(domain)
 
 
-def get_product_pricing_info(env, product):
-    website = env['website'].get_current_website()
-    pricelist = website._get_current_pricelist()
+def get_product_pricing_info(product):
     return product and product._get_combination_info_variant() or None
 
 
@@ -520,8 +518,7 @@ class Product(OdooObjectType):
 
     # Specific to use in Product Variant
     def resolve_combination_info_variant(self, info):
-        env = info.context["env"]
-        pricing_info = get_product_pricing_info(env, self)
+        pricing_info = get_product_pricing_info(self)
         if pricing_info.get('currency', False) and pricing_info['currency'].id:
             pricing_info['currency'] = {
                 'id': pricing_info['currency'].id,
@@ -549,18 +546,15 @@ class Product(OdooObjectType):
         return pricing_info or None
 
     def resolve_variant_price(self, info):
-        env = info.context["env"]
-        pricing_info = get_product_pricing_info(env, self)
+        pricing_info = get_product_pricing_info(self)
         return pricing_info['list_price'] or None
 
     def resolve_variant_price_after_discount(self, info):
-        env = info.context["env"]
-        pricing_info = get_product_pricing_info(env, self)
+        pricing_info = get_product_pricing_info(self)
         return pricing_info['price'] or None
 
     def resolve_variant_has_discounted_price(self, info):
-        env = info.context["env"]
-        pricing_info = get_product_pricing_info(env, self)
+        pricing_info = get_product_pricing_info(self)
         return pricing_info['has_discounted_price']
 
     def resolve_is_variant_possible(self, info):
@@ -574,8 +568,7 @@ class Product(OdooObjectType):
 
     # Specific to use in Product Template
     def resolve_combination_info(self, info):
-        env = info.context["env"]
-        pricing_info = get_product_pricing_info(env, self.product_variant_id)
+        pricing_info = get_product_pricing_info(self.product_variant_id)
         if pricing_info.get('currency', False) and pricing_info['currency'].id:
             pricing_info['currency'] = {
                 'id': pricing_info['currency'].id,
