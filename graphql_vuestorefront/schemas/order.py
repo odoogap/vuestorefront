@@ -121,11 +121,21 @@ class OrderQuery(graphene.ObjectType):
         return order._get_delivery_methods()
 
 
+class ApplyCoupons(graphene.Interface):
+    order = graphene.Field(Order)
+    error = graphene.String()
+
+
+class ApplyCouponList(graphene.ObjectType):
+    class Meta:
+        interfaces = (ApplyCoupons,)
+
+
 class ApplyCoupon(graphene.Mutation):
     class Arguments:
         promo = graphene.String()
 
-    error = graphene.String()
+    Output = ApplyCouponList
 
     @staticmethod
     def mutate(self, info, promo):
@@ -142,14 +152,26 @@ class ApplyCoupon(graphene.Mutation):
         order._auto_apply_rewards()
         order.action_open_reward_wizard()
 
-        return ApplyCoupon(error=coupon_status.get('error') or coupon_status.get('not_found'))
+        error = coupon_status.get('error') or coupon_status.get('not_found')
+
+        return ApplyCouponList(order=order, error=error)
+
+
+class ApplyGiftCards(graphene.Interface):
+    order = graphene.Field(Order)
+    error = graphene.String()
+
+
+class ApplyGiftCardList(graphene.ObjectType):
+    class Meta:
+        interfaces = (ApplyGiftCards,)
 
 
 class ApplyGiftCard(graphene.Mutation):
     class Arguments:
         promo = graphene.String()
 
-    error = graphene.String()
+    Output = ApplyGiftCardList
 
     @staticmethod
     def mutate(self, info, promo):
@@ -166,7 +188,9 @@ class ApplyGiftCard(graphene.Mutation):
         order._auto_apply_rewards()
         order.action_open_reward_wizard()
 
-        return ApplyGiftCard(error=gift_card_status.get('error') or gift_card_status.get('not_found'))
+        error = gift_card_status.get('error') or gift_card_status.get('not_found')
+
+        return ApplyGiftCardList(order=order, error=error)
 
 
 class OrderMutation(graphene.ObjectType):
