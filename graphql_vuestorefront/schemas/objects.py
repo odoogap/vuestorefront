@@ -770,7 +770,7 @@ class Order(OdooObjectType):
         return self.order_line or None
 
     def resolve_website_order_line(self, info):
-        return self.website_order_line or None
+        return self.website_order_line.filtered(lambda l: l.id and l.product_id) or None
 
     def resolve_stage(self, info):
         return self.state or None
