@@ -38,6 +38,7 @@
         <field name="arch" type="xml">
             <xpath expr="//field[@name='website_id']" position="before">
                 <field name="website_slug"/>
+                <field name="sales_count_30_days"/>
             </xpath>
             <page name="sales" position="inside">
                 <group string="Website Description" name="website_description">

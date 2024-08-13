@@ -19,5 +19,17 @@
             <field name="active" eval="False"/>
         </record>
 
+        <record id="ir_cron_recalculate_products_popularity" model="ir.cron">
+            <field name="name">Recalculate Products Popularity</field>
+            <field name="model_id" ref="product.model_product_template"/>
+            <field name="state">code</field>
+            <field name="code">model.recalculate_products_popularity()</field>
+            <field name="interval_number">1</field>
+            <field name="interval_type">weeks</field>
+            <field name="numbercall">-1</field>
+            <field name="doall" eval="False"/>
+            <field name="user_id" ref="base.user_admin"/>
+        </record>
+
     </data>
 </odoo>

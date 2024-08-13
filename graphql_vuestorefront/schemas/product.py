@@ -20,6 +20,10 @@ def get_search_order(sort):
             sorting += ', '
         if field == 'price':
             sorting += 'list_price %s' % val.value
+        elif field == 'popular':
+            sorting += 'sales_count_30_days %s' % val.value
+        elif field == 'newest':
+            sorting += 'create_date %s' % val.value
         else:
             sorting += '%s %s' % (field, val.value)
 
@@ -191,6 +195,8 @@ class ProductSortInput(graphene.InputObjectType):
     id = SortEnum()
     name = SortEnum()
     price = SortEnum()
+    popular = SortEnum()
+    newest = SortEnum()
 
 
 class ProductVariant(graphene.Interface):

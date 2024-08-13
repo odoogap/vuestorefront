@@ -4,7 +4,9 @@
 
 import json
 import requests
+from datetime import timedelta
 from odoo import models, fields, api, tools, _
+from odoo.tools.float_utils import float_round
 from odoo.addons.http_routing.models.ir_http import slug, slugify
 from odoo.exceptions import ValidationError
 
@@ -76,6 +78,27 @@ class ProductTemplate(models.Model):
                 mapped('value_ids')
             product.variant_attribute_value_ids = [(6, 0, attribute_values.ids)]
 
+    def _compute_sales_count_30_days(self):
+        date_30_days_ago = fields.Datetime.now() - timedelta(days=30)
+        done_states = self.env['sale.report'].sudo()._get_done_states()
+        domain = [
+            ('state', 'in', done_states),
+            ('date', '>=', date_30_days_ago),
+        ]
+
+        sale_groups = self.env['sale.report'].sudo().read_group(
+            domain,
+            ['product_id', 'product_uom_qty'],
+            ['product_id'],
+        )
+
+        sale_count_map = {group['product_id'][0]: group['product_uom_qty'] for group in sale_groups}
+
+        for product in self:
+            product_id = product.product_variant_id.id
+            count = sale_count_map.get(product_id, 0)
+            product.sales_count_30_days = float_round(count, precision_rounding=product.uom_id.rounding)
+
     variant_attribute_value_ids = fields.Many2many('product.attribute.value',
                                                    'product_template_variant_product_attribute_value_rel',
                                                    compute='_compute_variant_attribute_value_ids',
@@ -86,6 +109,8 @@ class ProductTemplate(models.Model):
                                              'product_template_product_public_category_slug_rel',
                                              compute='_compute_public_categ_slug_ids',
                                              store=True, readonly=True)
+    sales_count_30_days = fields.Float('Sales Count 30 Days', compute='_compute_sales_count_30_days', store=True,
+                                       readonly=True)
 
     def write(self, vals):
         res = super(ProductTemplate, self).write(vals)
@@ -158,6 +183,10 @@ class ProductTemplate(models.Model):
             json_ld.update({"sku": self.default_code})
 
         return json.dumps(json_ld)
+
+    @api.model
+    def recalculate_products_popularity(self):
+        self.search([])._compute_sales_count_30_days()
 
 
 class ProductProduct(models.Model):
