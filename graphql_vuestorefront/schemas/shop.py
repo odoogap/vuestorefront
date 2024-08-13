@@ -26,7 +26,6 @@ class ShoppingCartQuery(graphene.ObjectType):
     def resolve_cart(self, info):
         env = info.context["env"]
         website = env['website'].get_current_website()
-        request.website = website
         order = website.sale_get_order(force_create=True)
         if order and order.state != 'draft':
             request.session['sale_order_id'] = None
@@ -43,7 +42,6 @@ class CartClear(graphene.Mutation):
     def mutate(self, info):
         env = info.context["env"]
         website = env['website'].get_current_website()
-        request.website = website
         order = website.sale_get_order(force_create=1)
         order.order_line.sudo().unlink()
         return order
@@ -59,7 +57,6 @@ class SetShippingMethod(graphene.Mutation):
     def mutate(self, info, shipping_method_id):
         env = info.context["env"]
         website = env['website'].get_current_website()
-        request.website = website
         order = website.sale_get_order(force_create=1)
 
         order._check_carrier_quotation(force_carrier_id=shipping_method_id)
@@ -91,7 +88,6 @@ class CartAddMultipleItems(graphene.Mutation):
     def mutate(self, info, products):
         env = info.context["env"]
         website = env['website'].get_current_website()
-        request.website = website
         order = website.sale_get_order(force_create=1)
         # Forcing the website_id to be passed to the Order
         order.write({'website_id': website.id})
@@ -112,7 +108,6 @@ class CartUpdateMultipleItems(graphene.Mutation):
     def mutate(self, info, lines):
         env = info.context["env"]
         website = env['website'].get_current_website()
-        request.website = website
         order = website.sale_get_order(force_create=1)
         for line in lines:
             line_id = line['id']
@@ -134,7 +129,6 @@ class CartRemoveMultipleItems(graphene.Mutation):
     def mutate(self, info, line_ids):
         env = info.context["env"]
         website = env['website'].get_current_website()
-        request.website = website
         order = website.sale_get_order(force_create=1)
         for line_id in line_ids:
             line = order.order_line.filtered(lambda rec: rec.id == line_id)
@@ -154,7 +148,6 @@ class CreateUpdatePartner(graphene.Mutation):
     def mutate(self, info, name, email, subscribe_newsletter):
         env = info.context['env']
         website = env['website'].get_current_website()
-        request.website = website
         order = website.sale_get_order(force_create=1)
 
         data = {

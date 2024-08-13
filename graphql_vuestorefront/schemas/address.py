@@ -64,7 +64,6 @@ class AddressQuery(graphene.ObjectType):
         env = info.context["env"]
         ResPartner = env['res.partner'].with_context(show_address=1).sudo()
         website = env['website'].get_current_website()
-        request.website = website
         order = website.sale_get_order()
 
         if not order:
@@ -140,7 +139,6 @@ class AddAddress(graphene.Mutation):
         env = info.context["env"]
         ResPartner = env['res.partner'].sudo().with_context(tracking_disable=True)
         website = env['website'].get_current_website()
-        request.website = website
         order = website.sale_get_order()
 
         if order:
@@ -200,7 +198,6 @@ class UpdateAddress(graphene.Mutation):
     def mutate(self, info, address):
         env = info.context["env"]
         website = env['website'].get_current_website()
-        request.website = website
         order = website.sale_get_order()
 
         partner = get_partner(env, address['id'], order, website)
@@ -246,7 +243,6 @@ class DeleteAddress(graphene.Mutation):
     def mutate(self, info, address):
         env = info.context["env"]
         website = env['website'].get_current_website()
-        request.website = website
         order = website.sale_get_order()
 
         partner = get_partner(env, address['id'], order, website)
@@ -281,7 +277,6 @@ class SelectAddress(graphene.Mutation):
     def mutate(self, info, type, address):
         env = info.context["env"]
         website = env['website'].get_current_website()
-        request.website = website
         order = website.sale_get_order()
 
         partner = get_partner(env, address['id'], order, website)

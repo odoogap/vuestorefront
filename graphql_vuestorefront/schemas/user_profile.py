@@ -46,7 +46,6 @@ class UpdateMyAccount(graphene.Mutation):
     def mutate(self, info, myaccount):
         env = info.context["env"]
         website = env['website'].get_current_website()
-        request.website = website
         user = request.env.user
         website_user = website.user_id
 

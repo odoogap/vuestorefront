@@ -42,8 +42,6 @@ class PaymentQuery(graphene.ObjectType):
     def resolve_payment_provider(self, info, id):
         env = info.context["env"]
         PaymentProvider = env['payment.provider'].sudo()
-        website = env['website'].get_current_website()
-        request.website = website
         domain = [
             ('id', '=', id),
             ('state', 'in', ['enabled', 'test']),
@@ -59,7 +57,6 @@ class PaymentQuery(graphene.ObjectType):
         env = info.context["env"]
 
         website = env['website'].get_current_website()
-        request.website = website
         order = website.sale_get_order()
 
         domain = expression.AND([
@@ -115,7 +112,6 @@ class MakeGiftCardPayment(graphene.Mutation):
     def mutate(self, info):
         env = info.context["env"]
         website = env['website'].get_current_website()
-        request.website = website
         order = website.sale_get_order()
         tx = order.get_portal_last_transaction()
 
@@ -164,8 +160,6 @@ class AdyenProviderInfo(graphene.Mutation):
     def mutate(self, info, provider_id):
         env = info.context["env"]
         PaymentProvider = env['payment.provider'].sudo()
-        website = env['website'].get_current_website()
-        request.website = website
         domain = [
             ('id', '=', provider_id),
             ('state', 'in', ['enabled', 'test']),
@@ -197,7 +191,6 @@ class AdyenPaymentMethods(graphene.Mutation):
         env = info.context["env"]
         PaymentProvider = env['payment.provider'].sudo()
         website = env['website'].get_current_website()
-        request.website = website
         order = website.sale_get_order()
         domain = [
             ('id', '=', provider_id),
@@ -233,7 +226,6 @@ class AdyenTransaction(graphene.Mutation):
         PaymentProvider = env['payment.provider'].sudo()
         PaymentTransaction = env['payment.transaction'].sudo()
         website = env['website'].get_current_website()
-        request.website = website
         order = website.sale_get_order()
         domain = [
             ('id', '=', provider_id),
@@ -287,8 +279,6 @@ class AdyenPayments(graphene.Mutation):
         env = info.context["env"]
         PaymentProvider = env['payment.provider'].sudo()
         PaymentTransaction = env['payment.transaction'].sudo()
-        website = env['website'].get_current_website()
-        request.website = website
         domain = [
             ('id', '=', provider_id),
             ('state', 'in', ['enabled', 'test']),
@@ -339,8 +329,6 @@ class AdyenPaymentDetails(graphene.Mutation):
         env = info.context["env"]
         PaymentProvider = env['payment.provider'].sudo()
         PaymentTransaction = env['payment.transaction'].sudo()
-        website = env['website'].get_current_website()
-        request.website = website
         domain = [
             ('id', '=', provider_id),
             ('state', 'in', ['enabled', 'test']),

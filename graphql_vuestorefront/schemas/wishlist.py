@@ -30,8 +30,6 @@ class WishlistQuery(graphene.ObjectType):
     def resolve_wishlist_items(root, info):
         """ Get current user wishlist items """
         env = info.context['env']
-        website = env['website'].get_current_website()
-        request.website = website
         wishlist_items = env['product.wishlist'].current()
         total_count = len(wishlist_items)
         return WishlistData(wishlist_items=wishlist_items, total_count=total_count)
@@ -46,8 +44,6 @@ class WishlistAddItem(graphene.Mutation):
     @staticmethod
     def mutate(self, info, product_id):
         env = info.context["env"]
-        website = env['website'].get_current_website()
-        request.website = website
 
         values = env['product.wishlist'].with_context(display_default_code=False).current()
         if values.filtered(lambda v: v.product_id.id == product_id):
@@ -74,8 +70,6 @@ class WishlistRemoveItem(graphene.Mutation):
         wish_id = Wishlist.search([('id', '=', wish_id)], limit=1)
         wish_id.unlink()
 
-        website = env['website'].get_current_website()
-        request.website = website
         wishlist_items = env['product.wishlist'].current()
 
         total_count = len(wishlist_items)

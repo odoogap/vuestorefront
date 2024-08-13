@@ -108,6 +108,7 @@ class GraphQLController(http.Controller, GraphQLControllerMixin):
             website_id=website.id,
             lang=website.default_lang_id.code,
         )
+        request.website = website
 
         request_uid = request.env.uid
         website_uid = website.sudo().user_id.id

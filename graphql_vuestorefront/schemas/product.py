@@ -257,8 +257,6 @@ class ProductQuery(graphene.ObjectType):
             product = Product
 
         if product:
-            website = env['website'].get_current_website()
-            request.website = website
             if not product.can_access_from_current_website():
                 product = Product
 
@@ -280,8 +278,6 @@ class ProductQuery(graphene.ObjectType):
     def resolve_product_variant(self, info, product_template_id, combination_id=None):
         env = info.context["env"]
 
-        website = env['website'].get_current_website()
-        request.website = website
         is_combination_possible = False
 
         product_template = env['product.template'].browse(product_template_id)

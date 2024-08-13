@@ -25,7 +25,6 @@ class Login(graphene.Mutation):
     def mutate(self, info, email, password, subscribe_newsletter):
         env = info.context['env']
         website = env['website'].get_current_website()
-        request.website = website
 
         # Set email in lowercase
         email = email.lower()
@@ -66,7 +65,6 @@ class Register(graphene.Mutation):
     def mutate(self, info, name, email, password, subscribe_newsletter):
         env = info.context['env']
         website = env['website'].get_current_website()
-        request.website = website
 
         # Set email in lowercase
         email = email.lower()
@@ -160,7 +158,6 @@ class UpdatePassword(graphene.Mutation):
     def mutate(self, info, current_password, new_password):
         env = info.context['env']
         website = env['website'].get_current_website()
-        request.website = website
         website_user = website.user_id
         if env.uid:
             user = env['res.users'].sudo().search([('id', '=', env.uid), ('active', 'in', [True, False])], limit=1)

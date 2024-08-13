@@ -79,8 +79,6 @@ def get_product_pricing_info(product):
 
 
 def product_is_in_wishlist(env, product):
-    website = env['website'].get_current_website()
-    request.website = website
     return product._is_in_wishlist()
 
 
@@ -708,7 +706,6 @@ class ShippingMethod(OdooObjectType):
 
     def resolve_price(self, info):
         website = self.env['website'].get_current_website()
-        request.website = website
         order = website.sale_get_order(force_create=True)
         return self.rate_shipment(order)['price'] if self.free_over else self.fixed_price
 
