@@ -791,7 +791,9 @@ class Order(OdooObjectType):
         return sum(subtotal_lines.mapped('price_total')) - self.amount_delivery
 
     def resolve_amount_discounts(self, info):
-        return self.reward_amount
+        return sum(self.order_line.filtered(
+            lambda l: l.coupon_id and l.coupon_id.program_type and
+                      l.coupon_id.program_type != 'gift_card').mapped('price_total'))
 
     def resolve_amount_gift_cards(self, info):
         return sum(self.order_line.filtered(
