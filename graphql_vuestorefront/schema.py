@@ -58,7 +58,7 @@ class Mutation(
 schema = graphene.Schema(
     query=Query,
     mutation=Mutation,
-    types=[country.CountryList, category.CategoryList, product.ProductList, product.ProductVariantData, order.OrderList,
+    types=[country.CountryList, category.CategoryList, product.ProductList, product.ProductVariantData, order.OrderList, order.ApplyGiftCardList,
            invoice.InvoiceList, wishlist.WishlistData, shop.CartData, mailing_list.MailingContactList,
            mailing_list.MailingListList, website_blog.BlogPostList, website_blog.BlogTagList,
            website_blog.BlogTagCategoryList, website_page.WebsitePageList, website_cms.CmsCollectionList,
