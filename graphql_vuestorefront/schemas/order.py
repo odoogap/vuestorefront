@@ -140,21 +140,11 @@ class ApplyCoupon(graphene.Mutation):
         return ApplyCoupon(error=coupon_status.get('not_found') or coupon_status.get('error'))
 
 
-class ApplyGiftCards(graphene.Interface):
-    order = graphene.Field(Order)
-    error = graphene.String()
-
-
-class ApplyGiftCardList(graphene.ObjectType):
-    class Meta:
-        interfaces = (ApplyGiftCards,)
-
-
 class ApplyGiftCard(graphene.Mutation):
     class Arguments:
         promo = graphene.String()
 
-    Output = ApplyGiftCardList
+    error = graphene.String()
 
     @staticmethod
     def mutate(self, info, promo):
@@ -166,7 +156,7 @@ class ApplyGiftCard(graphene.Mutation):
         gift_card = env["gift.card"].sudo().search([('code', '=', promo)], limit=1)
         gift_card_status = order._pay_with_gift_card(gift_card)
 
-        return ApplyGiftCardList(error=gift_card_status, order=order)
+        return ApplyGiftCard(error=gift_card_status)
 
 
 class OrderMutation(graphene.ObjectType):
