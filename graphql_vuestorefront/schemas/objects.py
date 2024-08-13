@@ -143,6 +143,7 @@ class Company(OdooObjectType):
     phone = graphene.String()
     mobile = graphene.String()
     image = graphene.String()
+    image_filename = graphene.String()
     vat = graphene.String()
     social_twitter = graphene.String()
     social_facebook = graphene.String()
@@ -159,6 +160,9 @@ class Company(OdooObjectType):
 
     def resolve_image(self, info):
         return '/web/image/res.company/{}/image_1920'.format(self.id)
+
+    def resolve_image_filename(self, info):
+        return slugify(self.name)
 
 
 class Pricelist(OdooObjectType):
@@ -192,6 +196,7 @@ class Partner(OdooObjectType):
     signup_valid = graphene.String()
     parent_id = graphene.Field(lambda: Partner)
     image = graphene.String()
+    image_filename = graphene.String()
     vat = graphene.String()
     public_pricelist = graphene.Field(lambda: Pricelist)
     current_pricelist = graphene.Field(lambda: Pricelist)
@@ -225,6 +230,9 @@ class Partner(OdooObjectType):
 
     def resolve_image(self, info):
         return '/web/image/res.partner/{}/image_1920'.format(self.id)
+
+    def resolve_image_filename(self, info):
+        return slugify(self.name)
 
     def resolve_public_pricelist(self, info):
         website = self.env['website'].get_current_website()
@@ -263,6 +271,7 @@ class Category(OdooObjectType):
     id = graphene.Int(required=True)
     name = graphene.String()
     image = graphene.String()
+    image_filename = graphene.String()
     parent = graphene.Field(lambda: Category)
     childs = graphene.List(graphene.NonNull(lambda: Category))
     slug = graphene.String()
@@ -275,6 +284,9 @@ class Category(OdooObjectType):
 
     def resolve_image(self, info):
         return '/web/image/product.public.category/{}/image_1920'.format(self.id)
+
+    def resolve_image_filename(self, info):
+        return slugify(self.name)
 
     def resolve_parent(self, info):
         return self.parent_id or None
@@ -887,6 +899,7 @@ class PaymentMethod(OdooObjectType):
     brands = graphene.List(graphene.NonNull(lambda: PaymentMethod))
     image = graphene.String()
     image_payment_form = graphene.String()
+    image_filename = graphene.String()
 
     def resolve_providers(self, info):
         return self.provider_ids or None
@@ -899,6 +912,9 @@ class PaymentMethod(OdooObjectType):
 
     def resolve_image_payment_form(self, info):
         return '/web/image/payment.method/{}/image_payment_form'.format(self.id)
+
+    def resolve_image_filename(self, info):
+        return slugify(self.name)
 
 
 class PaymentProvider(OdooObjectType):
@@ -979,6 +995,7 @@ class WebsiteMenu(OdooObjectType):
 class WebsiteMenuImage(OdooObjectType):
     id = graphene.Int(required=True)
     image = graphene.String()
+    image_filename = graphene.String()
     tag = graphene.String()
     title = graphene.String()
     subtitle = graphene.String()
@@ -989,3 +1006,6 @@ class WebsiteMenuImage(OdooObjectType):
 
     def resolve_image(self, info):
         return '/web/image/website.menu.image/{}/image'.format(self.id)
+
+    def resolve_image_filename(self, info):
+        return slugify(self.title)
