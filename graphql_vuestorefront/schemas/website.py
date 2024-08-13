@@ -100,5 +100,5 @@ class WebsiteQuery(graphene.ObjectType):
             meta_description=website.website_meta_description,
             meta_image=f'/web/image/website/{website.id}/website_meta_img',
             meta_image_filename=slugify(website.website_meta_title),
-            json_ld=website.json_ld,
+            json_ld=website.get_json_ld(),
         )

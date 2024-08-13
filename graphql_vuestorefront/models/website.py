@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # Copyright 2024 ERPGAP/PROMPTEQUATION LDA
 # License LGPL-3.0 or later (http://www.gnu.org/licenses/lgpl).
-
+import json
 import requests
 from odoo import models, fields, api
 
@@ -35,6 +35,80 @@ class Website(models.Model):
         ICP = self.env['ir.config_parameter'].sudo()
         ICP.set_param('auth_signup.invitation_scope', 'b2c')
         ICP.set_param('auth_signup.reset_password', True)
+
+    def get_json_ld(self):
+        self.ensure_one()
+        if self.json_ld:
+            return self.json_ld
+
+        website = self.env['website'].get_current_website()
+        base_url = website.domain or ''
+        if base_url and base_url[-1] == '/':
+            base_url = base_url[:-1]
+
+        company = website.company_id
+
+        social_fields = [
+            'social_twiter',
+            'social_facebook',
+            'social_github',
+            'social_linkedin',
+            'social_youtube',
+            'social_instagram',
+            'social_tiktok',
+        ]
+
+        social = list()
+        for social_field in social_fields:
+            value = getattr(self, social_field, None)
+            if value:
+                social.append(value)
+
+        address = {
+            "@type": "PostalAddress",
+        }
+        if company.street:
+            address.update({"streetAddress": company.street})
+        if company.street2:
+            if address.get('streetAddress'):
+                address['streetAddress'] += ', ' + company.street2
+            else:
+                address.update({"streetAddress": company.street2})
+        if company.city:
+            address.update({"addressLocality": company.city})
+        if company.state_id:
+            address.update({"addressRegion": company.state_id.name})
+        if company.zip:
+            address.update({"postalCode": company.zip})
+        if company.country_id:
+            address.update({"addressCountry": company.country_id.name})
+
+        json_ld = {
+           "@context": "https://schema.org",
+           "@type": "Organization",
+           "name": website.name,
+           "url": website.domain,
+           "logo": f'{base_url}/web/image/website/{self.id}/logo',
+        }
+
+        if social:
+            json_ld.update({
+                "sameAs": social,
+            })
+
+        if company.phone or company.mobile:
+            json_ld.update({
+                "contactPoint": {
+                    "@type": "ContactPoint",
+                    "telephone": company.phone or company.mobile,
+                }
+            })
+
+        json_ld.update({
+            "address": address
+        })
+
+        return json.dumps(json_ld)
 
 
 class WebsiteRewrite(models.Model):
