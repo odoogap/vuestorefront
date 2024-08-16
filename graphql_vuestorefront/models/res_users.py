@@ -15,6 +15,10 @@ _logger = logging.getLogger(__name__)
 class ResUsers(models.Model):
     _inherit = 'res.users'
 
+    def _get_website_reset_password_email_template(self):
+        website = self.env['website'].get_current_website()
+        return website.reset_password_email_template_id
+
     def api_action_reset_password(self):
         """ create signup token for each user, and send their signup url by email """
         if self.filtered(lambda user: not user.active):
@@ -28,7 +32,7 @@ class ResUsers(models.Model):
         self.mapped('partner_id').signup_prepare(signup_type="reset", expiration=expiration)
 
         # send email to users with their signup url
-        template = self.env.ref('graphql_vuestorefront.website_reset_password_email')
+        template = self._get_website_reset_password_email_template()
 
         assert template._name == 'mail.template'
 

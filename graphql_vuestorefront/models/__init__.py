@@ -9,3 +9,4 @@ from . import res_config_settings
 from . import res_users
 from . import payment_transaction
 from . import ir_binary
+from . import sale_order

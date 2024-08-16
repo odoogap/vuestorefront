@@ -17,6 +17,13 @@ class Website(models.Model):
     _name = 'website'
     _inherit = ['website', 'website.seo.metadata']
 
+
+    def _default_reset_password_email_template(self):
+        return self.env.ref('graphql_vuestorefront.website_reset_password_email').id
+
+    def _default_order_confirmation_email_template(self):
+        return self.env.ref('sale.mail_template_sale_confirmation').id
+
     vsf_payment_success_return_url = fields.Char(
         'Payment Success Return Url', required=True, translate=True, default='Dummy'
     )
@@ -24,6 +31,11 @@ class Website(models.Model):
         'Payment Error Return Url', required=True,  translate=True, default='Dummy'
     )
     vsf_mailing_list_id = fields.Many2one('mailing.list', 'Newsletter', domain=[('is_public', '=', True)])
+
+    reset_password_email_template_id = fields.Many2one('mail.template', string='Reset Password',
+                                                    default=_default_reset_password_email_template)
+    order_confirmation_email_template_id = fields.Many2one('mail.template', string='Order confirmation',
+                                                    default=_default_order_confirmation_email_template)
 
     @api.model
     def enable_b2c_reset_password(self):
