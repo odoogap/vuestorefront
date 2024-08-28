@@ -68,3 +68,8 @@ class ResConfigSettings(models.TransientModel):
     def create_vsf_cache_invalidation_key(self):
         ICP = self.env['ir.config_parameter'].sudo()
         ICP.set_param('vsf_cache_invalidation_key', str(uuid.uuid4()))
+
+    @api.model
+    def deactivate_2fa_enforcement(self):
+        ICP = self.env['ir.config_parameter'].sudo()
+        ICP.set_param('auth_totp.policy', False)
