@@ -240,12 +240,18 @@ class User(OdooObjectType):
     name = graphene.String(required=True)
     email = graphene.String(required=True)
     partner = graphene.Field(lambda: Partner)
+    two_factor_email = graphene.Boolean()
 
     def resolve_email(self, info):
         return self.login or None
 
     def resolve_partner(self, info):
         return self.partner_id or None
+
+    def resolve_two_factor_email(self, info):
+        if self._mfa_type() == 'totp_mail':
+            return True
+        return False
 
 
 class Currency(OdooObjectType):
