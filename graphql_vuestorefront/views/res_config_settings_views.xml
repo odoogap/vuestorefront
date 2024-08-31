@@ -42,6 +42,15 @@
                     <setting></setting>
                 </block>
 
+                <block title="Vue Storefront Mail Templates" id="vsf_mail_templates_settings">
+                    <setting id="reset_password_email_template_id_settings">
+                        <field name="reset_password_email_template_id"/>
+                    </setting>
+                    <setting id="order_confirmation_email_template_id_settings">
+                        <field name="order_confirmation_email_template_id"/>
+                    </setting>
+                </block>
+
                 <block title="Vue Storefront Images" id="vsf_images_settings">
                     <setting id="vsf_image_quality_settings">
                         <field name="vsf_image_quality"/>

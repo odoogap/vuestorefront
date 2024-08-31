@@ -25,8 +25,8 @@
     ],
     'data': [
         'security/ir.model.access.csv',
-        'data/website_data.xml',
         'data/mail_template.xml',
+        'data/website_data.xml',
         'data/ir_config_parameter_data.xml',
         'data/ir_cron_data.xml',
         'views/product_views.xml',

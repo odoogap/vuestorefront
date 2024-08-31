@@ -12,6 +12,8 @@
         <field name="vsf_payment_success_return_url">http://localhost:3000/checkout/thank-you</field>
         <field name="vsf_payment_error_return_url">http://localhost:3000/payment-fail</field>
         <field name="vsf_mailing_list_id" eval="ref('mass_mailing.mailing_list_data')"/>
+        <field name="reset_password_email_template_id" eval="ref('graphql_vuestorefront.website_reset_password_email')"/>
+        <field name="order_confirmation_email_template_id" eval="ref('sale.mail_template_sale_confirmation')"/>
     </record>
 
 </odoo>

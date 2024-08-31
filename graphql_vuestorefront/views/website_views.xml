@@ -31,8 +31,8 @@
 
                 <page name="email_templates" string="Email Templates">
                     <group>
-                        <field name="reset_password_email_template_id" required="1"/>
-                        <field name="order_confirmation_email_template_id" required="1"/>
+                        <field name="reset_password_email_template_id"/>
+                        <field name="order_confirmation_email_template_id"/>
                     </group>
                 </page>
             </xpath>

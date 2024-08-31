@@ -6,6 +6,7 @@ from odoo import models
 class SaleOrder(models.Model):
     _inherit = "sale.order"
 
-    def _get_confirmation_template(self):
-        website = self.env['website'].get_current_website()
-        return website.order_confirmation_email_template_id
+    def action_preview_sale_order(self):
+        action = super().action_preview_sale_order()
+        action['url'] = self.get_portal_url()
+        return action
