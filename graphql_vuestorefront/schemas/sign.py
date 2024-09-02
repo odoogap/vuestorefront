@@ -195,7 +195,7 @@ class UpdatePassword(graphene.Mutation):
             raise GraphQLError(_('You must be logged in.'))
 
 
-class TwoFactorVerification(graphene.Mutation):
+class TotpVerification(graphene.Mutation):
     class Arguments:
         code = graphene.String(required=True)
         user_id = graphene.Int(required=True)
@@ -249,4 +249,4 @@ class SignMutation(graphene.ObjectType):
     change_password = ChangePassword.Field(description="Set new user's password with the token from the change "
                                                        "password url received in the email.")
     update_password = UpdatePassword.Field(description="Update user password.")
-    two_factor_verification = TwoFactorVerification.Field(description="Two-Factor Verification")
+    totp_verification = TotpVerification.Field(description="Two-Factor Verification")
