@@ -10,7 +10,7 @@ import werkzeug
 from werkzeug import urls
 
 from odoo import http, _
-from odoo.http import request
+from odoo.http import request, Response
 from odoo.exceptions import ValidationError
 from odoo.addons.payment import utils as payment_utils
 from odoo.addons.payment_adyen.controllers.main import AdyenController
@@ -229,7 +229,7 @@ class AdyenControllerInherit(AdyenController):
             except ValidationError:  # Acknowledge the notification to avoid getting spammed
                 request.env.cr.rollback()
                 _logger.exception("unable to handle the notification data; skipping to acknowledge")
-                return '400'
+                return Response('Server Error', status=400)
 
         request.env.cr.commit()
         return '[accepted]'  # Acknowledge the notification
