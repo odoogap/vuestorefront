@@ -226,7 +226,7 @@ class AdyenControllerInherit(AdyenController):
                     request.session["__payment_monitored_tx_ids__"] = [payment_transaction.id]
                     # Confirm sale order
                     PaymentPostProcessing().poll_status()
-            except ValidationError:  # Acknowledge the notification to avoid getting spammed
+            except:  # Acknowledge the notification to avoid getting spammed
                 request.env.cr.rollback()
                 _logger.exception("unable to handle the notification data; skipping to acknowledge")
                 return Response('Server Error', status=400)
