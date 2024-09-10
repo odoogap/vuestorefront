@@ -229,7 +229,7 @@ class AdyenControllerInherit(AdyenController):
             except ValidationError:  # Acknowledge the notification to avoid getting spammed
                 request.env.cr.rollback()
                 _logger.exception("unable to handle the notification data; skipping to acknowledge")
-                return
+                return '400'
 
         request.env.cr.commit()
         return '[accepted]'  # Acknowledge the notification
