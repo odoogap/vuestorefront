@@ -40,7 +40,7 @@ class VSFBinary(Binary):
                 auth="public")
     def content_image(self, xmlid=None, model='ir.attachment', id=None, field='datas',
                       filename_field='name', unique=None, filename=None, mimetype=None,
-                      download=None, width=0, height=0, crop=False, access_token=None,
+                      download=False, width=0, height=0, crop=False, access_token=None,
                       **kwargs):
         """ Validate width and height """
         try:
