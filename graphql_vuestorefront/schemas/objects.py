@@ -251,12 +251,16 @@ class User(OdooObjectType):
     name = graphene.String(required=True)
     email = graphene.String(required=True)
     partner = graphene.Field(lambda: Partner)
+    mfa_enabled = graphene.Boolean()
 
     def resolve_email(self, info):
         return self.login or None
 
     def resolve_partner(self, info):
         return self.partner_id or None
+
+    def resolve_mfa_enabled(self, info):
+        return bool(self._mfa_type())
 
 
 class Currency(OdooObjectType):
