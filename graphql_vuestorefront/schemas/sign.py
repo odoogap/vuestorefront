@@ -43,13 +43,10 @@ class Login(graphene.Mutation):
 
         try:
             uid = request.session.authenticate(request.session.db, email, password)
-            user = env['res.users'].sudo().browse(uid)
-            if user._mfa_type() == 'totp_mail':
-                user._send_totp_mail_code()
             # Subscribe Newsletter
             if website and website.vsf_mailing_list_id and subscribe_newsletter:
                 MassMailController().subscribe(website.vsf_mailing_list_id.id, email, 'email')
-            return user
+            return env['res.users'].sudo().browse(uid)
         except odoo.exceptions.AccessDenied as e:
             if e.args == odoo.exceptions.AccessDenied().args:
                 raise GraphQLError(_('Wrong email or password.'))
