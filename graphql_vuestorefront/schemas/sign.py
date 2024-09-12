@@ -5,12 +5,23 @@
 import graphene
 from graphql import GraphQLError
 import odoo
+import re
 from odoo import _
 from odoo.http import request
-from odoo.exceptions import UserError
+from odoo.exceptions import UserError, AccessDenied
 from odoo.addons.auth_signup.models.res_users import SignupError
 from odoo.addons.graphql_vuestorefront.schemas.objects import User
 from odoo.addons.website_mass_mailing.controllers.main import MassMailController
+from odoo.addons.auth_totp.controllers.home import TRUSTED_DEVICE_COOKIE,TRUSTED_DEVICE_AGE
+
+
+class TwoFactorOutput(graphene.ObjectType):
+    user = graphene.Field(lambda: User)
+    key = graphene.String()
+    value = graphene.String()
+    max_age = graphene.Int()
+    httponly = graphene.Boolean()
+    samesite = graphene.String()
 
 
 class Login(graphene.Mutation):
@@ -31,10 +42,13 @@ class Login(graphene.Mutation):
 
         try:
             uid = request.session.authenticate(request.session.db, email, password)
+            user = env['res.users'].sudo().browse(uid)
+            if user._mfa_type() == 'totp_mail':
+                user._send_totp_mail_code()
             # Subscribe Newsletter
             if website and website.vsf_mailing_list_id and subscribe_newsletter:
                 MassMailController().subscribe(website.vsf_mailing_list_id.id, email, 'email')
-            return env['res.users'].sudo().browse(uid)
+            return user
         except odoo.exceptions.AccessDenied as e:
             if e.args == odoo.exceptions.AccessDenied().args:
                 raise GraphQLError(_('Wrong email or password.'))
@@ -178,6 +192,54 @@ class UpdatePassword(graphene.Mutation):
             raise GraphQLError(_('You must be logged in.'))
 
 
+
+
+class TotpVerification(graphene.Mutation):
+    class Arguments:
+        code = graphene.String(required=True)
+        user_id = graphene.Int(required=True)
+        remember_device = graphene.Boolean(default_value=False)
+
+    Output = TwoFactorOutput
+
+    @staticmethod
+    def mutate(self, info, code, user_id, remember_device):
+        env = info.context['env']
+        website = env['website'].get_current_website()
+        request.website = website
+        user = env['res.users'].sudo().search([('id', '=', user_id)], limit=1)
+        key = False
+
+        try:
+            with user._assert_can_auth(user=user_id):
+                user._totp_check(int(re.sub(r'\s', '', code)))
+        except AccessDenied as e:
+            raise GraphQLError(_(str(e)))
+        except ValueError:
+            raise GraphQLError(_("Invalid authentication code format."))
+
+        request.session.finalize(request.env)
+        request.update_env(user=request.session.uid)
+        request.update_context(**request.session.context)
+        if remember_device:
+            name = _("%(browser)s on %(platform)s",
+                     browser=request.httprequest.user_agent.browser.capitalize(),
+                     platform=request.httprequest.user_agent.platform.capitalize(),
+                     )
+
+            if request.geoip.city.name:
+                name += f" ({request.geoip.city.name}, {request.geoip.country_name})"
+
+            key = request.env['auth_totp.device']._generate("browser", name)
+
+        return TwoFactorOutput(user=user,
+                               key=TRUSTED_DEVICE_COOKIE,
+                               value=key,
+                               max_age=TRUSTED_DEVICE_AGE,
+                               httponly=True,
+                               samesite='Lax')
+
+
 class SignMutation(graphene.ObjectType):
     login = Login.Field(description='Authenticate user with email and password and retrieves token.')
     logout = Logout.Field(description='Logout user')
@@ -186,3 +248,4 @@ class SignMutation(graphene.ObjectType):
     change_password = ChangePassword.Field(description="Set new user's password with the token from the change "
                                                        "password url received in the email.")
     update_password = UpdatePassword.Field(description="Update user password.")
+    totp_verification = TotpVerification.Field(description="Two-Factor Verification")

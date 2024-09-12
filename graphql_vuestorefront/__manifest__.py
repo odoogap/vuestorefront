@@ -21,7 +21,8 @@
         'contacts',
         'crm',
         'theme_default',
-        'payment_adyen_vsf'
+        'payment_adyen_vsf',
+        'auth_totp',
     ],
     'data': [
         'security/ir.model.access.csv',
