@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<odoo>
-    <data noupdate="1">
-        <function model="res.config.settings" name="deactivate_2fa_enforcement"/>
-    </data>
-
-</odoo>
