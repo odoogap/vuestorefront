@@ -27,7 +27,6 @@
         'theme_default',
         'payment_adyen_vsf',
         'auth_totp_mail_enforce',
-        'auth_totp_mail_enforce',
     ],
     'data': [
         'security/ir.model.access.csv',
