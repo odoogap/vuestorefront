@@ -161,8 +161,9 @@ class AddAddress(graphene.Mutation):
             # Create main contact
             values['type'] = 'contact'
             partner_id = ResPartner.create(values).id
-            order.partner_id = partner_id
-            order.with_context(not_self_saleperson=True).onchange_partner_id()
+            if order:
+                order.partner_id = partner_id
+                order.with_context(not_self_saleperson=True).onchange_partner_id()
 
         values['type'] = type.value
         values['parent_id'] = partner_id
