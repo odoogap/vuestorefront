@@ -200,6 +200,10 @@ class UpdateAddress(graphene.Mutation):
         website = env['website'].get_current_website()
         order = website.sale_get_order()
 
+        websites = env['website'].sudo().search([])
+        if address['id'] in websites.mapped('user_id.partner_id.id'):
+            raise GraphQLError(_("Can't update public user address."))
+
         partner = get_partner(env, address['id'], order, website)
 
         values = {}
@@ -244,6 +248,10 @@ class DeleteAddress(graphene.Mutation):
         env = info.context["env"]
         website = env['website'].get_current_website()
         order = website.sale_get_order()
+
+        websites = env['website'].sudo().search([])
+        if address['id'] in websites.mapped('user_id.partner_id.id'):
+            raise GraphQLError(_("Can't delete public user address."))
 
         partner = get_partner(env, address['id'], order, website)
 
