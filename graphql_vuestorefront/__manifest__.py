@@ -13,6 +13,7 @@
     'website': 'https://www.erpgap.com/',
     'depends': [
         'graphql_base',
+        'website',
         'website_sale_wishlist',
         'website_mass_mailing',
         'website_sale_loyalty',
@@ -47,6 +48,11 @@
         'data/demo_products_men_clothing_4.xml',
         'data/demo_products_men_shoes.xml',
     ],
+    'assets': {
+        'web.assets_backend': [
+            'graphql_vuestorefront/static/src/client_actions/website_preview/website_preview.js',
+        ]
+    },
     'installable': True,
     'auto_install': False,
     'pre_init_hook': 'pre_init_hook_login_check',
