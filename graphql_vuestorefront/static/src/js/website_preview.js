@@ -1,10 +1,12 @@
 /** @odoo-module **/
 import { patch } from "@web/core/utils/patch";
+import wUtils from 'website.utils';
 import { WebsitePreview } from '@website/client_actions/website_preview/website_preview';
 import { useService, useBus } from '@web/core/utils/hooks';
 import { unslugHtmlDataObject } from '@website/services/website_service';
 import {OptimizeSEODialog} from '@website/components/dialog/seo';
-
+import { WebsiteDialog } from "@website/components/dialog/dialog";
+import { sprintf } from "@web/core/utils/strings";
 
 const { onWillStart, onMounted, onWillUnmount, useRef, useEffect, useState, useExternalListener } = owl;
 
@@ -47,7 +49,31 @@ patch(WebsitePreview.prototype, 'website_vsf_website_preview', {
             this.backendWebsiteId = unslugHtmlDataObject(backendWebsiteRepr).id;
 
             const encodedPath = encodeURIComponent(this.path);
-            this.initialUrl = `/website/force/${encodeURIComponent(this.websiteId)}?path=${encodedPath}`;
+            if (this.websiteDomain && !wUtils.isHTTPSorNakedDomainRedirection(this.websiteDomain, window.location.origin)) {
+                // The website domain might be the naked one while the naked one
+                // is actually redirecting to `www` (or the other way around).
+                // In such a case, we need to consider those 2 from the same
+                // domain and let the iframe load that "different" domain. The
+                // iframe will actually redirect to the correct one (naked/www),
+                // which will ends up with the same domain as the parent window
+                // URL (event if it wasn't, it wouldn't be an issue as those are
+                // really considered as the same domain, the user will share the
+                // same session and CORS errors won't be a thing in such a case)
+                this.dialogService.add(WebsiteDialog, {
+                    title: this.env._t("Redirecting..."),
+                    body: sprintf(this.env._t(
+                        "You are about to be redirected to the domain configured for your website ( %s ). " +
+                        "This is necessary to edit or view your website from the Website app. You might need to log back in."
+                    ), this.websiteDomain),
+                    showSecondaryButton: false,
+                }, {
+                    onClose: () => {
+                        window.location.href = `${this.websiteDomain}`;
+                    }
+                });
+            } else {
+                this.initialUrl = `/website/force/${encodeURIComponent(this.websiteId)}?path=${encodedPath}`;
+            }
         });
 
         useEffect(() => {
