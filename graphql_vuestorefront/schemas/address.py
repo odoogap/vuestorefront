@@ -253,7 +253,7 @@ class DeleteAddress(graphene.Mutation):
         websites = env['website'].sudo().search([])
 
         if address['id'] in websites.mapped('user_id.partner_id.id'):
-            raise GraphQLError(_("Can't update public user address."))
+            raise GraphQLError(_("Can't delete public user address."))
 
         partner = get_partner(env, address['id'], order, website)
 
