@@ -24,13 +24,18 @@ class TwoFactorOutput(graphene.ObjectType):
     samesite = graphene.String()
 
 
+class LoginOutput(graphene.ObjectType):
+    user = graphene.Field(lambda: User)
+    totp_verification = graphene.Boolean()
+
+
 class Login(graphene.Mutation):
     class Arguments:
         email = graphene.String(required=True)
         password = graphene.String(required=True)
         subscribe_newsletter = graphene.Boolean(default_value=False)
 
-    Output = User
+    Output = LoginOutput
 
     @staticmethod
     def mutate(self, info, email, password, subscribe_newsletter):
@@ -40,13 +45,26 @@ class Login(graphene.Mutation):
 
         # Set email in lowercase
         email = email.lower()
+        user = info.context['env']['res.users'].sudo().search([('login', '=', email)], limit=1)
 
         try:
-            uid = request.session.authenticate(request.session.db, email, password)
-            # Subscribe Newsletter
-            if website and website.vsf_mailing_list_id and subscribe_newsletter:
-                MassMailController().subscribe(website.vsf_mailing_list_id.id, email, 'email')
-            return env['res.users'].sudo().browse(uid)
+            cookies = request.httprequest.cookies
+            key = cookies.get(TRUSTED_DEVICE_COOKIE)
+
+            if key:
+                user_match = request.env['auth_totp.device']._check_credentials_for_uid(
+                    scope="browser", key=key, uid=user.id)
+                if user_match:
+                    request.session.finalize(request.env)
+                totp_verification = False
+            else:
+                request.session.authenticate(request.session.db, email, password)
+                # Subscribe Newsletter
+                if website and website.vsf_mailing_list_id and subscribe_newsletter:
+                    MassMailController().subscribe(website.vsf_mailing_list_id.id, email, 'email')
+                totp_verification = True
+
+            return LoginOutput(user=user, totp_verification=totp_verification)
         except odoo.exceptions.AccessDenied as e:
             if e.args == odoo.exceptions.AccessDenied().args:
                 raise GraphQLError(_('Wrong email or password.'))
