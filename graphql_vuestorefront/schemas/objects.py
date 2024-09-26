@@ -11,6 +11,7 @@ from odoo.addons.http_routing.models.ir_http import slugify
 from odoo.addons.graphql_base import OdooObjectType
 from odoo.exceptions import AccessError
 from odoo.http import request
+from odoo.addons.auth_totp.controllers.home import TRUSTED_DEVICE_COOKIE
 
 
 # --------------------- #
@@ -251,7 +252,7 @@ class User(OdooObjectType):
     name = graphene.String(required=True)
     email = graphene.String(required=True)
     partner = graphene.Field(lambda: Partner)
-    mfa_enabled = graphene.Boolean()
+    totp_required = graphene.Boolean()
 
     def resolve_email(self, info):
         return self.login or None
@@ -259,8 +260,19 @@ class User(OdooObjectType):
     def resolve_partner(self, info):
         return self.partner_id or None
 
-    def resolve_mfa_enabled(self, info):
-        return bool(self._mfa_type())
+    def resolve_totp_required(self, info):
+        if bool(self._mfa_type()):
+            cookies = request.httprequest.cookies
+            key = cookies.get(TRUSTED_DEVICE_COOKIE)
+
+            if key:
+                user_match = request.env['auth_totp.device']._check_credentials_for_uid(
+                    scope="browser", key=key, uid=self.id)
+                if user_match:
+                    return False
+            return True
+
+        return False
 
 
 class Currency(OdooObjectType):
