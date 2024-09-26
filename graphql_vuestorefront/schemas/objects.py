@@ -11,6 +11,7 @@ from odoo.addons.http_routing.models.ir_http import slugify
 from odoo.addons.graphql_base import OdooObjectType
 from odoo.exceptions import AccessError
 from odoo.http import request
+from odoo.addons.auth_totp.controllers.home import TRUSTED_DEVICE_COOKIE
 
 
 # --------------------- #
