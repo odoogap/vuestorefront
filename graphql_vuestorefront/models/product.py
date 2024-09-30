@@ -14,6 +14,46 @@ from odoo.exceptions import ValidationError
 class ProductTemplate(models.Model):
     _inherit = 'product.template'
 
+    def _compute_json_ld(self):
+        env = self.env
+        website = env['website'].get_current_website()
+        base_url = env['ir.config_parameter'].sudo().get_param('web.base.url', '')
+        if base_url and base_url[-1:] == '/':
+            base_url = base_url[:-1]
+
+        for product in self:
+            # Get list of images
+            images = list()
+            if product.image_1920:
+                images.append(f'{base_url}/web/image/product.product/{product.id}/image')
+
+            json_ld = {
+                "@context": "https://schema.org/",
+                "@type": "Product",
+                "name": product.display_name,
+                "image": images,
+                "offers": {
+                    "@type": "Offer",
+                    "url": f"{website.domain or ''}/product/{slug(product)}",
+                    "priceCurrency": product.currency_id.name,
+                    "price": product.list_price,
+                    "itemCondition": "https://schema.org/NewCondition",
+                    "availability": "https://schema.org/InStock",
+                    "seller": {
+                        "@type": "Organization",
+                        "name": website and website.display_name or product.env.user.company_id.display_name
+                    }
+                }
+            }
+
+            if product.description_sale:
+                json_ld.update({"description": product.description_sale})
+
+            if product.default_code:
+                json_ld.update({"sku": product.default_code})
+
+            product.json_ld = json.dumps(json_ld)
+
     def _get_public_categ_slug(self, category_ids, category):
         category_ids.append(category.id)
 
@@ -141,49 +181,6 @@ class ProductTemplate(models.Model):
 
         return combination_info
 
-    def get_json_ld(self):
-        self.ensure_one()
-        if self.json_ld:
-            return self.json_ld
-
-        env = self.env
-        website = env['website'].get_current_website()
-        base_url = env['ir.config_parameter'].sudo().get_param('web.base.url', '')
-        if base_url and base_url[-1:] == '/':
-            base_url = base_url[:-1]
-
-        # Get list of images
-        images = list()
-        if self.image_1920:
-            images.append('%s/web/image/product.product/%s/image' % (base_url, self.id))
-
-        json_ld = {
-            "@context": "https://schema.org/",
-            "@type": "Product",
-            "name": self.display_name,
-            "image": images,
-            "offers": {
-                "@type": "Offer",
-                "url": "%s/product/%s" % (website.domain or '', slug(self)),
-                "priceCurrency": self.currency_id.name,
-                "price": self.list_price,
-                "itemCondition": "https://schema.org/NewCondition",
-                "availability": "https://schema.org/InStock",
-                "seller": {
-                    "@type": "Organization",
-                    "name": website and website.display_name or self.env.user.company_id.display_name
-                }
-            }
-        }
-
-        if self.description_sale:
-            json_ld.update({"description": self.description_sale})
-
-        if self.default_code:
-            json_ld.update({"sku": self.default_code})
-
-        return json.dumps(json_ld)
-
     @api.model
     def recalculate_products_popularity(self):
         self.search([])._compute_sales_count_30_days()
@@ -192,52 +189,65 @@ class ProductTemplate(models.Model):
 class ProductProduct(models.Model):
     _inherit = 'product.product'
 
-    def get_json_ld(self):
-        self.ensure_one()
-        if self.json_ld:
-            return self.json_ld
-
+    def _compute_json_ld(self):
         env = self.env
         website = env['website'].get_current_website()
         base_url = env['ir.config_parameter'].sudo().get_param('web.base.url', '')
         if base_url and base_url[-1:] == '/':
             base_url = base_url[:-1]
 
-        # Get list of images
-        images = list()
-        if self.image_1920:
-            images.append('%s/web/image/product.product/%s/image' % (base_url, self.id))
+        for product in self:
+            # Get list of images
+            images = list()
+            if product.image_1920:
+                images.append(f'{base_url}/web/image/product.product/{product.id}/image')
 
-        json_ld = {
-            "@context": "https://schema.org/",
-            "@type": "Product",
-            "name": self.display_name,
-            "image": images,
-            "offers": {
-                "@type": "Offer",
-                "url": "%s/product/%s" % (website.domain or '', slug(self)),
-                "priceCurrency": self.currency_id.name,
-                "price": self.list_price,
-                "itemCondition": "https://schema.org/NewCondition",
-                "availability": "https://schema.org/InStock",
-                "seller": {
-                    "@type": "Organization",
-                    "name": website and website.display_name or self.env.user.company_id.display_name
+            json_ld = {
+                "@context": "https://schema.org/",
+                "@type": "Product",
+                "name": product.display_name,
+                "image": images,
+                "offers": {
+                    "@type": "Offer",
+                    "url": f"{website.domain or ''}/product/{slug(product)}",
+                    "priceCurrency": product.currency_id.name,
+                    "price": product.list_price,
+                    "itemCondition": "https://schema.org/NewCondition",
+                    "availability": "https://schema.org/InStock",
+                    "seller": {
+                        "@type": "Organization",
+                        "name": website and website.display_name or product.env.user.company_id.display_name
+                    }
                 }
             }
-        }
 
-        if self.description_sale:
-            json_ld.update({"description": self.description_sale})
+            if product.description_sale:
+                json_ld.update({"description": product.description_sale})
 
-        if self.default_code:
-            json_ld.update({"sku": self.default_code})
+            if product.default_code:
+                json_ld.update({"sku": product.default_code})
 
-        return json.dumps(json_ld)
+            product.json_ld = json.dumps(json_ld)
 
 
 class ProductPublicCategory(models.Model):
     _inherit = 'product.public.category'
+
+    def _compute_json_ld(self):
+        website = self.env['website'].get_current_website()
+        base_url = website.domain or ''
+        if base_url and base_url[-1] == '/':
+            base_url = base_url[:-1]
+
+        for category in self:
+            json_ld = {
+                "@context": "https://schema.org",
+                "@type": "CollectionPage",
+                "url": f'{base_url}{category.website_slug}',
+                "name": category.display_name,
+            }
+
+            category.json_ld = json.dumps(json_ld)
 
     def _validate_website_slug(self):
         for category in self.filtered(lambda c: c.website_slug):
@@ -272,25 +282,6 @@ class ProductPublicCategory(models.Model):
     def unlink(self):
         self.env['invalidate.cache'].create_invalidate_cache(self._name, self.ids)
         return super(ProductPublicCategory, self).unlink()
-
-    def get_json_ld(self):
-        self.ensure_one()
-        if self.json_ld:
-            return self.json_ld
-
-        website = self.env['website'].get_current_website()
-        base_url = website.domain or ''
-        if base_url and base_url[-1] == '/':
-            base_url = base_url[:-1]
-
-        json_ld = {
-            "@context": "https://schema.org",
-            "@type": "CollectionPage",
-            "url": '{}{}'.format(base_url, self.website_slug or ''),
-            "name": self.display_name,
-        }
-
-        return json.dumps(json_ld)
 
 
 class ProductAttributeValue(models.Model):

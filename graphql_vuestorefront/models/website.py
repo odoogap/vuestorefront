@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 # Copyright 2024 ERPGAP/PROMPTEQUATION LDA
 # License LGPL-3.0 or later (http://www.gnu.org/licenses/lgpl).
+import pprint
 import json
 import requests
 from odoo import models, fields, api
@@ -9,13 +10,96 @@ from odoo import models, fields, api
 class WebsiteSeoMetadata(models.AbstractModel):
     _inherit = 'website.seo.metadata'
 
+    def _compute_json_ld(self):
+        for record in self:
+            record.json_ld = None
+
+    @api.depends('json_ld')
+    def _compute_pprint_json_ld(self):
+        for record in self:
+            if record.json_ld:
+                record.pprint_json_ld = pprint.pformat(json.loads(record.json_ld))
+            else:
+                record.pprint_json_ld = None
+
     website_meta_img = fields.Image('Website meta image')
-    json_ld = fields.Char('JSON-LD')
+    json_ld = fields.Char('JSON-LD', compute='_compute_json_ld', store=False, readonly=True)
+    pprint_json_ld = fields.Text('JSON-LD', compute='_compute_pprint_json_ld', store=False, readonly=True)
 
 
 class Website(models.Model):
     _name = 'website'
     _inherit = ['website', 'website.seo.metadata']
+
+    def _compute_json_ld(self):
+        for website in self:
+            base_url = website.domain or ''
+            if base_url and base_url[-1] == '/':
+                base_url = base_url[:-1]
+
+            company = website.company_id
+
+            social_fields = [
+                'social_twiter',
+                'social_facebook',
+                'social_github',
+                'social_linkedin',
+                'social_youtube',
+                'social_instagram',
+                'social_tiktok',
+            ]
+
+            social = list()
+            for social_field in social_fields:
+                value = getattr(website, social_field, None)
+                if value:
+                    social.append(value)
+
+            address = {
+                "@type": "PostalAddress",
+            }
+            if company.street:
+                address.update({"streetAddress": company.street})
+            if company.street2:
+                if address.get('streetAddress'):
+                    address['streetAddress'] += ', ' + company.street2
+                else:
+                    address.update({"streetAddress": company.street2})
+            if company.city:
+                address.update({"addressLocality": company.city})
+            if company.state_id:
+                address.update({"addressRegion": company.state_id.name})
+            if company.zip:
+                address.update({"postalCode": company.zip})
+            if company.country_id:
+                address.update({"addressCountry": company.country_id.name})
+
+            json_ld = {
+            "@context": "https://schema.org",
+            "@type": "Organization",
+            "name": website.name,
+            "url": website.domain or '',
+            "logo": f'{base_url}/web/image/website/{website.id}/logo',
+            }
+
+            if social:
+                json_ld.update({
+                    "sameAs": social,
+                })
+
+            if company.phone or company.mobile:
+                json_ld.update({
+                    "contactPoint": {
+                        "@type": "ContactPoint",
+                        "telephone": company.phone or company.mobile,
+                    }
+                })
+
+            json_ld.update({
+                "address": address
+            })
+
+            website.json_ld = json.dumps(json_ld)
 
     vsf_payment_success_return_url = fields.Char(
         'Payment Success Return Url', required=True, translate=True, default='Dummy'
@@ -37,80 +121,6 @@ class Website(models.Model):
         ICP = self.env['ir.config_parameter'].sudo()
         ICP.set_param('auth_signup.invitation_scope', 'b2c')
         ICP.set_param('auth_signup.reset_password', True)
-
-    def get_json_ld(self):
-        self.ensure_one()
-        if self.json_ld:
-            return self.json_ld
-
-        website = self.env['website'].get_current_website()
-        base_url = website.domain or ''
-        if base_url and base_url[-1] == '/':
-            base_url = base_url[:-1]
-
-        company = website.company_id
-
-        social_fields = [
-            'social_twiter',
-            'social_facebook',
-            'social_github',
-            'social_linkedin',
-            'social_youtube',
-            'social_instagram',
-            'social_tiktok',
-        ]
-
-        social = list()
-        for social_field in social_fields:
-            value = getattr(self, social_field, None)
-            if value:
-                social.append(value)
-
-        address = {
-            "@type": "PostalAddress",
-        }
-        if company.street:
-            address.update({"streetAddress": company.street})
-        if company.street2:
-            if address.get('streetAddress'):
-                address['streetAddress'] += ', ' + company.street2
-            else:
-                address.update({"streetAddress": company.street2})
-        if company.city:
-            address.update({"addressLocality": company.city})
-        if company.state_id:
-            address.update({"addressRegion": company.state_id.name})
-        if company.zip:
-            address.update({"postalCode": company.zip})
-        if company.country_id:
-            address.update({"addressCountry": company.country_id.name})
-
-        json_ld = {
-           "@context": "https://schema.org",
-           "@type": "Organization",
-           "name": website.name,
-           "url": website.domain,
-           "logo": f'{base_url}/web/image/website/{self.id}/logo',
-        }
-
-        if social:
-            json_ld.update({
-                "sameAs": social,
-            })
-
-        if company.phone or company.mobile:
-            json_ld.update({
-                "contactPoint": {
-                    "@type": "ContactPoint",
-                    "telephone": company.phone or company.mobile,
-                }
-            })
-
-        json_ld.update({
-            "address": address
-        })
-
-        return json.dumps(json_ld)
 
 
 class WebsiteRewrite(models.Model):

@@ -314,9 +314,6 @@ class Category(OdooObjectType):
     def resolve_products(self, info):
         return self.product_tmpl_ids or None
 
-    def resolve_json_ld(self, info):
-        return self and self.get_json_ld() or None
-
     def resolve_meta_title(self, info):
         return self.website_meta_title or None
 
@@ -632,9 +629,6 @@ class Product(OdooObjectType):
 
     def resolve_first_variant(self, info):
         return self.product_variant_id or None
-
-    def resolve_json_ld(self, info):
-        return self and self.get_json_ld() or None
 
 
 class Payment(OdooObjectType):
