@@ -199,6 +199,8 @@ class UpdatePassword(graphene.Mutation):
                 user.change_password(current_password, new_password)
                 env.cr.commit()
                 request.session.authenticate(request.session.db, user.login, new_password)
+                if bool(user._mfa_type()):
+                    request.session.finalize(request.env)
                 return user
             except odoo.exceptions.AccessDenied:
                 raise GraphQLError(_('Incorrect password.'))
