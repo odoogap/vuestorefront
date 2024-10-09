@@ -23,6 +23,7 @@
         'crm',
         'theme_default',
         'payment_adyen_vsf',
+        'payment_stripe_vsf',
         'auth_totp',
     ],
     'data': [

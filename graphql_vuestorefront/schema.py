@@ -9,7 +9,7 @@ from odoo.addons.graphql_vuestorefront.schemas import (
     country, category, product, order,
     invoice, contact_us, user_profile, sign,
     address, wishlist, shop, payment,
-    mailing_list, website,
+    mailing_list, website, payment_stripe,
 )
 
 
@@ -42,6 +42,7 @@ class Mutation(
     shop.ShopMutation,
     payment.PaymentMutation,
     payment.AdyenPaymentMutation,
+    payment_stripe.StripePaymentMutation,
     mailing_list.NewsletterSubscribeMutation,
     order.OrderMutation,
 ):
