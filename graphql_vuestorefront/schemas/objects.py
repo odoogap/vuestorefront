@@ -1017,4 +1017,4 @@ class WebsiteMenuImage(OdooObjectType):
         return '/web/image/website.menu.image/{}/image'.format(self.id)
 
     def resolve_image_filename(self, info):
-        return slugify(self.title)
+        return slugify(self.title or 'image')
