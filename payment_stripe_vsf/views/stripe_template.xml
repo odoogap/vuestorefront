@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Copyright 2024 ERPGAP/PROMPTEQUATION LDA
+    License LGPL-3.0 or later (http://www.gnu.org/licenses/lgpl).
+-->
+<odoo>
+
+    <template id="stripe_template">
+        <t t-call="payment_stripe.sdk_assets"/>
+        <t t-call="website.layout">
+            <div class="container" id="stripe_checkout">
+                <form id="payment-form">
+                    <div id="link-authentication-element">
+                        <!-- Elements will create authentication element here -->
+                    </div>
+                    <div id="payment-element">
+                    <!-- Elements will create form elements here -->
+                    </div>
+                    <button type="submit" id="submit">Pay now</button>
+                    <div id="error-message">
+                    <!-- Display error message to your customers here -->
+                    </div>
+                </form>
+            </div>
+        </t>
+    </template>
+
+</odoo>

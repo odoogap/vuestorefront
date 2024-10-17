@@ -22,7 +22,17 @@
     ],
 
     # Views
-    'data': [],
+    'data': [
+        'views/stripe_template.xml',
+        'data/website_data.xml',
+    ],
+
+    # Assets
+    'assets': {
+        'web.assets_frontend': [
+            'payment_stripe_vsf/static/src/stripe.js'
+        ]
+    },
 
     # Technical
     'installable': True,
