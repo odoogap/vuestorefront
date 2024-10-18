@@ -66,14 +66,18 @@ class AddressQuery(graphene.ObjectType):
         website = env['website'].get_current_website()
         order = website.sale_get_order()
 
-        if not order:
-            raise GraphQLError(_('Shopping cart not found.'))
-
-        # Is public user
-        if not order.partner_id.user_ids or order.partner_id.id == website.user_id.sudo().partner_id.id:
-            partner_id = order.partner_id.id
+        if order:
+            # Is public user
+            if not order.partner_id.user_ids or order.partner_id == website.user_id.sudo().partner_id:
+                partner_id = order.partner_id.id
+            else:
+                partner_id = env.user.partner_id.commercial_partner_id.id
         else:
-            partner_id = env.user.partner_id.commercial_partner_id.id
+            # Is public user
+            if env.user == website.user_id.sudo():
+                partner_id = env.user.partner_id.id
+            else:
+                partner_id = env.user.partner_id.commercial_partner_id.id
 
         # Get all addresses of a specific addressType - delivery or/and shipping
         if filter.get('address_type'):
