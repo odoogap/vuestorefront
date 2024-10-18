@@ -118,7 +118,9 @@ class OrderQuery(graphene.ObjectType):
         env = info.context['env']
         website = env['website'].get_current_website()
         order = website.sale_get_order()
-        return order._get_delivery_methods()
+        if order:
+            return order._get_delivery_methods()
+        return env['delivery.carrier']
 
 
 class ApplyCoupons(graphene.Interface):
