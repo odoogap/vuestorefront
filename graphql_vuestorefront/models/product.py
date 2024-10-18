@@ -3,7 +3,7 @@
 # License LGPL-3.0 or later (http://www.gnu.org/licenses/lgpl).
 
 import json
-import requests
+from odoo.osv import expression
 from datetime import timedelta
 from odoo import models, fields, api, tools, _
 from odoo.tools.float_utils import float_round
@@ -13,6 +13,103 @@ from odoo.exceptions import ValidationError
 
 class ProductTemplate(models.Model):
     _inherit = 'product.template'
+
+    @api.model
+    def _graphql_get_search_order(self, sort):
+        sorting = ''
+        for field, val in sort.items():
+            if sorting:
+                sorting += ', '
+            if field == 'price':
+                sorting += 'list_price %s' % val.value
+            elif field == 'popular':
+                sorting += 'sales_count_30_days %s' % val.value
+            elif field == 'newest':
+                sorting += 'create_date %s' % val.value
+            else:
+                sorting += '%s %s' % (field, val.value)
+
+        # Add id as last factor, so we can consistently get the same results
+        if sorting:
+            sorting += ', id ASC'
+        else:
+            sorting = 'id ASC'
+
+        return sorting
+
+    @api.model
+    def _graphql_get_search_domain(self, search, **kwargs):
+        env = self.env
+
+        # Only get published products
+        domains = [
+            env['website'].get_current_website().sale_product_domain(),
+            [('is_published', '=', True)],
+        ]
+
+        # Filter with ids
+        if kwargs.get('ids', False):
+            domains.append([('id', 'in', kwargs['ids'])])
+
+        # Filter with Category ID
+        if kwargs.get('category_id', False):
+            domains.append([('public_categ_ids', 'child_of', kwargs['category_id'])])
+
+        # Filter with Category Slug
+        if kwargs.get('category_slug', False):
+            domains.append([('public_categ_slug_ids.website_slug', '=', kwargs['category_slug'])])
+
+        # Filter With Name
+        if kwargs.get('name', False):
+            name = kwargs['name']
+            for n in name.split(" "):
+                domains.append([('name', 'ilike', n)])
+
+        if search:
+            for srch in search.split(" "):
+                domains.append([
+                    '|', '|', ('name', 'ilike', srch), ('description_sale', 'like', srch), ('default_code', 'like', srch)])
+
+        partial_domain = domains.copy()
+
+        # Product Price Filter
+        if kwargs.get('min_price', False):
+            domains.append([('list_price', '>=', float(kwargs['min_price']))])
+        if kwargs.get('max_price', False):
+            domains.append([('list_price', '<=', float(kwargs['max_price']))])
+
+        # Deprecated: filter with Attribute Value
+        if kwargs.get('attribute_value_id', False):
+            domains.append([('attribute_line_ids.value_ids', 'in', kwargs['attribute_value_id'])])
+
+        # Filter with Attribute Value
+        if kwargs.get('attrib_values', False):
+            attributes = {}
+            attributes_domain = []
+
+            for value in kwargs['attrib_values']:
+                try:
+                    value = value.split('-')
+                    if len(value) != 2:
+                        continue
+
+                    attribute_id = int(value[0])
+                    attribute_value_id = int(value[1])
+                except ValueError:
+                    continue
+
+                if attribute_id not in attributes:
+                    attributes[attribute_id] = []
+
+                attributes[attribute_id].append(attribute_value_id)
+
+            for key, value in attributes.items():
+                attributes_domain.append([('attribute_line_ids.value_ids', 'in', value)])
+
+            attributes_domain = expression.AND(attributes_domain)
+            domains.append(attributes_domain)
+
+        return expression.AND(domains), expression.AND(partial_domain)
 
     def _compute_json_ld(self):
         env = self.env
