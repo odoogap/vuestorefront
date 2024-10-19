@@ -100,16 +100,14 @@ class StripeGetInlineFormValues(graphene.Mutation):
 class StripeTransaction(graphene.Mutation):
     class Arguments:
         provider_id = graphene.Int(required=True)
-        payment_method_id = graphene.Int(required=True)
         tokenization_requested = graphene.Boolean(default_value=False)
 
     Output = StripeTransactionResult
 
     @staticmethod
-    def mutate(self, info, provider_id, payment_method_id, tokenization_requested):
+    def mutate(self, info, provider_id, tokenization_requested):
         env = info.context["env"]
         PaymentProvider = env['payment.provider'].sudo()
-        PaymentMethod = env['payment.method'].sudo()
         PaymentTransaction = env['payment.transaction'].sudo()
         website = env['website'].get_current_website()
         order = website.sale_get_order()
@@ -119,7 +117,7 @@ class StripeTransaction(graphene.Mutation):
         ]
 
         payment_provider = PaymentProvider.search(domain, limit=1)
-        payment_method = PaymentMethod.search([('id', '=', payment_method_id)], limit=1)
+        payment_method = payment_provider.payment_method_ids[0] if payment_provider.payment_method_ids else None
 
         if not payment_method:
             raise GraphQLError(_('Payment Method does not exist.'))
