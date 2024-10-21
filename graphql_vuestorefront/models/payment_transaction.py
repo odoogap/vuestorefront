@@ -18,6 +18,10 @@ class PaymentTransactionInherit(models.Model):
             2- Not update the SO to 'sent' State;
             3- Not send the quotation email confirmation;
             4- Not Log the message on the SO chatter;
+
+            This will prevent the creation of a new Cart, because the customer can stop the payment during the process,
+            and that way the Cart will stay on the session;
+            For this, we need to keep the last_transaction in "draft";
         """
         for record in self:
             if not record.created_on_vsf:
