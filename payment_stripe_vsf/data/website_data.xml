@@ -9,8 +9,8 @@
         <!-- Stripe Page -->
         <record id="stripe_page" model="website.page">
             <field name="name">Stripe</field>
-            <field name="is_published">True</field>
-            <field name="website_indexed">True</field>
+            <field name="is_published">False</field>
+            <field name="website_indexed">False</field>
             <field name="url">/shop/stripe</field>
             <field name="view_id" ref="stripe_template"/>
             <field name="track">False</field>
@@ -20,7 +20,7 @@
             <field name="name">Stripe</field>
             <field name="page_id" ref="payment_stripe_vsf.stripe_page"/>
             <field name="parent_id" ref="website.main_menu"/>
-            <field name="sequence" type="int">50</field>
+            <field name="sequence" type="int">70</field>
         </record>
 
     </data>

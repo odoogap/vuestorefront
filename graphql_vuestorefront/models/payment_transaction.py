@@ -12,16 +12,16 @@ class PaymentTransactionInherit(models.Model):
 
     def _set_pending(self, state_message=None):
         """
-            Overwrite steps:
+            Overwrite the following steps:
 
-            1- Not update the Transaction to "Pending" ;
-            2- Not update the SO to 'sent' State;
-            3- Not send the quotation email confirmation;
-            4- Not Log the message on the SO chatter;
+            1- Do not update the Transaction to "Pending", keep the transaction in "Draft";
+            2- Do not update the SO to 'sent' State;
+            3- Do not send the quotation email confirmation;
+            4- Do not Log the message on the SO chatter;
 
-            This will prevent the creation of a new Cart, because the customer can stop the payment during the process,
-            and that way the Cart will stay on the session;
-            For this, we need to keep the last_transaction in "draft";
+            These steps will prevent the creation of a new Cart.
+            If the customer stops the payment process, the Cart will remain active in the current session.
+            To ensure this behavior, we need to keep the last transaction in "Draft".
         """
         for record in self:
             if not record.created_on_vsf:
