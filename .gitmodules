@@ -1,4 +1,0 @@
-[submodule ".external/rest-framework"]
-	path = .external/rest-framework
-	url = https://github.com/odoogap/rest-framework.git
-	branch = 17.0
