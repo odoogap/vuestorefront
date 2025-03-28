@@ -92,7 +92,7 @@ class GraphQLController(http.Controller, GraphQLControllerMixin):
     def _set_website_context(self):
         """Set website context based on http_request_host header."""
         try:
-            request_host = request.httprequest.headers.environ['HTTP_RESQUEST_HOST']
+            request_host = request.httprequest.headers.environ['HTTP_REQUEST_HOST']
             website = request.env['website'].search([('domain', 'ilike', request_host)], limit=1)
             if website:
                 context = dict(request.context)
